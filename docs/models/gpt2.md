@@ -10,7 +10,7 @@ the pretrained GPT-2 small checkpoint and the original IOI datasets.
 ```python
 import torch
 from transformers import GPT2Config, GPT2LMHeadModel
-from vlm_probing import Prober, TokenMargin
+from vlmprobe import Prober, TokenMargin
 
 torch.manual_seed(4)
 config = GPT2Config(vocab_size=40, n_embd=16, n_head=2, n_layer=2,

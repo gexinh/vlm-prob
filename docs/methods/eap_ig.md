@@ -27,7 +27,7 @@ Unlike input-feature IG, summing these graph-edge scores has no completeness
 guarantee.
 
 ```python
-from vlm_probing import Prober, TokenMargin
+from vlmprobe import Prober, TokenMargin
 
 probe = Prober(model, processor=tokenizer)
 method = probe.causal.eap_ig(graph="transformer", steps=5)

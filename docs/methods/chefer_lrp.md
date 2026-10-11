@@ -21,7 +21,7 @@ The explicit form below also works without constructing a Prober.
 ```python
 import torch
 from transformers import ViTForImageClassification, ViTImageProcessor
-from vlm_probing.attention.lrp import CheferLRP, create_chefer_vit
+from vlmprobe.attention.lrp import CheferLRP, create_chefer_vit
 
 # Reuse an already-loaded classifier. No second weight download is needed.
 classifier = ViTForImageClassification.from_pretrained(local_model_directory)

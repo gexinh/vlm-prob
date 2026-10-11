@@ -50,7 +50,7 @@ model with real attention and a caller-supplied image-token prefix.
 ```python
 import torch
 from examples.tiny_model import TinyModel
-from vlm_probing import Prober, TokenMargin
+from vlmprobe import Prober, TokenMargin
 
 torch.manual_seed(7)
 torch.set_num_threads(1)

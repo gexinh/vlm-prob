@@ -9,7 +9,7 @@ This example needs no weights or network access.
 ```python
 import torch
 from transformers import LlamaConfig, LlamaForCausalLM
-from vlm_probing import Prober
+from vlmprobe import Prober
 
 config = LlamaConfig(vocab_size=40, hidden_size=16, intermediate_size=32,
                      num_hidden_layers=2, num_attention_heads=2, num_key_value_heads=1)

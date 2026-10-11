@@ -11,7 +11,7 @@ Native class: `LlavaForConditionalGeneration`. Install `pip install -e ".[transf
 import torch
 from PIL import Image
 from transformers import AutoModelForImageTextToText, AutoProcessor
-from vlm_probing import Prober
+from vlmprobe import Prober
 
 model_id = "llava-hf/llava-1.5-7b-hf"
 model = AutoModelForImageTextToText.from_pretrained(

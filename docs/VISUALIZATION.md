@@ -12,7 +12,7 @@ pip install -e ".[visualization]"
 ```
 
 ```python
-from vlm_probing import visualization as viz
+from vlmprobe import visualization as viz
 ```
 
 ## Lens readouts

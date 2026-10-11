@@ -9,13 +9,14 @@ demo workflows.
 - [Model guides and capability matrix](models/README.md): loading, native inputs, supported sites, and validation scope.
 - [Method guides](methods/README.md): computation, examples, parameters, outputs, and paper mappings.
 - [Common API](API.md): token selectors, complete-answer metrics, alignment, fitting, and persistence.
+- [Installation and package releases](PACKAGING.md): pip installation, compatible imports, wheels, and PyPI publishing.
 - [Visualization](VISUALIZATION.md): reusable lens heatmaps, image overlays, causal grids, curves, and graphs.
 - [Lens calibration](TRAINING.md): training and validation splits, author checkpoints, persistent optimization, and resumable Jacobian estimation.
 - [Package architecture](ARCHITECTURE.md): family base classes, adapters, execution, and results.
 - [Custom adapters](ADAPTERS.md): connect another architecture through an explicit contract.
 - [Papers and datasets](REFERENCES.md): original algorithms, author code, and data sources.
 - [Demos](../demos/README.md): offline replay of measured examples, input images, and opt-in model reruns.
-- [Technical report](https://github.com/gexinh/vlm-probing/releases/latest/download/vlm-probing-technical-report.pdf): shared-case comparisons across five pretrained VLMs, plus language and vision controls.
+- [Technical report](https://github.com/gexinh/vlm-probing-report/blob/main/technical-report.pdf): shared-case comparisons across five pretrained VLMs, plus language and vision controls.
 
 ## Choose a demo
 

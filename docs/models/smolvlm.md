@@ -11,7 +11,7 @@ Native class: `Idefics3ForConditionalGeneration`. Install `pip install -e ".[tra
 import torch
 from PIL import Image
 from transformers import AutoModelForImageTextToText, AutoProcessor
-from vlm_probing import Prober
+from vlmprobe import Prober
 
 model_id = "HuggingFaceTB/SmolVLM-256M-Instruct"
 model = AutoModelForImageTextToText.from_pretrained(
@@ -61,7 +61,7 @@ validated edge graph. See the
 SmolVLM-500M-Instruct also runs all eight fixed report cases with actual
 residual replacements, editable attention and a full paired-image path sweep.
 Three Tuned Lens translators are independently calibrated on COCO captions.
-See the [technical report](https://github.com/gexinh/vlm-probing/releases/latest/download/vlm-probing-technical-report.pdf) and
+See the [technical report](https://github.com/gexinh/vlm-probing-report/blob/main/technical-report.pdf) and
 [VLM lens notebook](../../demos/vlm_lens_demo.ipynb).
 
 Both the tiny architecture and the named pretrained checkpoint were run. Pretrained checks cover an image prompt, selected Logit Lens layers, EmbedLens, an attention profile, self-patching, and an image intervention. The processor expanded the image to 1,088 visual slots, all correctly identified by the adapter.

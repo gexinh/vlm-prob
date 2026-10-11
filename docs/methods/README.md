@@ -68,7 +68,7 @@ Pretrained GPT-2 uses the separate original transformer-graph implementation.
 ```python
 import torch
 from examples.tiny_model import TinyModel
-from vlm_probing import Prober, TokenMargin
+from vlmprobe import Prober, TokenMargin
 
 torch.manual_seed(7)
 torch.set_num_threads(1)

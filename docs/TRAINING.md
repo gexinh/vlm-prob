@@ -105,7 +105,7 @@ separate deterministic train/validation caches. DataLoaders should yield
 `activations`, `teacher_logits`, and an optional boolean `mask`.
 
 ```python
-from vlm_probing.training import train_distribution_lens
+from vlmprobe.training import train_distribution_lens
 
 history = train_distribution_lens(
     kernel, cached_training_loader, cached_validation_loader,
@@ -144,7 +144,7 @@ checkpoint is separate from this library's normal artifact `.load(...)`.
 ## Estimate Jacobian Lens
 
 ```python
-from vlm_probing.training import fit_jacobian_lenses
+from vlmprobe.training import fit_jacobian_lenses
 
 method, report = fit_jacobian_lenses(
     probe, calibration_input_batches,

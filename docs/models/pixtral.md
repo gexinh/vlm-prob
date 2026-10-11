@@ -13,7 +13,7 @@ See the [official Transformers guide](https://huggingface.co/docs/transformers/m
 import torch
 from PIL import Image
 from transformers import AutoProcessor, LlavaForConditionalGeneration
-from vlm_probing import Prober, TokenMargin
+from vlmprobe import Prober, TokenMargin
 
 checkpoint = "/path/to/downloaded/Pixtral-12B-2409"
 processor = AutoProcessor.from_pretrained(checkpoint, local_files_only=True)

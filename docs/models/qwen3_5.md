@@ -11,7 +11,7 @@ Native class: `Qwen3_5ForConditionalGeneration`. Install `pip install -e ".[tran
 import torch
 from PIL import Image
 from transformers import AutoModelForImageTextToText, AutoProcessor
-from vlm_probing import Prober
+from vlmprobe import Prober
 
 model_id = "Qwen/Qwen3.5-4B"
 model = AutoModelForImageTextToText.from_pretrained(

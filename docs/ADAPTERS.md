@@ -15,7 +15,7 @@ verified module paths and sequence layout provider.
 ```python
 import torch
 from examples.tiny_model import TinyModel
-from vlm_probing import (
+from vlmprobe import (
     HookPoint, ModelReadout, ModelSpec, Prober, TokenLayout, TorchModelAdapter,
 )
 
@@ -139,7 +139,7 @@ attention, and preserve that hook-stage convention in experimental metadata.
 ## Registering an architecture
 
 ```python
-from vlm_probing import register_adapter
+from vlmprobe import register_adapter
 
 register_adapter(MyModelClass, make_adapter)
 probe = Prober(my_model)  # make_adapter(my_model)

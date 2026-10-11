@@ -19,7 +19,7 @@ the TAM and Beyond Intuition image experiments.
 import torch
 from PIL import Image
 from transformers import AutoImageProcessor, ViTForImageClassification
-from vlm_probing import ClassScore, Prober
+from vlmprobe import ClassScore, Prober
 
 model_id = "google/vit-base-patch16-224"
 processor = AutoImageProcessor.from_pretrained(model_id)
@@ -80,7 +80,7 @@ prepared `probe`, `inputs`, and verified candidate token IDs, the same public
 methods apply to an autoregressive answer:
 
 ```python
-from vlm_probing import TokenMargin
+from vlmprobe import TokenMargin
 
 metric = TokenMargin(positive=correct_token_id, negative=contrast_token_id)
 result = probe.attention.grad_cam(

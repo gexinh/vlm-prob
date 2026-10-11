@@ -11,7 +11,7 @@ Native class: `Qwen3VLForConditionalGeneration`. Install `pip install -e ".[tran
 import torch
 from PIL import Image
 from transformers import AutoModelForImageTextToText, AutoProcessor
-from vlm_probing import Prober
+from vlmprobe import Prober
 
 model_id = "Qwen/Qwen3-VL-2B-Instruct"
 model = AutoModelForImageTextToText.from_pretrained(
@@ -61,7 +61,7 @@ Validated with a tiny randomly initialized instance including the real vision
 path, and with the named pretrained checkpoint on eight fixed GQA/MMVP/VSR/
 VisOnlyQA report cases. Readouts, attention attribution, real residual edits
 and one complete paired-image path sweep are recorded in the
-[technical report](https://github.com/gexinh/vlm-probing/releases/latest/download/vlm-probing-technical-report.pdf).
+[technical report](https://github.com/gexinh/vlm-probing-report/blob/main/technical-report.pdf).
 
 See the [architecture checks](../../examples/hf_model_matrix.py) and the
 [official model implementation](https://github.com/huggingface/transformers/blob/v5.3.0/src/transformers/models/qwen3_vl/modeling_qwen3_vl.py).

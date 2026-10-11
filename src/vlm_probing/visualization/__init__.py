@@ -1,6 +1,6 @@
 """Reusable model-independent plots for lens, attention, and causal results.
 
-Install ``vlm-probing[visualization]`` to draw figures. Importing this module
+Install ``vlmprobe[visualization]`` to draw figures. Importing this module
 does not import matplotlib, NumPy, or Pillow. All functions return matplotlib
 Axes, except the two path-diagram functions which return Figure,
 ``plot_attention_comparison`` which returns (Figure, axes), and

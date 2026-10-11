@@ -36,7 +36,7 @@ def pyplot():
     try:
         import matplotlib.pyplot as plt
     except ImportError as error:
-        raise ImportError("Install vlm-probing[visualization] to draw figures") from error
+        raise ImportError("Install vlmprobe[visualization] to draw figures") from error
     return plt
 
 

@@ -7,7 +7,7 @@ import tempfile
 import torch
 
 from tiny_model import TinyModel
-from vlm_probing import Prober, TokenMargin
+from vlmprobe import Prober, TokenMargin
 
 
 def main():

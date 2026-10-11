@@ -9,7 +9,7 @@ from .api.causal import CausalMethods
 from .metrics import TokenMargin, SequenceLogProb, ClassScore
 from . import visualization
 
-__version__ = "0.8.0"
+__version__ = "0.9.0"
 __all__ = ["BaseMethod", "ProbeResult", "ForwardTrace", "BaseModelAdapter",
            "HookPoint", "ModelReadout", "TorchModelAdapter", "Prober", "ModelSpec",
            "ProbeInputs", "TokenLayout", "HeadSite", "CapabilityError", "register_adapter",

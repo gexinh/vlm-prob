@@ -1,0 +1,19 @@
+# Keep source distributions as small and portable as the installed library.
+include README.md pyproject.toml MANIFEST.in
+recursive-include src *.py
+include src/vlm_probing/_vendor/chefer2021/LICENSE
+include src/vlm_probing/_vendor/chefer2021/README.md
+prune build
+prune dist
+prune docs
+prune demos
+prune examples
+prune tests
+prune paper
+prune papers
+prune research
+prune report
+prune slides
+prune outputs
+prune results
+global-exclude __pycache__ *.py[cod]

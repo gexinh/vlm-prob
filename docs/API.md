@@ -8,7 +8,7 @@ factory parameters and examples live in the [method guides](methods/README.md).
 ## Bind and inspect
 
 ```python
-from vlm_probing import Prober
+from vlmprobe import Prober
 
 probe = Prober(model, processor=processor, adapter="auto", result_device="cpu")
 support = probe.describe()
@@ -101,7 +101,7 @@ and the [attention-map interfaces](methods/attention_maps.md).
 For single-token candidate answers:
 
 ```python
-from vlm_probing import TokenMargin
+from vlmprobe import TokenMargin
 
 positive = processor.tokenizer.encode(" red", add_special_tokens=False)
 negative = processor.tokenizer.encode(" blue", add_special_tokens=False)
@@ -115,7 +115,7 @@ one prediction position per example. For teacher-forced multi-token answers,
 supply the full prompt+answer sequence and an answer mask:
 
 ```python
-from vlm_probing import ProbeInputs, TokenLayout, SequenceLogProb
+from vlmprobe import ProbeInputs, TokenLayout, SequenceLogProb
 
 inputs = ProbeInputs(model_kwargs, TokenLayout(
     valid=valid_mask, visual=visual_mask, prompt=prompt_mask, token_ids=expanded_ids,

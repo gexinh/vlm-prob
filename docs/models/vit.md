@@ -8,7 +8,7 @@ attribution comparisons; it has no language vocabulary lens.
 
 ```python
 from transformers import AutoImageProcessor, ViTForImageClassification
-from vlm_probing import ClassScore, Prober
+from vlmprobe import ClassScore, Prober
 
 # Supply a locally prepared checkpoint and an actual PIL image.
 checkpoint = "/path/to/downloaded/vit"

@@ -24,7 +24,7 @@ weights. They check all available lens methods, gradients, padding, visual token
 coordinates, readout equality, head projection, self-patching, and nontrivial
 interventions. This is architecture validation; it does not establish pretrained
 accuracy on the checkpoints whose weights were not run. The
-[technical report](https://github.com/gexinh/vlm-probing/releases/latest/download/vlm-probing-technical-report.pdf) adds actual execution on five
+[technical report](https://github.com/gexinh/vlm-probing-report/blob/main/technical-report.pdf) adds actual execution on five
 pretrained VLMs, eight fixed cases each, with explicit capability boundaries.
 All eight official processors were also exercised on image+chat inputs.
 [Architecture checks](../../examples/hf_model_matrix.py) use small native models.

@@ -64,7 +64,7 @@ visual wrappers are removed as a complete span; direction construction then
 uses the same text tokens in both conditions.
 
 ```python
-from vlm_probing.causal.visual_steering import VisualSteering
+from vlmprobe.causal.visual_steering import VisualSteering
 
 # Prepare the same question with and without its image. No answer text is used.
 vsv = VisualSteering.from_inputs(probe, image_inputs, text_only_inputs)
@@ -102,7 +102,7 @@ MLP-output implementation uses a different scale. Its `λ=0.17` is not a
 portable default for this raw block-residual demo. Compare a small strength
 sweep, inspect both visual claims and repetition, and retain complete outputs.
 
-The [technical report](https://github.com/gexinh/vlm-probing/releases/latest/download/vlm-probing-technical-report.pdf)
+The [technical report](https://github.com/gexinh/vlm-probing-report/blob/main/technical-report.pdf)
 also compares the same COCO image in LLaVA, SmolVLM and Qwen3-VL. The portable
 [Steering demo](../../demos/steering_vsv_demo.ipynb) includes saved measurements;
 its manifest retains the model, input, and intervention identities.

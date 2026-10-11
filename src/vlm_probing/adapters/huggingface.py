@@ -38,7 +38,7 @@ def make_adapter(model):
     }
     if release != ["5", "3"] and not legacy:
         raise CapabilityError(f"HF adapters require transformers 5.3.x (tested: 5.3.0), got {installed}; "
-                              "install vlm-probing[transformers] or pass an explicit adapter")
+                              "install vlmprobe[transformers] or pass an explicit adapter")
     prefix, visual_fields = MODEL_CONTRACTS[(type(model).__module__, name)]
     decoder = model.get_submodule(prefix)
     # Composite architectures allow other text backbones; only audited ones count.
