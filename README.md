@@ -1,16 +1,16 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/gexinh/vlm-probing/main/docs/assets/vlm-probing-icon.svg" width="112" alt="VLM Probing icon">
+  <img src="https://raw.githubusercontent.com/gexinh/vlm-probing/main/docs/assets/vlm-probing-icon.svg" width="112" alt="vlmprobe icon">
 </p>
 
-<h1 align="center">VLM Probing</h1>
+<h1 align="center">vlmprobe</h1>
 
 <p align="center"><strong>Exploring Model Internals Beyond the Answer</strong></p>
 
 <p align="center">
-  <a href="https://gexinh.github.io/vlm-probing/"><img src="https://img.shields.io/badge/Project%20Page-Visit%20Website-3266e5?style=for-the-badge" alt="Visit the VLM Probing project page"></a>
+  <a href="https://gexinh.github.io/vlm-probing/"><img src="https://img.shields.io/badge/Project%20Page-Visit%20Website-3266e5?style=for-the-badge" alt="Visit the vlmprobe project page"></a>
 </p>
 
-VLM Probing brings lens readouts, attention explanations, and causal
+vlmprobe brings lens readouts, attention explanations, and causal
 interventions into one model-bound interface. It supports vision-language
 models, language models, and a ViT image-classification control. Bind a loaded
 model once, select layers and token groups, and inspect how its internal
@@ -35,7 +35,7 @@ a measured zero effect.
 
 [Project Page](https://gexinh.github.io/vlm-probing/) · [Documentation](https://github.com/gexinh/vlm-probing/blob/main/docs/README.md) · [Demos](https://github.com/gexinh/vlm-probing/blob/main/demos/README.md) ·
 [Visualization](https://github.com/gexinh/vlm-probing/blob/main/docs/VISUALIZATION.md) ·
-[Technical report](https://github.com/gexinh/vlm-probing-report/blob/main/technical-report.pdf) ·
+[Technical report](https://github.com/gexinh/vlm-probing/releases/latest/download/vlm-probing-technical-report.pdf) ·
 [Papers and datasets](https://github.com/gexinh/vlm-probing/blob/main/docs/REFERENCES.md)
 
 ## Installation
@@ -215,6 +215,6 @@ share model execution. [Architecture](https://github.com/gexinh/vlm-probing/blob
 The [paper and dataset index](https://github.com/gexinh/vlm-probing/blob/main/docs/REFERENCES.md) links the original method
 papers, author implementations, and datasets used for demonstrations and lens
 calibration. The
-[technical report](https://github.com/gexinh/vlm-probing-report/blob/main/technical-report.pdf)
+[technical report](https://github.com/gexinh/vlm-probing/releases/latest/download/vlm-probing-technical-report.pdf)
 compares real readouts, explanations, and interventions on shared cases across
 five pretrained VLMs, with language and vision controls.

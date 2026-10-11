@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 700" role="img" aria-labelledby="title desc">
-  <title id="title">VLM Probing library overview</title>
+  <title id="title">vlmprobe library overview</title>
   <desc id="desc">A vision-language model is bound through Prober and an explicit model adapter, then inspected with lens, attention, and causal methods, producing structured probe results.</desc>
   <defs>
     <linearGradient id="canvas" x1="0" y1="0" x2="1440" y2="700" gradientUnits="userSpaceOnUse">

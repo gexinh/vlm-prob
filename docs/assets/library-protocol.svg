@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1600" height="660" viewBox="0 100 1600 660" role="img" aria-labelledby="figure-title figure-description">
-  <title id="figure-title">VLM Probing: from model inputs to reproducible analysis</title>
+  <title id="figure-title">vlmprobe: from model inputs to reproducible analysis</title>
   <desc id="figure-description">An editable four-stage library overview. Model inputs and optional paired examples are bound through Prober and an explicit adapter. Site selection, token groups, target scores and optional lens calibration configure three tool families. Lens readouts, attention attribution and causal experiments produce structured results and reproducible experiment artifacts. Method availability depends on adapter capabilities.</desc>
   <metadata id="draft-metadata">Report figure 1; version 3; simplified output descriptions. The three miniature visualizations are schematic and contain no experimental measurements. Native editable SVG text and shapes. Palette follows docs/assets/library-overview.svg.</metadata>
   <defs>

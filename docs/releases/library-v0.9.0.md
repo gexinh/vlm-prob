@@ -1,4 +1,4 @@
-# VLM Probing 0.9.0: install and import as vlmprobe
+# vlmprobe 0.9.0: install and import as vlmprobe
 
 ## Goal
 

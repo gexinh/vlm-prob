@@ -2,8 +2,8 @@
 
 [Home](../README.md) / [Documentation](README.md)
 
-The installable distribution and recommended Python import are **`vlmprobe`**.
-The project and repository remain **VLM Probing** and **`gexinh/vlm-probing`**.
+The library, installable distribution, and recommended Python import are
+**`vlmprobe`**. The GitHub repository remains **`gexinh/vlm-probing`**.
 
 ## Install and import
 

@@ -1,4 +1,4 @@
-# VLM Probing project page
+# vlmprobe project page
 
 A responsive English research project page with three method families, a framework diagram, model support, nine demonstration links, and an interactive replay of a real Attention Knockout experiment.
 
@@ -18,7 +18,7 @@ Open http://127.0.0.1:8765/. Use HTTP rather than opening index.html directly be
 - Colors, spacing, and responsive layout: docs/project-page/styles.css.
 - Confirmed author names in order and affiliation: docs/project-page/assets/site-config.json. Empty fields display nothing.
 - Experiment data: docs/project-page/assets/experiment.json; rendering: docs/project-page/app.js.
-- Repository, documentation, notebooks, and report links currently require repository access. Do not mark them as publicly available before they actually are.
+- The library repository, documentation, and notebooks are public. The separate report source repository is currently private.
 - No paper title, venue, author identity, affiliation, benchmark, or citation has been invented.
 
 ## GitHub Pages
@@ -39,17 +39,12 @@ at the site root, so styles, JavaScript, SVGs, and JSON use the same relative pa
 
 Subsequent changes to this folder on main publish automatically.
 The workflow uploads only index.html, styles.css, app.js, and assets;
-Python source, notebooks, model weights, and the rest of the private repository
+Python source, notebooks, model weights, and the rest of the repository
 are not part of the website artifact.
 
-Private repositories require an eligible GitHub plan for Pages. If Pages settings
-offer only an upgrade or public-repository option, keep this research repository
-private and use a separate public page repository containing the site assets,
-then update the README links to that repository's Pages URL.
-
 A published page exposes its HTML, JavaScript, diagrams, and displayed experiment
-numbers. Repository, documentation, notebooks, and technical report links still
-require repository access while the research repository is private.
+numbers. The report source repository has separate access settings from the
+public library repository and project page.
 
 ### Verification
 

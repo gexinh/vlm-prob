@@ -16,7 +16,7 @@ demo workflows.
 - [Custom adapters](ADAPTERS.md): connect another architecture through an explicit contract.
 - [Papers and datasets](REFERENCES.md): original algorithms, author code, and data sources.
 - [Demos](../demos/README.md): offline replay of measured examples, input images, and opt-in model reruns.
-- [Technical report](https://github.com/gexinh/vlm-probing-report/blob/main/technical-report.pdf): shared-case comparisons across five pretrained VLMs, plus language and vision controls.
+- [Technical report](https://github.com/gexinh/vlm-probing/releases/latest/download/vlm-probing-technical-report.pdf): shared-case comparisons across five pretrained VLMs, plus language and vision controls.
 
 ## Choose a demo
 
