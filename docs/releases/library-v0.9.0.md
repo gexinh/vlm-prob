@@ -51,5 +51,24 @@ inference, lens training, or dataset-level result is introduced.
 - 66 Python documentation blocks parsed successfully; workflow YAML and
   whitespace checks passed.
 
-These are local validation results. PyPI publication requires a configured
-maintainer trusted publisher and is not claimed by this source release.
+## PyPI publication
+
+Version **0.9.0** is published at
+[PyPI](https://pypi.org/project/vlmprobe/0.9.0/), built from commit
+`b837be9aaaeb9efbbbd9c4458c944d99d54eab26`. The
+[publication workflow](https://github.com/gexinh/vlm-probing/actions/runs/38105633245)
+passed the Python 3.10 and 3.12 build/installed-wheel checks and the trusted
+publisher upload. The GitHub `pypi` environment restricts deployment to `main`.
+
+Installation with `pip install vlmprobe==0.9.0` was verified against the public
+PyPI index in a new virtual environment reusing an existing PyTorch install.
+Both import names resolve to the installed package, retain shared class and
+adapter identities, and report version 0.9.0. All five namespace tests passed
+against that PyPI installation, including actual forwards through all three
+probing families.
+The `transformers,visualization` extras also resolved successfully against
+PyPI in a pip dry run. Both published archives have the same SHA256 digests
+as the successful workflow's Python 3.12 build artifacts.
+
+README and project-page installation instructions now lead with the published
+PyPI package; GitHub installation remains available for development versions.

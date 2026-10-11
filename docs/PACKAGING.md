@@ -7,10 +7,10 @@ The project and repository remain **VLM Probing** and **`gexinh/vlm-probing`**.
 
 ## Install and import
 
-Install from GitHub without cloning the repository yourself:
+Install the published package from [PyPI](https://pypi.org/project/vlmprobe/):
 
 ```bash
-python -m pip install "vlmprobe[transformers,visualization] @ git+https://github.com/gexinh/vlm-probing.git"
+python -m pip install "vlmprobe[transformers,visualization]"
 ```
 
 ```python
@@ -30,6 +30,16 @@ and Hugging Face dependencies are loaded only when those features are used.
 | `visualization` | Matplotlib, NumPy, and Pillow for built-in plots. |
 | `transformers` | Supported Transformers 5.3.x, Accelerate, Torchvision, and Pillow. |
 | `notebooks` | Jupyter and the plotting/tokenizer tools used by demos. |
+
+For tensor methods and custom PyTorch adapters, the base installation is
+`python -m pip install vlmprobe`.
+
+For the latest development code, install from GitHub without cloning the
+repository yourself:
+
+```bash
+python -m pip install "vlmprobe[transformers,visualization] @ git+https://github.com/gexinh/vlm-probing.git"
+```
 
 For a pinned experiment, append a commit or release tag to the Git URL, using
 [pip's VCS syntax](https://pip.pypa.io/en/stable/topics/vcs-support/).
@@ -71,23 +81,15 @@ The version has one source: `vlm_probing.__version__`. Setuptools reads that
 constant to create distribution metadata; `vlmprobe.__version__` exposes the
 same value. The source distribution is sufficient to rebuild the wheel.
 
-## First PyPI publication
-
-Until the first publication completes, use the GitHub install command above.
-After publication, users can install with:
-
-```bash
-python -m pip install "vlmprobe[transformers,visualization]"
-```
+## Publish a new version
 
 The repository includes a GitHub Actions workflow named **Build and publish
 Python package** (`.github/workflows/package.yml`). Pushes and pull requests
 only build and test the package on Python 3.10 and 3.12. Publishing is a manual
 workflow action, using PyPI's token-free trusted publishing.
 
-For a new project, a maintainer must first create a
-[pending trusted publisher](https://docs.pypi.org/trusted-publishers/creating-a-project-through-oidc/)
-in their PyPI account with these values:
+The project uses a [trusted publisher](https://docs.pypi.org/trusted-publishers/)
+with these values:
 
 | Field | Value |
 | --- | --- |
@@ -97,13 +99,15 @@ in their PyPI account with these values:
 | Workflow filename | `package.yml` |
 | Environment | `pypi` |
 
-Create the matching GitHub repository environment `pypi`. In **Actions → Build
-and publish Python package → Run workflow**, choose `main` and set
+The matching GitHub repository environment `pypi` allows deployment from
+`main`. Before each new release, increment `vlm_probing.__version__` and push
+the reviewed change. In **Actions → Build and publish Python package → Run
+workflow**, choose `main` and set
 `publish_target` to `pypi`. The workflow publishes only after both build/test
 jobs succeed. Its OIDC permission belongs only to the publish job; no PyPI API
 token is stored in the repository.
 
-To test publication first, repeat the trusted-publisher setup on **TestPyPI**
+To test a release first, configure a trusted publisher on **TestPyPI**
 with environment `testpypi`, then select `testpypi` in the workflow. TestPyPI
 accounts and projects are separate from PyPI. An index refuses overwriting an
 already published version; increment the version for later releases.

@@ -40,17 +40,16 @@ a measured zero effect.
 
 ## Installation
 
-Python 3.10+ is required. Install directly from GitHub; no manual clone or
-`PYTHONPATH` setup is needed:
+Python 3.10+ is required. Install from [PyPI](https://pypi.org/project/vlmprobe/):
 
 ```bash
-python -m pip install "vlmprobe[transformers,visualization] @ git+https://github.com/gexinh/vlm-probing.git"
+python -m pip install "vlmprobe[transformers,visualization]"
 ```
 
 For tensor methods and custom PyTorch adapters, install the base package:
 
 ```bash
-python -m pip install "vlmprobe @ git+https://github.com/gexinh/vlm-probing.git"
+python -m pip install vlmprobe
 ```
 
 The Python import name is **`vlmprobe`**. Existing `vlm_probing` imports remain
@@ -68,11 +67,15 @@ Transformers 5.3.x and includes Accelerate, Torchvision, and Pillow;
 `visualization` provides the plotting dependencies. Add `notebooks` when using
 Jupyter. Model weights and complete datasets are downloaded separately.
 
+For the latest development code, install directly from GitHub:
+
+```bash
+python -m pip install "vlmprobe[transformers,visualization] @ git+https://github.com/gexinh/vlm-probing.git"
+```
+
 To develop the library in a checkout, use
 `python -m pip install -e ".[transformers,visualization,notebooks]"`.
-The [package guide](https://github.com/gexinh/vlm-probing/blob/main/docs/PACKAGING.md) covers wheels and PyPI publication.
-The short PyPI command `pip install vlmprobe` becomes available after the first
-PyPI release; the GitHub installation above works independently of PyPI.
+The [package guide](https://github.com/gexinh/vlm-probing/blob/main/docs/PACKAGING.md) covers wheels and release publication.
 
 ## Quick Start
 
