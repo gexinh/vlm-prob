@@ -3,7 +3,8 @@
 [Home](../README.md) / [Documentation](README.md)
 
 The library, installable distribution, and recommended Python import are
-**`vlmprobe`**. The GitHub repository remains **`gexinh/vlm-probing`**.
+**`vlmprobe`**. The laboratory repository is **`ubc-tea/vlm-probe`**, with an
+identical personal mirror at **`gexinh/vlm-probing`**. Both share one PyPI project.
 
 ## Install and import
 
@@ -38,7 +39,7 @@ For the latest development code, install from GitHub without cloning the
 repository yourself:
 
 ```bash
-python -m pip install "vlmprobe[transformers,visualization] @ git+https://github.com/gexinh/vlm-probing.git"
+python -m pip install "vlmprobe[transformers,visualization] @ git+https://github.com/ubc-tea/vlm-probe.git"
 ```
 
 For a pinned experiment, append a commit or release tag to the Git URL, using
@@ -87,6 +88,14 @@ The repository includes a GitHub Actions workflow named **Build and publish
 Python package** (`.github/workflows/package.yml`). Pushes and pull requests
 only build and test the package on Python 3.10 and 3.12. Publishing is a manual
 workflow action, using PyPI's token-free trusted publishing.
+
+`pip install vlmprobe` downloads a versioned distribution uploaded to PyPI; it
+does not fetch either repository's current `main`. GitHub pushes alone do not
+update that installation. Both mirrors build the package, but only
+`gexinh/vlm-probing` can execute the PyPI publish job. Keep the existing Trusted
+Publisher and publish each version once. Repository links in package metadata
+may point to the lab even while the publishing workflow runs in the personal
+mirror. See [repository synchronization](REPOSITORY_SYNC.md).
 
 The project uses a [trusted publisher](https://docs.pypi.org/trusted-publishers/)
 with these values:

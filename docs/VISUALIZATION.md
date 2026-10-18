@@ -52,6 +52,7 @@ ax = viz.plot_attention_overlay(
     grid_shape=(grid_height, grid_width),
     visual_positions=visual_token_indices,
     query_positions=[prediction_position],
+    image_alpha=0.25,
     bounding_boxes=[shirt_box_xywh],
 )
 ax.figure.savefig("attention.png", bbox_inches="tight")
@@ -68,6 +69,14 @@ The overlay accepts a two-dimensional spatial map, a vector with an explicit
 attention heads are averaged for display. Use `signed=True` for signed
 attributions such as ATTATTR; a measured zero map stays zero.
 
+`image_alpha` controls the original image drawn over the heatmap. Its default
+is `0.25`; lower values soften saturated image colors and show more of the
+measured heatmap. The heatmap stays fully opaque by default (`alpha=1.0`).
+An explicit `alpha` still controls heatmap opacity for existing callers.
+Both parameters accept finite values from zero to one and affect only display;
+the measured values, missing-value mask, image geometry, and color scale stay
+the same. `plot_input` continues to show the original image at full opacity.
+
 ```python
 fig, axes = viz.plot_attention_comparison(
     processed_image,
@@ -76,7 +85,7 @@ fig, axes = viz.plot_attention_comparison(
     visual_positions=visual_token_indices,
     query_positions=[prediction_position],
     signed={"Grad-CAM": False, "ATTATTR": True, "TAM": False},
-    columns=3, shared_scale=False,
+    columns=3, shared_scale=False, image_alpha=0.25,
 )
 fig.savefig("attention-comparison.png", bbox_inches="tight")
 ```

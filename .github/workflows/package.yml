@@ -6,6 +6,8 @@ on:
     paths:
       - "src/**"
       - "tests/test_package_imports.py"
+      - "tests/test_repository_sync.py"
+      - "tools/sync_repositories.py"
       - "examples/tiny_model.py"
       - "pyproject.toml"
       - "MANIFEST.in"
@@ -15,6 +17,8 @@ on:
     paths:
       - "src/**"
       - "tests/test_package_imports.py"
+      - "tests/test_repository_sync.py"
+      - "tools/sync_repositories.py"
       - "examples/tiny_model.py"
       - "pyproject.toml"
       - "MANIFEST.in"
@@ -57,13 +61,14 @@ jobs:
         run: |
           python -m pip install --no-deps dist/*.whl
           python -m unittest discover -s tests -p test_package_imports.py -v
+          python -m unittest discover -s tests -p test_repository_sync.py -v
       - uses: actions/upload-artifact@v4
         with:
           name: vlmprobe-dist-${{ matrix.python }}
           path: dist/*
 
   publish:
-    if: github.event_name == 'workflow_dispatch' && inputs.publish_target != 'none'
+    if: github.repository == 'gexinh/vlm-probing' && github.event_name == 'workflow_dispatch' && inputs.publish_target != 'none'
     needs: build
     runs-on: ubuntu-latest
     environment:

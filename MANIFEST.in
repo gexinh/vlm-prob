@@ -9,6 +9,7 @@ prune docs
 prune demos
 prune examples
 prune tests
+prune tools
 prune paper
 prune papers
 prune research

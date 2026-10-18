@@ -94,20 +94,34 @@ def _image(image):
     return values
 
 
-def _overlay(ax, image, values, *, norm, signed, cmap, alpha, bounding_boxes,
+def _opacity(value, name):
+    from math import isfinite
+    try:
+        valid = isfinite(value) and 0 <= value <= 1
+        if valid:
+            return
+    except (TypeError, ValueError, OverflowError):
+        pass
+    raise ValueError(f"{name} must be finite and between zero and one")
+
+
+def _overlay(ax, image, values, *, norm, signed, cmap, alpha, image_alpha, bounding_boxes,
              title, colorbar, value_label):
     import numpy as np
     from matplotlib.patches import Rectangle
     palette = pyplot().get_cmap(cmap or ("RdBu_r" if signed else "Blues")).with_extremes(bad=(0, 0, 0, 0))
     height, width = image.shape[:2]
     extent = (-.5, width - .5, height - .5, -.5)
-    ax.imshow(image, extent=extent)
+    # Keep the image/map artist order stable, but render the image above the
+    # measured map so its opacity alone controls how much image detail shows.
+    ax.imshow(image, extent=extent, alpha=image_alpha, zorder=2)
     artist = ax.imshow(np.ma.masked_invalid(values), extent=extent, norm=norm, cmap=palette,
-                       interpolation="bilinear", alpha=alpha)
+                       interpolation="bilinear", alpha=alpha, zorder=1)
     for box in bounding_boxes or []:
         if len(box) != 4 or not np.isfinite(box).all() or min(box[2:]) <= 0:
             raise ValueError("bounding_boxes must be (x,y,width,height) in the supplied image coordinates")
-        ax.add_patch(Rectangle(box[:2], box[2], box[3], fill=False, edgecolor="#20e060", linewidth=1.6))
+        ax.add_patch(Rectangle(box[:2], box[2], box[3], fill=False, edgecolor="#20e060", linewidth=1.6,
+                               zorder=3))
     ax.set(xlim=(-.5, width - .5), ylim=(height - .5, -.5))
     ax.set_aspect("equal")
     ax.axis("off")
@@ -120,7 +134,7 @@ def _overlay(ax, image, values, *, norm, signed, cmap, alpha, bounding_boxes,
 
 def plot_attention_overlay(image, values, *, tensor=None, grid_shape=None,
                            visual_positions=None, query_positions=None, layer=-1,
-                           batch_index=0, signed=False, alpha=.72, cmap=None,
+                           batch_index=0, signed=False, alpha=1.0, image_alpha=.25, cmap=None,
                            vmin=None, vmax=None, bounding_boxes=None, ax=None,
                            title=None, colorbar=True, value_label="Attribution"):
     """Overlay a map on the *actual image represented by its visual grid*.
@@ -131,10 +145,13 @@ def plot_attention_overlay(image, values, *, tensor=None, grid_shape=None,
     ``visual_positions`` and ``query_positions`` (or a captured query_mask).
     Heads are averaged for raw attention. ``layer`` indexes captured layers,
     not an assumed global decoder index. No normalization changes the data;
-    color limits only control display. Returns a matplotlib Axes.
+    color limits only control display. ``image_alpha`` controls the original
+    image drawn over the map; lower values reveal more of the heatmap. ``alpha``
+    retains its heatmap-opacity meaning and defaults to fully opaque.
+    Both opacities must be finite and in [0,1]. Returns a matplotlib Axes.
     """
-    if not 0 <= alpha <= 1:
-        raise ValueError("alpha must be between zero and one")
+    _opacity(alpha, "alpha")
+    _opacity(image_alpha, "image_alpha")
     image = _image(image)
     values = _visual_map(values, tensor=tensor, grid_shape=grid_shape,
                          visual_positions=visual_positions, query_positions=query_positions,
@@ -144,6 +161,7 @@ def plot_attention_overlay(image, values, *, tensor=None, grid_shape=None,
     norm = normalization(values, signed=signed, vmin=0 if vmin is None and not signed else vmin, vmax=vmax)
     ax = axes(ax, figsize=(6, 5))
     _overlay(ax, image, values, norm=norm, signed=signed, cmap=cmap, alpha=alpha,
+             image_alpha=image_alpha,
              bounding_boxes=bounding_boxes, title=title, colorbar=colorbar, value_label=value_label)
     return ax
 
@@ -151,7 +169,7 @@ def plot_attention_overlay(image, values, *, tensor=None, grid_shape=None,
 def plot_attention_comparison(image, named_maps, *, grid_shape=None,
                               visual_positions=None, query_positions=None, layer=-1,
                               batch_index=0, columns=4, signed=False, shared_scale=False,
-                              cmap=None, alpha=.72, axes=None, colorbar=True,
+                              cmap=None, alpha=1.0, image_alpha=.25, axes=None, colorbar=True,
                               value_label="Attribution", titles=None, bounding_boxes=None):
     """Compare named maps with a common image, geometry, and explicit scale.
 
@@ -159,6 +177,8 @@ def plot_attention_comparison(image, named_maps, *, grid_shape=None,
     Per-map color limits are the default because different methods have
     different units. ``shared_scale=True`` uses one colorbar/scale per
     signedness group; compare magnitudes only when scores share units.
+    ``image_alpha`` controls the original image over each map; ``alpha``
+    controls heatmap opacity. Both opacities must be finite and in [0,1].
     Returns ``(figure, axes)`` with a two-dimensional axes array.
     """
     import numpy as np
@@ -167,8 +187,8 @@ def plot_attention_comparison(image, named_maps, *, grid_shape=None,
         raise ValueError("named_maps must be a nonempty mapping")
     if type(columns) is not int or columns <= 0:
         raise ValueError("columns must be a positive integer")
-    if not 0 <= alpha <= 1:
-        raise ValueError("alpha must be between zero and one")
+    _opacity(alpha, "alpha")
+    _opacity(image_alpha, "image_alpha")
     image = _image(image)
     maps = {name: _visual_map(value, grid_shape=grid_shape, visual_positions=visual_positions,
                             query_positions=query_positions, layer=layer, batch_index=batch_index)
@@ -205,7 +225,7 @@ def plot_attention_comparison(image, named_maps, *, grid_shape=None,
         norm = norms[sign] if shared_scale else normalization(values, signed=sign, vmin=None if sign else 0)
         artist = _overlay(ax, image, values, norm=norm, signed=sign,
                           cmap=cmap.get(name) if isinstance(cmap, Mapping) else cmap,
-                          alpha=alpha, bounding_boxes=bounding_boxes,
+                          alpha=alpha, image_alpha=image_alpha, bounding_boxes=bounding_boxes,
                           title=titles.get(name, name) if titles else name,
                           colorbar=colorbar and not shared_scale, value_label=value_label)
         artists[sign] = artist

@@ -83,8 +83,83 @@ class VisualizationTests(unittest.TestCase):
         ax = viz.plot_attention_overlay(image, values, grid_shape=(2, 2), colorbar=False)
         np.testing.assert_array_equal(ax.images[1].get_array(), [[0, .2], [.5, 1]])
         self.assertEqual(tuple(ax.images[1].get_extent()), (-.5, 39.5, 19.5, -.5))
+        self.assertEqual(ax.images[0].get_alpha(), .25)
+        self.assertEqual(ax.images[1].get_alpha(), 1.0)
         np.testing.assert_array_equal(values, [0, .2, .5, 1])
         np.testing.assert_array_equal(image, np.zeros((20, 40, 3), dtype=np.uint8))
+
+    def test_overlay_image_opacity_reveals_heatmap_without_changing_measurements(self):
+        image = np.full((8, 12, 3), (255, 0, 0), dtype=np.uint8)
+        values = np.array([[1.]])
+        for image_alpha, alpha in ((0., 1.), (.25, 1.), (1., 1.), (0., .4)):
+            with self.subTest(image_alpha=image_alpha, alpha=alpha):
+                figure, ax = plt.subplots(figsize=(2, 2), dpi=60)
+                viz.plot_attention_overlay(image, values, image_alpha=image_alpha,
+                                           alpha=alpha, vmin=0, vmax=1,
+                                           colorbar=False, ax=ax)
+                figure.canvas.draw()
+                pixels = np.asarray(figure.canvas.buffer_rgba())
+                column = int((ax.bbox.x0 + ax.bbox.x1) / 2)
+                row = pixels.shape[0] - int((ax.bbox.y0 + ax.bbox.y1) / 2)
+                map_rgb = np.array(ax.images[1].cmap(1.0)[:3]) * 255
+                heatmap_rgb = alpha * map_rgb + (1 - alpha) * 255
+                expected = image_alpha * image[0, 0] + (1 - image_alpha) * heatmap_rgb
+                np.testing.assert_allclose(pixels[row, column, :3], expected, atol=2)
+                np.testing.assert_array_equal(ax.images[0].get_array(), image)
+                np.testing.assert_array_equal(ax.images[1].get_array(), values)
+                self.assertEqual(ax.images[0].get_alpha(), image_alpha)
+                self.assertEqual(ax.images[1].get_alpha(), alpha)
+        np.testing.assert_array_equal(image, np.full((8, 12, 3), (255, 0, 0), dtype=np.uint8))
+        np.testing.assert_array_equal(values, [[1.]])
+
+    def test_comparison_image_opacity_preserves_signed_maps_masks_and_geometry(self):
+        image = np.full((10, 20, 3), (255, 64, 0), dtype=np.uint8)
+        values = np.array([[-2., np.nan], [0., 1.]])
+        for image_alpha in (0., .8):
+            with self.subTest(image_alpha=image_alpha):
+                figure, panels = viz.plot_attention_comparison(image,
+                    {"first": values, "second": values / 2}, signed=True, shared_scale=True,
+                    image_alpha=image_alpha, alpha=.6, bounding_boxes=[(5, 3, 8, 6)])
+                self.assertEqual(len(figure.axes), 3)
+                self.assertIs(panels[0, 0].images[1].norm, panels[0, 1].images[1].norm)
+                for panel, expected in zip(panels.flat, (values, values / 2)):
+                    background, heatmap = panel.images
+                    np.testing.assert_array_equal(background.get_array(), image)
+                    np.testing.assert_allclose(heatmap.get_array().data, expected)
+                    np.testing.assert_array_equal(np.ma.getmaskarray(heatmap.get_array()), np.isnan(expected))
+                    self.assertEqual(tuple(heatmap.get_extent()), (-.5, 19.5, 9.5, -.5))
+                    self.assertEqual(tuple(background.get_extent()), tuple(heatmap.get_extent()))
+                    self.assertEqual((heatmap.norm.vmin, heatmap.norm.vcenter, heatmap.norm.vmax), (-2, 0, 2))
+                    self.assertEqual(heatmap.cmap.name, "RdBu_r")
+                    self.assertEqual(background.get_alpha(), image_alpha)
+                    self.assertEqual(heatmap.get_alpha(), .6)
+                    self.assertGreater(background.get_zorder(), heatmap.get_zorder())
+                    self.assertGreater(panel.patches[0].get_zorder(), background.get_zorder())
+                    self.assertEqual(panel.patches[0].get_xy(), (5, 3))
+        np.testing.assert_array_equal(values, [[-2, np.nan], [0, 1]])
+        np.testing.assert_array_equal(image, np.full((10, 20, 3), (255, 64, 0), dtype=np.uint8))
+
+    def test_overlay_zero_map_and_input_image_keep_their_values(self):
+        image = np.full((6, 10, 3), (255, 0, 0), dtype=np.uint8)
+        values = np.zeros((2, 2))
+        ax = viz.plot_attention_overlay(image, values, image_alpha=.1, colorbar=False)
+        np.testing.assert_array_equal(ax.images[1].get_array(), values)
+        self.assertFalse(np.ma.getmaskarray(ax.images[1].get_array()).any())
+        input_ax = viz.plot_input(image)
+        np.testing.assert_array_equal(input_ax.images[0].get_array(), image)
+        self.assertIsNone(input_ax.images[0].get_alpha())
+        np.testing.assert_array_equal(values, np.zeros((2, 2)))
+        np.testing.assert_array_equal(image, np.full((6, 10, 3), (255, 0, 0), dtype=np.uint8))
+
+    def test_overlay_and_comparison_reject_invalid_opacity(self):
+        image = np.zeros((5, 5, 3), np.uint8)
+        for plot, maps in ((viz.plot_attention_overlay, [[0, 1]]),
+                           (viz.plot_attention_comparison, {"map": [[0, 1]]})):
+            for name in ("alpha", "image_alpha"):
+                for value in (-.1, 1.1, float("nan"), float("inf"), -float("inf")):
+                    with self.subTest(plot=plot.__name__, name=name, value=value):
+                        with self.assertRaisesRegex(ValueError, f"{name} must be finite"):
+                            plot(image, maps, **{name: value})
 
     def test_overlay_selects_query_key_coordinates_in_declared_order(self):
         image = np.zeros((10, 20, 3), dtype=np.uint8)

@@ -1,0 +1,13 @@
+{
+  "source_repository": "https://github.com/gexinh/vlm-probing-report",
+  "source_commit": "93acafacf7df0aa3159da138dabff047a7e9d6fc",
+  "source_file": "main.tex",
+  "pdf": "vlmprobe-technical-report.pdf",
+  "pdf_sha256": "d6fb19f4e6e8177f55a0920ae4d7452b4d0e7d1f33a7e75a0ddba33727140172",
+  "pages": 24,
+  "references_pages": [
+    17
+  ],
+  "references_columns": 1,
+  "note": "Latest remote authors retained; single-column article and data bibliography. Source and experimental build trees remain in the separate report repository/local archive."
+}

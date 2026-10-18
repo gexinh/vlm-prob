@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/gexinh/vlm-probing/main/docs/assets/vlm-probing-icon.svg" width="112" alt="vlmprobe icon">
+  <img src="https://raw.githubusercontent.com/ubc-tea/vlm-probe/main/docs/assets/vlm-probing-icon.svg" width="112" alt="vlmprobe icon">
 </p>
 
 <h1 align="center">vlmprobe</h1>
@@ -7,8 +7,13 @@
 <p align="center"><strong>Exploring Model Internals Beyond the Answer</strong></p>
 
 <p align="center">
-  <a href="https://gexinh.github.io/vlm-probing/"><img src="https://img.shields.io/badge/Project%20Page-Visit%20Website-3266e5?style=for-the-badge" alt="Visit the vlmprobe project page"></a>
+  <a href="https://ubc-tea.github.io/vlm-probe/"><img src="https://img.shields.io/badge/UBC%20TEA-Project%20Page-3266e5?style=for-the-badge" alt="UBC TEA project page"></a>
+  <a href="https://gexinh.github.io/vlm-probing/"><img src="https://img.shields.io/badge/Personal%20Mirror-Project%20Page-087f8c?style=for-the-badge" alt="Personal mirror project page"></a>
 </p>
+
+Maintained under [UBC TEA](https://github.com/ubc-tea/vlm-probe), with a
+[synchronized personal mirror](https://github.com/gexinh/vlm-probing). Both
+repositories contain the same library, demos, and current technical report.
 
 vlmprobe brings lens readouts, attention explanations, and causal
 interventions into one model-bound interface. It supports vision-language
@@ -30,13 +35,13 @@ connection graphs. Capability checks distinguish an unsupported operation from
 a measured zero effect.
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/gexinh/vlm-probing/main/docs/assets/library-protocol.svg" width="100%" alt="Model inputs, adapter configuration, lens/attention/causal tools, and structured results">
+  <img src="https://raw.githubusercontent.com/ubc-tea/vlm-probe/main/docs/assets/library-protocol.svg" width="100%" alt="Model inputs, adapter configuration, lens/attention/causal tools, and structured results">
 </p>
 
-[Project Page](https://gexinh.github.io/vlm-probing/) · [Documentation](https://github.com/gexinh/vlm-probing/blob/main/docs/README.md) · [Demos](https://github.com/gexinh/vlm-probing/blob/main/demos/README.md) ·
-[Visualization](https://github.com/gexinh/vlm-probing/blob/main/docs/VISUALIZATION.md) ·
-[Technical report](https://github.com/gexinh/vlm-probing/releases/latest/download/vlm-probing-technical-report.pdf) ·
-[Papers and datasets](https://github.com/gexinh/vlm-probing/blob/main/docs/REFERENCES.md)
+[Lab project page](https://ubc-tea.github.io/vlm-probe/) · [Personal project page](https://gexinh.github.io/vlm-probing/) · [Documentation](https://github.com/ubc-tea/vlm-probe/blob/main/docs/README.md) · [Demos](https://github.com/ubc-tea/vlm-probe/blob/main/demos/README.md) ·
+[Visualization](https://github.com/ubc-tea/vlm-probe/blob/main/docs/VISUALIZATION.md) ·
+[Technical report](https://github.com/ubc-tea/vlm-probe/blob/main/docs/assets/vlmprobe-technical-report.pdf) ·
+[Papers and datasets](https://github.com/ubc-tea/vlm-probe/blob/main/docs/REFERENCES.md)
 
 ## Installation
 
@@ -70,17 +75,20 @@ Jupyter. Model weights and complete datasets are downloaded separately.
 For the latest development code, install directly from GitHub:
 
 ```bash
-python -m pip install "vlmprobe[transformers,visualization] @ git+https://github.com/gexinh/vlm-probing.git"
+python -m pip install "vlmprobe[transformers,visualization] @ git+https://github.com/ubc-tea/vlm-probe.git"
 ```
 
 To develop the library in a checkout, use
 `python -m pip install -e ".[transformers,visualization,notebooks]"`.
-The [package guide](https://github.com/gexinh/vlm-probing/blob/main/docs/PACKAGING.md) covers wheels and release publication.
+The [package guide](https://github.com/ubc-tea/vlm-probe/blob/main/docs/PACKAGING.md) covers wheels and release publication;
+[repository synchronization](https://github.com/ubc-tea/vlm-probe/blob/main/docs/REPOSITORY_SYNC.md) keeps the two GitHub copies
+on the same commit. PyPI distributes one shared package, not a separate package
+for each repository.
 
 ## Quick Start
 
 This example loads **Qwen3-VL-2B-Instruct** on one CUDA GPU. Replace
-`example.jpg` with your image, or use an image from [the bundled demos](https://github.com/gexinh/vlm-probing/blob/main/demos/README.md).
+`example.jpg` with your image, or use an image from [the bundled demos](https://github.com/ubc-tea/vlm-probe/blob/main/demos/README.md).
 
 ```python
 import torch
@@ -125,7 +133,7 @@ attention = probe.attention.profile(
 Use a model you have already loaded, and pass its native processor dictionary
 directly to `.run(...)` when convenient. Layer indices are zero-based; tokens
 refer to the expanded sequence, including image positions. The
-[model guides](https://github.com/gexinh/vlm-probing/blob/main/docs/models/README.md) explain each architecture's input contract.
+[model guides](https://github.com/ubc-tea/vlm-probe/blob/main/docs/models/README.md) explain each architecture's input contract.
 
 ```python
 from vlmprobe import visualization as viz
@@ -149,31 +157,31 @@ explicitly, or use complete-answer metrics for interventions.
 | `method.fit_batches(...)` / `method.load(...)` | Calibrate or restore Tuned/Attention Lens; Jacobian Lens has a separate estimator. |
 | `result.save(directory)` | Save CPU tensors and JSON metadata. |
 
-[The API guide](https://github.com/gexinh/vlm-probing/blob/main/docs/API.md) covers selectors, complete-answer metrics,
-paired-input alignment, and result shapes. [Visualization](https://github.com/gexinh/vlm-probing/blob/main/docs/VISUALIZATION.md)
-describes reusable plotting functions. The [demos](https://github.com/gexinh/vlm-probing/blob/main/demos/README.md) include
+[The API guide](https://github.com/ubc-tea/vlm-probe/blob/main/docs/API.md) covers selectors, complete-answer metrics,
+paired-input alignment, and result shapes. [Visualization](https://github.com/ubc-tea/vlm-probe/blob/main/docs/VISUALIZATION.md)
+describes reusable plotting functions. The [demos](https://github.com/ubc-tea/vlm-probe/blob/main/demos/README.md) include
 saved real measurements and input images for offline replay; rerunning a model
-is an explicit option. A [small CPU example](https://github.com/gexinh/vlm-probing/blob/main/examples/prober_quickstart.py)
+is an explicit option. A [small CPU example](https://github.com/ubc-tea/vlm-probe/blob/main/examples/prober_quickstart.py)
 exercises the API without downloading pretrained weights.
 
 ## Model Support
 
 Eight VLM families have explicit adapters. Text-only GPT-2/Llama and a ViT
 classifier provide complementary controls. Availability is method-specific;
-see the [capability matrix](https://github.com/gexinh/vlm-probing/blob/main/docs/models/README.md).
+see the [capability matrix](https://github.com/ubc-tea/vlm-probe/blob/main/docs/models/README.md).
 
 | Family | Example checkpoint | Guide |
 | --- | --- | --- |
-| Qwen3-VL | Qwen3-VL-2B-Instruct | [Usage](https://github.com/gexinh/vlm-probing/blob/main/docs/models/qwen3_vl.md) |
-| Qwen2.5-VL | Qwen2.5-VL-3B-Instruct | [Usage](https://github.com/gexinh/vlm-probing/blob/main/docs/models/qwen2_5_vl.md) |
-| Qwen2-VL | Qwen2-VL-2B-Instruct | [Usage](https://github.com/gexinh/vlm-probing/blob/main/docs/models/qwen2_vl.md) |
-| Qwen3.5 | Qwen3.5-4B; hybrid attention restrictions | [Usage](https://github.com/gexinh/vlm-probing/blob/main/docs/models/qwen3_5.md) |
-| SmolVLM | SmolVLM-500M-Instruct | [Usage](https://github.com/gexinh/vlm-probing/blob/main/docs/models/smolvlm.md) |
-| InternVL | InternVL3-1B-hf | [Usage](https://github.com/gexinh/vlm-probing/blob/main/docs/models/internvl.md) |
-| LLaVA | llava-1.5-7b-hf | [Usage](https://github.com/gexinh/vlm-probing/blob/main/docs/models/llava.md) |
-| Pixtral | Pixtral-12B-2409 | [Usage](https://github.com/gexinh/vlm-probing/blob/main/docs/models/pixtral.md) |
-| Language models | GPT-2 / Llama | [GPT-2](https://github.com/gexinh/vlm-probing/blob/main/docs/models/gpt2.md) · [Llama](https://github.com/gexinh/vlm-probing/blob/main/docs/models/llama.md) |
-| Vision classifier | ViT-B/16 | [Usage](https://github.com/gexinh/vlm-probing/blob/main/docs/models/vit.md) |
+| Qwen3-VL | Qwen3-VL-2B-Instruct | [Usage](https://github.com/ubc-tea/vlm-probe/blob/main/docs/models/qwen3_vl.md) |
+| Qwen2.5-VL | Qwen2.5-VL-3B-Instruct | [Usage](https://github.com/ubc-tea/vlm-probe/blob/main/docs/models/qwen2_5_vl.md) |
+| Qwen2-VL | Qwen2-VL-2B-Instruct | [Usage](https://github.com/ubc-tea/vlm-probe/blob/main/docs/models/qwen2_vl.md) |
+| Qwen3.5 | Qwen3.5-4B; hybrid attention restrictions | [Usage](https://github.com/ubc-tea/vlm-probe/blob/main/docs/models/qwen3_5.md) |
+| SmolVLM | SmolVLM-500M-Instruct | [Usage](https://github.com/ubc-tea/vlm-probe/blob/main/docs/models/smolvlm.md) |
+| InternVL | InternVL3-1B-hf | [Usage](https://github.com/ubc-tea/vlm-probe/blob/main/docs/models/internvl.md) |
+| LLaVA | llava-1.5-7b-hf | [Usage](https://github.com/ubc-tea/vlm-probe/blob/main/docs/models/llava.md) |
+| Pixtral | Pixtral-12B-2409 | [Usage](https://github.com/ubc-tea/vlm-probe/blob/main/docs/models/pixtral.md) |
+| Language models | GPT-2 / Llama | [GPT-2](https://github.com/ubc-tea/vlm-probe/blob/main/docs/models/gpt2.md) · [Llama](https://github.com/ubc-tea/vlm-probe/blob/main/docs/models/llama.md) |
+| Vision classifier | ViT-B/16 | [Usage](https://github.com/ubc-tea/vlm-probe/blob/main/docs/models/vit.md) |
 
 ## Methods
 
@@ -183,10 +191,10 @@ from paper methods.
 
 | Family | Method guides |
 | --- | --- |
-| Lens | [Logit](https://github.com/gexinh/vlm-probing/blob/main/docs/methods/logit_lens.md) · [Tuned](https://github.com/gexinh/vlm-probing/blob/main/docs/methods/tuned_lens.md) · [Attention Lens](https://github.com/gexinh/vlm-probing/blob/main/docs/methods/attention_lens.md) · [Jacobian](https://github.com/gexinh/vlm-probing/blob/main/docs/methods/jacobian_lens.md) · [EmbedLens](https://github.com/gexinh/vlm-probing/blob/main/docs/methods/embed_lens.md) · [Patchscopes](https://github.com/gexinh/vlm-probing/blob/main/docs/methods/patchscope.md) |
-| Attention | [Rollout](https://github.com/gexinh/vlm-probing/blob/main/docs/methods/attention_rollout.md) · [Grad-CAM, ATTATTR, TAM, Beyond Intuition](https://github.com/gexinh/vlm-probing/blob/main/docs/methods/attention_maps.md) · [Generic relevance](https://github.com/gexinh/vlm-probing/blob/main/docs/methods/attention_relevance.md) · [ViT DTD/LRP](https://github.com/gexinh/vlm-probing/blob/main/docs/methods/chefer_lrp.md) |
-| Causal | [Activation patching](https://github.com/gexinh/vlm-probing/blob/main/docs/methods/activation_patching.md) · [IOI-style path patching](https://github.com/gexinh/vlm-probing/blob/main/docs/methods/path_patching.md) · [Attribution patching](https://github.com/gexinh/vlm-probing/blob/main/docs/methods/attribution_patching.md) · [Attention Knockout](https://github.com/gexinh/vlm-probing/blob/main/docs/methods/attention_knockout.md) · [EAP / EAP-IG](https://github.com/gexinh/vlm-probing/blob/main/docs/methods/eap_ig.md) · [Residual steering / VSV](https://github.com/gexinh/vlm-probing/blob/main/docs/methods/steering.md) |
-| Supporting tools | [Attention profile](https://github.com/gexinh/vlm-probing/blob/main/docs/methods/attention_profile.md) · [Head logit attribution](https://github.com/gexinh/vlm-probing/blob/main/docs/methods/head_logit_attribution.md) · [Probability reweighting](https://github.com/gexinh/vlm-probing/blob/main/docs/methods/attention_reweight.md) · [Temperature](https://github.com/gexinh/vlm-probing/blob/main/docs/methods/attention_temperature.md) |
+| Lens | [Logit](https://github.com/ubc-tea/vlm-probe/blob/main/docs/methods/logit_lens.md) · [Tuned](https://github.com/ubc-tea/vlm-probe/blob/main/docs/methods/tuned_lens.md) · [Attention Lens](https://github.com/ubc-tea/vlm-probe/blob/main/docs/methods/attention_lens.md) · [Jacobian](https://github.com/ubc-tea/vlm-probe/blob/main/docs/methods/jacobian_lens.md) · [EmbedLens](https://github.com/ubc-tea/vlm-probe/blob/main/docs/methods/embed_lens.md) · [Patchscopes](https://github.com/ubc-tea/vlm-probe/blob/main/docs/methods/patchscope.md) |
+| Attention | [Rollout](https://github.com/ubc-tea/vlm-probe/blob/main/docs/methods/attention_rollout.md) · [Grad-CAM, ATTATTR, TAM, Beyond Intuition](https://github.com/ubc-tea/vlm-probe/blob/main/docs/methods/attention_maps.md) · [Generic relevance](https://github.com/ubc-tea/vlm-probe/blob/main/docs/methods/attention_relevance.md) · [ViT DTD/LRP](https://github.com/ubc-tea/vlm-probe/blob/main/docs/methods/chefer_lrp.md) |
+| Causal | [Activation patching](https://github.com/ubc-tea/vlm-probe/blob/main/docs/methods/activation_patching.md) · [IOI-style path patching](https://github.com/ubc-tea/vlm-probe/blob/main/docs/methods/path_patching.md) · [Attribution patching](https://github.com/ubc-tea/vlm-probe/blob/main/docs/methods/attribution_patching.md) · [Attention Knockout](https://github.com/ubc-tea/vlm-probe/blob/main/docs/methods/attention_knockout.md) · [EAP / EAP-IG](https://github.com/ubc-tea/vlm-probe/blob/main/docs/methods/eap_ig.md) · [Residual steering / VSV](https://github.com/ubc-tea/vlm-probe/blob/main/docs/methods/steering.md) |
+| Supporting tools | [Attention profile](https://github.com/ubc-tea/vlm-probe/blob/main/docs/methods/attention_profile.md) · [Head logit attribution](https://github.com/ubc-tea/vlm-probe/blob/main/docs/methods/head_logit_attribution.md) · [Probability reweighting](https://github.com/ubc-tea/vlm-probe/blob/main/docs/methods/attention_reweight.md) · [Temperature](https://github.com/ubc-tea/vlm-probe/blob/main/docs/methods/attention_temperature.md) |
 
 ## Package Architecture
 
@@ -207,14 +215,14 @@ docs/            # model, method, API and source guides
 ```
 
 Family base classes keep algorithm implementations small; adapters let them
-share model execution. [Architecture](https://github.com/gexinh/vlm-probing/blob/main/docs/ARCHITECTURE.md) and
-[adapter contracts](https://github.com/gexinh/vlm-probing/blob/main/docs/ADAPTERS.md) describe these boundaries.
+share model execution. [Architecture](https://github.com/ubc-tea/vlm-probe/blob/main/docs/ARCHITECTURE.md) and
+[adapter contracts](https://github.com/ubc-tea/vlm-probe/blob/main/docs/ADAPTERS.md) describe these boundaries.
 
 ## References
 
-The [paper and dataset index](https://github.com/gexinh/vlm-probing/blob/main/docs/REFERENCES.md) links the original method
+The [paper and dataset index](https://github.com/ubc-tea/vlm-probe/blob/main/docs/REFERENCES.md) links the original method
 papers, author implementations, and datasets used for demonstrations and lens
 calibration. The
-[technical report](https://github.com/gexinh/vlm-probing/releases/latest/download/vlm-probing-technical-report.pdf)
+[technical report](https://github.com/ubc-tea/vlm-probe/blob/main/docs/assets/vlmprobe-technical-report.pdf)
 compares real readouts, explanations, and interventions on shared cases across
 five pretrained VLMs, with language and vision controls.

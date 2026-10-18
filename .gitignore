@@ -56,3 +56,9 @@ outputs/
 /demos/outputs/
 /demos/cache/
 /demos/checkpoints/
+
+# Static deployment output and local presentation helpers.
+/_site/
+/examples/build_cover_slide.py
+/examples/update_attention_slide.py
+/examples/update_closing_slide.py

@@ -5,6 +5,8 @@ on:
     branches: [main]
     paths:
       - 'docs/project-page/**'
+      - 'docs/assets/vlmprobe-technical-report.pdf'
+      - 'tools/build_project_page.py'
       - '.github/workflows/deploy-project-page.yml'
   workflow_dispatch:
 
@@ -27,13 +29,7 @@ jobs:
       - name: Configure Pages
         uses: actions/configure-pages@v5
       - name: Prepare the static project page
-        run: |
-          mkdir -p _site
-          cp docs/project-page/index.html docs/project-page/styles.css docs/project-page/app.js _site/
-          cp -R docs/project-page/assets _site/assets
-          touch _site/.nojekyll
-          test -s _site/index.html
-          test -s _site/assets/experiment.json
+        run: python3 tools/build_project_page.py --output _site
       - name: Upload site
         uses: actions/upload-pages-artifact@v4
         with:

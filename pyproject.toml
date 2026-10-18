@@ -28,11 +28,13 @@ classifiers = [
 ]
 
 [project.urls]
-Homepage = "https://gexinh.github.io/vlm-probing/"
-Documentation = "https://github.com/gexinh/vlm-probing/tree/main/docs"
-Source = "https://github.com/gexinh/vlm-probing"
-Issues = "https://github.com/gexinh/vlm-probing/issues"
-Report = "https://github.com/gexinh/vlm-probing-report"
+Homepage = "https://ubc-tea.github.io/vlm-probe/"
+Documentation = "https://github.com/ubc-tea/vlm-probe/tree/main/docs"
+Source = "https://github.com/ubc-tea/vlm-probe"
+Issues = "https://github.com/ubc-tea/vlm-probe/issues"
+Report = "https://github.com/ubc-tea/vlm-probe/blob/main/docs/assets/vlmprobe-technical-report.pdf"
+"Personal mirror" = "https://github.com/gexinh/vlm-probing"
+"Report sources" = "https://github.com/gexinh/vlm-probing-report"
 
 [project.optional-dependencies]
 visualization = ["matplotlib>=3.8", "Pillow>=10", "numpy>=1.26"]
