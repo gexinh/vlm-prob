@@ -1,15 +1,92 @@
 #!/usr/bin/env python3
-"""Fast-forward the personal and lab main branches to one reviewed commit."""
+"""Publish matching library trees with a README tailored to each repository."""
 from __future__ import annotations
 
 import argparse
+import os
+import re
 import subprocess
+import tempfile
 from pathlib import Path
+from urllib.parse import urlsplit
 
 
-def git(repo: Path, *args: str, check: bool = True) -> subprocess.CompletedProcess:
-    return subprocess.run(["git", "-C", str(repo), *args], check=check, text=True,
-                          stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+PERSONAL_REPOSITORY = "gexinh/vlm-probing"
+LAB_REPOSITORY = "ubc-tea/vlm-probe"
+
+
+def render_readme(text: str, repository: str) -> str:
+    """Retarget this project's GitHub, raw-file and Pages URLs only.
+
+    The standalone ``vlm-probing-report`` repository and third-party links
+    remain unchanged. No badges, links or explanatory text are added.
+    """
+    if repository not in (PERSONAL_REPOSITORY, LAB_REPOSITORY):
+        raise ValueError("Unknown repository for README rendering.")
+    owner, name = repository.split("/")
+
+    def replace(match):
+        url = urlsplit(match.group())
+        for source in (PERSONAL_REPOSITORY, LAB_REPOSITORY):
+            source_owner, source_name = source.split("/")
+            if url.netloc == "github.com":
+                prefix, replacement = "/" + source, "/" + repository
+                matches = url.path in (prefix, prefix + ".git") or url.path.startswith(prefix + "/")
+            elif url.netloc == "raw.githubusercontent.com":
+                prefix, replacement = "/" + source, "/" + repository
+                matches = url.path.startswith(prefix + "/")
+            elif url.netloc == source_owner + ".github.io":
+                prefix, replacement = "/" + source_name, "/" + name
+                matches = url.path == prefix or url.path.startswith(prefix + "/")
+                if matches:
+                    url = url._replace(netloc=owner + ".github.io")
+            else:
+                continue
+            if matches:
+                return url._replace(path=replacement + url.path[len(prefix):]).geturl()
+        return match.group()
+
+    return re.sub(r"https?://[^\s<>\"'()]+", replace, text)
+
+
+def git(repo: Path, *args: str, check: bool = True, env=None, input=None) -> subprocess.CompletedProcess:
+    # In particular, status must not refresh/write the user's index merely to
+    # perform the clean-tree check. Explicit temporary-index writes still work.
+    return subprocess.run(["git", "--no-optional-locks", "-C", str(repo), *args], check=check, text=True,
+                          stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env, input=input)
+
+
+def readme_at(repo: Path, commit: str) -> str:
+    # Binary subprocess output avoids silently changing a CRLF README to LF.
+    return subprocess.check_output(["git", "-C", str(repo), "show", f"{commit}:README.md"]).decode("utf-8")
+
+
+def is_ancestor(repo: Path, ancestor: str, descendant: str) -> bool:
+    result = git(repo, "merge-base", "--is-ancestor", ancestor, descendant, check=False)
+    if result.returncode not in (0, 1):
+        result.check_returncode()
+    return result.returncode == 0
+
+
+def changed_paths(repo: Path, before: str, after: str) -> set[str]:
+    return set(git(repo, "diff", "--name-only", "-z", before, after).stdout.split("\0")) - {""}
+
+
+def lab_tree(repo: Path, target: str) -> str:
+    """Create the derived tree without touching the checkout or its index."""
+    entry = git(repo, "ls-tree", target, "--", "README.md").stdout.split()
+    if not entry or entry[0] not in ("100644", "100755") or entry[1] != "blob":
+        raise ValueError("The reviewed commit must contain a regular README.md. Nothing was pushed.")
+    rendered = render_readme(readme_at(repo, target), LAB_REPOSITORY)
+    blob = git(repo, "hash-object", "-w", "--stdin", input=rendered).stdout.strip()
+    with tempfile.TemporaryDirectory(prefix="vlmprobe-sync-index-") as directory:
+        environment = {**os.environ, "GIT_INDEX_FILE": str(Path(directory) / "index")}
+        git(repo, "read-tree", target, env=environment)
+        git(repo, "update-index", "--cacheinfo", f"{entry[0]},{blob},README.md", env=environment)
+        tree = git(repo, "write-tree", env=environment).stdout.strip()
+    if changed_paths(repo, target, tree) - {"README.md"}:
+        raise ValueError("Derived lab tree changes files other than README.md. Nothing was pushed.")
+    return tree
 
 
 def synchronize(repo: Path, remotes: tuple[str, str], branch: str, push: bool) -> str:
@@ -22,36 +99,63 @@ def synchronize(repo: Path, remotes: tuple[str, str], branch: str, push: bool) -
     if push and git(repo, "status", "--porcelain").stdout.strip():
         raise ValueError("Commit or set aside local changes before publishing.")
     target = git(repo, "rev-parse", f"refs/heads/{branch}").stdout.strip()
+    readme = readme_at(repo, target)
+    if readme != render_readme(readme, PERSONAL_REPOSITORY):
+        raise ValueError("Local README.md must use the personal repository URLs; "
+                         "the lab README is derived automatically. Nothing was pushed.")
     for remote in remotes:
         git(repo, "remote", "get-url", remote)
-        # Explicit refspec avoids a stale tracking ref or unrelated branch.
         git(repo, "fetch", remote, f"refs/heads/{branch}:refs/remotes/{remote}/{branch}")
     heads = {remote: git(repo, "rev-parse", f"refs/remotes/{remote}/{branch}").stdout.strip()
              for remote in remotes}
-    # Complete BOTH ancestry checks before writing to either remote.
-    for remote, head in heads.items():
-        if git(repo, "merge-base", "--is-ancestor", head, target, check=False).returncode:
-            raise ValueError(f"{remote}/{branch} contains changes absent from local {branch}. "
-                             "Merge those changes locally, review, and retry. Nothing was pushed.")
-    print(f"Local {branch}: {target}")
-    for remote, head in heads.items():
-        print(f"{remote}/{branch}: {head}" + (" (synchronized)" if head == target else " (can fast-forward)"))
+    personal, lab = remotes
+    if not is_ancestor(repo, heads[personal], target):
+        raise ValueError(f"{personal}/{branch} contains changes absent from local {branch}. "
+                         "Merge and review those changes first. Nothing was pushed.")
+    if not is_ancestor(repo, heads[lab], target):
+        base = git(repo, "merge-base", heads[lab], target).stdout.strip()
+        if changed_paths(repo, base, heads[lab]) - {"README.md"}:
+            raise ValueError(f"{lab}/{branch} has library changes absent locally. "
+                             "Merge and review those changes first. Nothing was pushed.")
+        if readme_at(repo, heads[lab]) != render_readme(readme_at(repo, base), LAB_REPOSITORY):
+            raise ValueError(f"{lab}/{branch} has unexpected README edits. "
+                             "Review them before synchronizing. Nothing was pushed.")
+    # Both remote histories are approved before constructing or publishing a commit.
+    tree = lab_tree(repo, target)
+    already_current = (git(repo, "rev-parse", heads[lab] + "^{tree}").stdout.strip() == tree
+                       and is_ancestor(repo, target, heads[lab]))
+    print(f"Personal target: {target}")
+    print(f"Lab tree: {tree}" + (" (already synchronized)" if already_current else " (README adapted)"))
+    print("Library, version and report match; repository-specific README links can give different commit hashes.")
     if not push:
         print("Check only. Add --push to update both remotes.")
         return target
-    for remote, head in heads.items():
-        if head != target:
-            # Pin the verified commit; never force or delete remote refs.
-            git(repo, "push", remote, f"{target}:refs/heads/{branch}")
+    if already_current:
+        lab_target = heads[lab]
+    else:
+        # Retain the old lab history and the reviewed personal commit. Neither
+        # the working-tree files nor the user's index are checked out or changed.
+        parents = [target] if is_ancestor(repo, heads[lab], target) else [heads[lab], target]
+        parent_args = [arg for parent in parents for arg in ("-p", parent)]
+        lab_target = git(repo, "commit-tree", tree, *parent_args, "-m",
+                         "Sync library and report; use lab repository links in README").stdout.strip()
+    targets = {personal: target, lab: lab_target}
+    for remote, destination in targets.items():
+        if heads[remote] != destination:
+            # A concurrent update is rejected by Git; never force or delete refs.
+            git(repo, "push", remote, f"{destination}:refs/heads/{branch}")
     mismatches = []
-    for remote in remotes:
+    for remote, destination in targets.items():
         line = git(repo, "ls-remote", remote, f"refs/heads/{branch}").stdout.strip()
-        if not line or line.split()[0] != target:
+        if not line or line.split()[0] != destination:
             mismatches.append(remote)
     if mismatches:
         raise ValueError("Remote verification failed for " + ", ".join(mismatches) +
-                         ". A concurrent update may have occurred; inspect both remotes before retrying.")
-    print(f"Verified: both remotes point to {target}")
+                         ". Inspect both remotes before retrying.")
+    if changed_paths(repo, target, lab_target) - {"README.md"}:
+        raise ValueError("Remote library trees differ outside README.md; inspect both remotes.")
+    print(f"Verified personal: {target}\nVerified lab: {lab_target}")
+    print("All tracked paths except README.md are identical.")
     return target
 
 
@@ -66,7 +170,10 @@ def main() -> None:
     try:
         synchronize(args.repo, (args.personal, args.lab), args.branch, args.push)
     except (ValueError, subprocess.CalledProcessError) as error:
-        detail = error.stderr.strip() if isinstance(error, subprocess.CalledProcessError) else str(error)
+        detail = (error.stderr or str(error)) if isinstance(error, subprocess.CalledProcessError) else str(error)
+        if isinstance(detail, bytes):
+            detail = detail.decode("utf-8", errors="replace")
+        detail = detail.strip()
         parser.exit(1, detail + "\n")
 
 

@@ -4,7 +4,8 @@
 
 The library, installable distribution, and recommended Python import are
 **`vlmprobe`**. The laboratory repository is **`ubc-tea/vlm-probe`**, with an
-identical personal mirror at **`gexinh/vlm-probing`**. Both share one PyPI project.
+personal copy at **`gexinh/vlm-probing`** with the same library version. Both
+share one PyPI project.
 
 ## Install and import
 
