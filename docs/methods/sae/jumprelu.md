@@ -6,12 +6,12 @@ Learn a separate nonnegative activation threshold for every feature.
 
 ## Principle
 
-Here $u$ is the declared normalized backbone activation, $D$ is the decoder
-dictionary, and $b_d$ is its bias. With the default scalar recipe, normalization
+Here $`u`$ is the declared normalized backbone activation, $`D`$ is the decoder
+dictionary, and $`b_d`$ is its bias. With the default scalar recipe, normalization
 is fitted on training activations and decoded values are returned in raw units.
 
-For each preactivation $a_i$, use $z_i=a_i\mathbb 1[a_i>\theta_i]$,
-with a learned threshold $\theta_i\ge0$. The default objective is reconstruction
+For each preactivation $`a_i`$, use $`z_i=a_i\mathbf{1}[a_i>\theta_i]`$,
+with a learned threshold $`\theta_i\ge0`$. The default objective is reconstruction
 error plus `l0_coefficient` times the count of threshold crossings. The hard
 step and JumpReLU use a rectangular surrogate centered at each threshold, with
 width `jumprelu_bandwidth`, to train thresholds. This is not an ordinary ReLU

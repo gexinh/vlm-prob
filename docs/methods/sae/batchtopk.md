@@ -6,13 +6,13 @@ Share the sparsity budget across training positions, then infer with a saved thr
 
 ## Principle
 
-Here $u$ is the declared normalized backbone activation, $D$ is the decoder
-dictionary, and $b_d$ is its bias. With the default scalar recipe, normalization
+Here $`u`$ is the declared normalized backbone activation, $`D`$ is the decoder
+dictionary, and $`b_d`$ is its bias. With the default scalar recipe, normalization
 is fitted on training activations and decoded values are returned in raw units.
 
 During training, apply positive TopK selection to the flattened
 `[positions, features]` preactivation array. With `batch_budget="average"`, a
-batch of $B$ vectors retains at most $kB$ nonzero coefficients; `"global"` uses
+batch of $`B`$ vectors retains at most $`kB`$ nonzero coefficients; `"global"` uses
 `k` total selections. Easy and difficult positions can therefore use different
 numbers of features. Evaluation does not rerun batch selection: it applies the
 saved training threshold to each vector. The threshold is calibrated on train

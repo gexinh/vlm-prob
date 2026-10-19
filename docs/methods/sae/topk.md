@@ -6,13 +6,13 @@ Allocate at most k positive dictionary coefficients to each activation vector.
 
 ## Principle
 
-Here $u$ is the declared normalized backbone activation, $D$ is the decoder
-dictionary, and $b_d$ is its bias. With the default scalar recipe, normalization
+Here $`u`$ is the declared normalized backbone activation, $`D`$ is the decoder
+dictionary, and $`b_d`$ is its bias. With the default scalar recipe, normalization
 is fitted on training activations and decoded values are returned in raw units.
 
-Compute $a=W_e(u-b_d)+b_e$, retain its `k` largest entries, and
+Compute $`a=W_e(u-b_d)+b_e`$, retain its `k` largest entries, and
 set selected negative entries and all unselected entries to zero. Decode
-$\hat u=Dz+b_d$. The default objective is summed squared reconstruction error;
+$`\hat u=Dz+b_d`$. The default objective is summed squared reconstruction error;
 there is no L1 penalty and the optional dead-feature AuxK loss is disabled.
 Positive TopK can return fewer than `k` nonzero values. Increasing `k` gives a
 larger per-position reconstruction budget, rather than naming more concepts.

@@ -2,9 +2,7 @@
 
 [Model hub](README.md) · [Training guide](../training/README.md)
 
-These are pretrained **vision backbones**, not pretrained SAE dictionaries. They correspond to the activation-extraction models described in the Overcomplete source. Use their activations to train a dictionary with the shared SAE training workflow.
-
-The untagged ViT alias is represented by an explicitly named published variant. Preserve the chosen checkpoint and transform in your training provenance.
+Use these pretrained **vision backbones** to collect activations and train an SAE. Each card lists the model checkpoint and output layer; the [training guide](../training/README.md) covers activation collection, dictionary fitting and evaluation.
 
 <a id="backbone-siglip-vit-b16"></a>
 

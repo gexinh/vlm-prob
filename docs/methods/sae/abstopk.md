@@ -6,12 +6,12 @@ Select the largest-magnitude coefficients while retaining their signs.
 
 ## Principle
 
-Here $u$ is the declared normalized backbone activation, $D$ is the decoder
-dictionary, and $b_d$ is its bias. With the default scalar recipe, normalization
+Here $`u`$ is the declared normalized backbone activation, $`D`$ is the decoder
+dictionary, and $`b_d`$ is its bias. With the default scalar recipe, normalization
 is fitted on training activations and decoded values are returned in raw units.
 
-Compute $a=W_e(u-b_d)+b_e$ and choose the `k` largest values of
-$|a|$. Retain the original signed values at those indices, setting the remaining
+Compute $`a=W_e(u-b_d)+b_e`$ and choose the `k` largest values of
+$`|a|`$. Retain the original signed values at those indices, setting the remaining
 coefficients to zero. Reconstruction uses the same linear dictionary, so a
 negative coefficient represents the opposite direction of its atom. The default
 objective is reconstruction only. Firing frequency counts `z != 0`, including

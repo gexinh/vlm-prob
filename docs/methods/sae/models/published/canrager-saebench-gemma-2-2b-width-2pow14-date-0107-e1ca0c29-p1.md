@@ -16,20 +16,26 @@ Pages: [1](canrager-saebench-gemma-2-2b-width-2pow14-date-0107-e1ca0c29-p1.md)
 
 **Model ID:** `sae-f8c167dbb76f615774bae8db`
 
-[Checkpoint files](https://huggingface.co/canrager/saebench_gemma-2-2b_width-2pow14_date-0107/tree/main/gemma-2-2b_matryoshka_batch_top_k_width-2pow14_date-0107/resid_post_layer_12/trainer_0)
+[Checkpoint files](https://huggingface.co/canrager/saebench_gemma-2-2b_width-2pow14_date-0107/tree/21f96e4b95d345d97f9d0c7d014ac685034edff1/gemma-2-2b_matryoshka_batch_top_k_width-2pow14_date-0107/resid_post_layer_12/trainer_0)
 
 | Property | Value |
 | --- | --- |
 | Artifact | SAE dictionary |
 | Base model | `gemma-2-2b` |
-| Method | Not reported |
-| Source hook / output | `Not specified` |
-| Layer | Not specified |
-| Activation width | Not specified |
-| Dictionary features | Not specified |
+| Method | [matryoshka_batchtopk](../../matryoshka_batchtopk.md) |
+| Source hook / output | `resid_post_layer_12` |
+| Layer | 12 |
+| Activation width | 2304 |
+| Dictionary features | 16384 |
 | Checkpoint license | Not specified |
-| Checkpoint revision | `Not specified` |
+| Checkpoint revision | `21f96e4b95d345d97f9d0c7d014ac685034edff1` |
 | Tensor format | saelens |
+
+**Input / activation conventions:**
+
+`{"context_size": 1024, "source_activation_io": "out", "source_submodule": "resid_post_layer_12", "k": 20}`
+
+[Checkpoint configuration](https://huggingface.co/canrager/saebench_gemma-2-2b_width-2pow14_date-0107/resolve/21f96e4b95d345d97f9d0c7d014ac685034edff1/gemma-2-2b_matryoshka_batch_top_k_width-2pow14_date-0107/resid_post_layer_12/trainer_0/config.json)
 
 **Published release names:** `saebench_gemma-2-2b_width-2pow14_date-0107` / `blocks.12.hook_resid_post__trainer_0`
 
@@ -41,20 +47,26 @@ Pages: [1](canrager-saebench-gemma-2-2b-width-2pow14-date-0107-e1ca0c29-p1.md)
 
 **Model ID:** `sae-30593918d40565f4ed5e9b52`
 
-[Checkpoint files](https://huggingface.co/canrager/saebench_gemma-2-2b_width-2pow14_date-0107/tree/main/gemma-2-2b_matryoshka_batch_top_k_width-2pow14_date-0107/resid_post_layer_12/trainer_1)
+[Checkpoint files](https://huggingface.co/canrager/saebench_gemma-2-2b_width-2pow14_date-0107/tree/21f96e4b95d345d97f9d0c7d014ac685034edff1/gemma-2-2b_matryoshka_batch_top_k_width-2pow14_date-0107/resid_post_layer_12/trainer_1)
 
 | Property | Value |
 | --- | --- |
 | Artifact | SAE dictionary |
 | Base model | `gemma-2-2b` |
-| Method | Not reported |
-| Source hook / output | `Not specified` |
-| Layer | Not specified |
-| Activation width | Not specified |
-| Dictionary features | Not specified |
+| Method | [matryoshka_batchtopk](../../matryoshka_batchtopk.md) |
+| Source hook / output | `resid_post_layer_12` |
+| Layer | 12 |
+| Activation width | 2304 |
+| Dictionary features | 16384 |
 | Checkpoint license | Not specified |
-| Checkpoint revision | `Not specified` |
+| Checkpoint revision | `21f96e4b95d345d97f9d0c7d014ac685034edff1` |
 | Tensor format | saelens |
+
+**Input / activation conventions:**
+
+`{"context_size": 1024, "source_activation_io": "out", "source_submodule": "resid_post_layer_12", "k": 40}`
+
+[Checkpoint configuration](https://huggingface.co/canrager/saebench_gemma-2-2b_width-2pow14_date-0107/resolve/21f96e4b95d345d97f9d0c7d014ac685034edff1/gemma-2-2b_matryoshka_batch_top_k_width-2pow14_date-0107/resid_post_layer_12/trainer_1/config.json)
 
 **Published release names:** `saebench_gemma-2-2b_width-2pow14_date-0107` / `blocks.12.hook_resid_post__trainer_1`
 
@@ -66,20 +78,26 @@ Pages: [1](canrager-saebench-gemma-2-2b-width-2pow14-date-0107-e1ca0c29-p1.md)
 
 **Model ID:** `sae-ccf7947a5cc6c5a616c3c67c`
 
-[Checkpoint files](https://huggingface.co/canrager/saebench_gemma-2-2b_width-2pow14_date-0107/tree/main/gemma-2-2b_matryoshka_batch_top_k_width-2pow14_date-0107/resid_post_layer_12/trainer_2)
+[Checkpoint files](https://huggingface.co/canrager/saebench_gemma-2-2b_width-2pow14_date-0107/tree/21f96e4b95d345d97f9d0c7d014ac685034edff1/gemma-2-2b_matryoshka_batch_top_k_width-2pow14_date-0107/resid_post_layer_12/trainer_2)
 
 | Property | Value |
 | --- | --- |
 | Artifact | SAE dictionary |
 | Base model | `gemma-2-2b` |
-| Method | Not reported |
-| Source hook / output | `Not specified` |
-| Layer | Not specified |
-| Activation width | Not specified |
-| Dictionary features | Not specified |
+| Method | [matryoshka_batchtopk](../../matryoshka_batchtopk.md) |
+| Source hook / output | `resid_post_layer_12` |
+| Layer | 12 |
+| Activation width | 2304 |
+| Dictionary features | 16384 |
 | Checkpoint license | Not specified |
-| Checkpoint revision | `Not specified` |
+| Checkpoint revision | `21f96e4b95d345d97f9d0c7d014ac685034edff1` |
 | Tensor format | saelens |
+
+**Input / activation conventions:**
+
+`{"context_size": 1024, "source_activation_io": "out", "source_submodule": "resid_post_layer_12", "k": 80}`
+
+[Checkpoint configuration](https://huggingface.co/canrager/saebench_gemma-2-2b_width-2pow14_date-0107/resolve/21f96e4b95d345d97f9d0c7d014ac685034edff1/gemma-2-2b_matryoshka_batch_top_k_width-2pow14_date-0107/resid_post_layer_12/trainer_2/config.json)
 
 **Published release names:** `saebench_gemma-2-2b_width-2pow14_date-0107` / `blocks.12.hook_resid_post__trainer_2`
 
@@ -91,20 +109,26 @@ Pages: [1](canrager-saebench-gemma-2-2b-width-2pow14-date-0107-e1ca0c29-p1.md)
 
 **Model ID:** `sae-e99d66302cf0f4338c48ca8a`
 
-[Checkpoint files](https://huggingface.co/canrager/saebench_gemma-2-2b_width-2pow14_date-0107/tree/main/gemma-2-2b_matryoshka_batch_top_k_width-2pow14_date-0107/resid_post_layer_12/trainer_3)
+[Checkpoint files](https://huggingface.co/canrager/saebench_gemma-2-2b_width-2pow14_date-0107/tree/21f96e4b95d345d97f9d0c7d014ac685034edff1/gemma-2-2b_matryoshka_batch_top_k_width-2pow14_date-0107/resid_post_layer_12/trainer_3)
 
 | Property | Value |
 | --- | --- |
 | Artifact | SAE dictionary |
 | Base model | `gemma-2-2b` |
-| Method | Not reported |
-| Source hook / output | `Not specified` |
-| Layer | Not specified |
-| Activation width | Not specified |
-| Dictionary features | Not specified |
+| Method | [matryoshka_batchtopk](../../matryoshka_batchtopk.md) |
+| Source hook / output | `resid_post_layer_12` |
+| Layer | 12 |
+| Activation width | 2304 |
+| Dictionary features | 16384 |
 | Checkpoint license | Not specified |
-| Checkpoint revision | `Not specified` |
+| Checkpoint revision | `21f96e4b95d345d97f9d0c7d014ac685034edff1` |
 | Tensor format | saelens |
+
+**Input / activation conventions:**
+
+`{"context_size": 1024, "source_activation_io": "out", "source_submodule": "resid_post_layer_12", "k": 160}`
+
+[Checkpoint configuration](https://huggingface.co/canrager/saebench_gemma-2-2b_width-2pow14_date-0107/resolve/21f96e4b95d345d97f9d0c7d014ac685034edff1/gemma-2-2b_matryoshka_batch_top_k_width-2pow14_date-0107/resid_post_layer_12/trainer_3/config.json)
 
 **Published release names:** `saebench_gemma-2-2b_width-2pow14_date-0107` / `blocks.12.hook_resid_post__trainer_3`
 
@@ -116,20 +140,26 @@ Pages: [1](canrager-saebench-gemma-2-2b-width-2pow14-date-0107-e1ca0c29-p1.md)
 
 **Model ID:** `sae-0450f0e3756f7cf9786fe3b4`
 
-[Checkpoint files](https://huggingface.co/canrager/saebench_gemma-2-2b_width-2pow14_date-0107/tree/main/gemma-2-2b_matryoshka_batch_top_k_width-2pow14_date-0107/resid_post_layer_12/trainer_4)
+[Checkpoint files](https://huggingface.co/canrager/saebench_gemma-2-2b_width-2pow14_date-0107/tree/21f96e4b95d345d97f9d0c7d014ac685034edff1/gemma-2-2b_matryoshka_batch_top_k_width-2pow14_date-0107/resid_post_layer_12/trainer_4)
 
 | Property | Value |
 | --- | --- |
 | Artifact | SAE dictionary |
 | Base model | `gemma-2-2b` |
-| Method | Not reported |
-| Source hook / output | `Not specified` |
-| Layer | Not specified |
-| Activation width | Not specified |
-| Dictionary features | Not specified |
+| Method | [matryoshka_batchtopk](../../matryoshka_batchtopk.md) |
+| Source hook / output | `resid_post_layer_12` |
+| Layer | 12 |
+| Activation width | 2304 |
+| Dictionary features | 16384 |
 | Checkpoint license | Not specified |
-| Checkpoint revision | `Not specified` |
+| Checkpoint revision | `21f96e4b95d345d97f9d0c7d014ac685034edff1` |
 | Tensor format | saelens |
+
+**Input / activation conventions:**
+
+`{"context_size": 1024, "source_activation_io": "out", "source_submodule": "resid_post_layer_12", "k": 320}`
+
+[Checkpoint configuration](https://huggingface.co/canrager/saebench_gemma-2-2b_width-2pow14_date-0107/resolve/21f96e4b95d345d97f9d0c7d014ac685034edff1/gemma-2-2b_matryoshka_batch_top_k_width-2pow14_date-0107/resid_post_layer_12/trainer_4/config.json)
 
 **Published release names:** `saebench_gemma-2-2b_width-2pow14_date-0107` / `blocks.12.hook_resid_post__trainer_4`
 
@@ -141,20 +171,26 @@ Pages: [1](canrager-saebench-gemma-2-2b-width-2pow14-date-0107-e1ca0c29-p1.md)
 
 **Model ID:** `sae-a7d0a50b6eaf8d578bbb83cc`
 
-[Checkpoint files](https://huggingface.co/canrager/saebench_gemma-2-2b_width-2pow14_date-0107/tree/main/gemma-2-2b_matryoshka_batch_top_k_width-2pow14_date-0107/resid_post_layer_12/trainer_5)
+[Checkpoint files](https://huggingface.co/canrager/saebench_gemma-2-2b_width-2pow14_date-0107/tree/21f96e4b95d345d97f9d0c7d014ac685034edff1/gemma-2-2b_matryoshka_batch_top_k_width-2pow14_date-0107/resid_post_layer_12/trainer_5)
 
 | Property | Value |
 | --- | --- |
 | Artifact | SAE dictionary |
 | Base model | `gemma-2-2b` |
-| Method | Not reported |
-| Source hook / output | `Not specified` |
-| Layer | Not specified |
-| Activation width | Not specified |
-| Dictionary features | Not specified |
+| Method | [matryoshka_batchtopk](../../matryoshka_batchtopk.md) |
+| Source hook / output | `resid_post_layer_12` |
+| Layer | 12 |
+| Activation width | 2304 |
+| Dictionary features | 16384 |
 | Checkpoint license | Not specified |
-| Checkpoint revision | `Not specified` |
+| Checkpoint revision | `21f96e4b95d345d97f9d0c7d014ac685034edff1` |
 | Tensor format | saelens |
+
+**Input / activation conventions:**
+
+`{"context_size": 1024, "source_activation_io": "out", "source_submodule": "resid_post_layer_12", "k": 640}`
+
+[Checkpoint configuration](https://huggingface.co/canrager/saebench_gemma-2-2b_width-2pow14_date-0107/resolve/21f96e4b95d345d97f9d0c7d014ac685034edff1/gemma-2-2b_matryoshka_batch_top_k_width-2pow14_date-0107/resid_post_layer_12/trainer_5/config.json)
 
 **Published release names:** `saebench_gemma-2-2b_width-2pow14_date-0107` / `blocks.12.hook_resid_post__trainer_5`
 

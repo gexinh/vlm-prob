@@ -6,13 +6,13 @@ Train nested dictionary prefixes to reconstruct the same activations.
 
 ## Principle
 
-Here $u$ is the declared normalized backbone activation, $D$ is the decoder
-dictionary, and $b_d$ is its bias. With the default scalar recipe, normalization
+Here $`u`$ is the declared normalized backbone activation, $`D`$ is the decoder
+dictionary, and $`b_d`$ is its bias. With the default scalar recipe, normalization
 is fitted on training activations and decoded values are returned in raw units.
 
 The encoder uses BatchTopK. For ordered prefix widths
-$F_1<\cdots<F_m=F$, the reconstruction objective is
-$\sum_j w_j\,\mathbb E[\|u-(D_{:,:F_j}z_{:F_j}+b_d)\|_2^2]$.
+$`F_1<\cdots<F_m=F`$, the reconstruction objective is
+$`\sum_j w_j\,\mathbb{E}[\|u-(D_{:,:F_j}z_{:F_j}+b_d)\|_2^2]`$.
 The same feature vector is truncated for each loss; it is not re-encoded with a
 new TopK budget at each prefix. Earlier features must support smaller useful
 dictionaries, while later features add capacity. Evaluation uses the saved

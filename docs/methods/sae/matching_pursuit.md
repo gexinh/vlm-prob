@@ -6,13 +6,13 @@ Build a sparse code by greedily explaining the current residual with dictionary 
 
 ## Principle
 
-Here $u$ is the declared normalized backbone activation, $D$ is the decoder
-dictionary, and $b_d$ is its bias. With the default scalar recipe, normalization
+Here $`u`$ is the declared normalized backbone activation, $`D`$ is the decoder
+dictionary, and $`b_d`$ is its bias. With the default scalar recipe, normalization
 is fitted on training activations and decoded values are returned in raw units.
 
-Start with residual $r=u-b_d$ and zero code. Select the atom $d_i$
+Start with residual $`r=u-b_d`$ and zero code. Select the atom $`d_i`$
 with the largest positive correlation, add
-$\max(\langle r,d_i\rangle/\|d_i\|_2^2,0)$ to its coefficient, and subtract
+$`\max(\langle r,d_i\rangle/\|d_i\|_2^2,0)`$ to its coefficient, and subtract
 that contribution from the residual. Repeat up to the configured iteration
 budget. The encoder is tied to decoder atoms; a separate encoder matrix is not
 trained. Support choices are discrete, while selected coefficients and atoms

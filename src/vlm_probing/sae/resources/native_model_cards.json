@@ -10,8 +10,11 @@
     "methods": {
       "relu": 75,
       "topk": 568,
-      "unknown": 1117,
-      "jumprelu": 7900
+      "unknown": 1039,
+      "jumprelu": 7900,
+      "batchtopk": 20,
+      "gated": 40,
+      "matryoshka_batchtopk": 18
     },
     "excluded_non_sae_contracts": {
       "transcoder": 3847,

@@ -6,14 +6,14 @@ Learn nonnegative dictionary features by balancing reconstruction against an L1 
 
 ## Principle
 
-Here $u$ is the declared normalized backbone activation, $D$ is the decoder
-dictionary, and $b_d$ is its bias. With the default scalar recipe, normalization
+Here $`u`$ is the declared normalized backbone activation, $`D`$ is the decoder
+dictionary, and $`b_d`$ is its bias. With the default scalar recipe, normalization
 is fitted on training activations and decoded values are returned in raw units.
 
-For a normalized residual vector $u$, let $a=W_e(u-b_d)+b_e$.
-The encoder produces $z=\max(a,0)$ and the decoder reconstructs
-$\hat u=Dz+b_d$. The objective is
-$\mathbb E[\|u-\hat u\|_2^2+\lambda\|z\|_1]$; both sums are over feature/input
+For a normalized residual vector $`u`$, let $`a=W_e(u-b_d)+b_e`$.
+The encoder produces $`z=\max(a,0)`$ and the decoder reconstructs
+$`\hat u=Dz+b_d`$. The objective is
+$`\mathbb{E}[\|u-\hat u\|_2^2+\lambda\|z\|_1]`$; both sums are over feature/input
 coordinates before averaging positions. Decoder columns are unit-normalized
 after updates by default, preventing a trivial decoder-scale reduction of L1.
 Larger `l1_coefficient` usually trades reconstruction accuracy for fewer active

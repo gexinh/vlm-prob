@@ -8,13 +8,13 @@ This method is experimental; the recipe below states exactly what is implemented
 
 ## Principle
 
-Here $u$ is the declared normalized backbone activation, $D$ is the decoder
-dictionary, and $b_d$ is its bias. With the default scalar recipe, normalization
+Here $`u`$ is the declared normalized backbone activation, $`D`$ is the decoder
+dictionary, and $`b_d`$ is its bias. With the default scalar recipe, normalization
 is fitted on training activations and decoded values are returned in raw units.
 
 Choose each next unused atom by absolute correlation with the
-current residual. On the growing support $S$, solve
-$\min_{z_S}\|u-b_d-D_Sz_S\|_2^2$ with `torch.linalg.lstsq`, permitting signed
+current residual. On the growing support $`S`$, solve
+$`\min_{z_S}\|u-b_d-D_Sz_S\|_2^2`$ with `torch.linalg.lstsq`, permitting signed
 coefficients, and recompute the whole residual. Joint least-squares refitting
 can undo errors from earlier greedy coefficient choices. It does not make the
 greedy support globally optimal. This is an experimental signed pursuit recipe;

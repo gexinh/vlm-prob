@@ -1,11 +1,15 @@
-# Browse SAE model cards on the web
+# Search SAE model cards
 
-The interactive catalog renders model cards, searches the full checkpoint list,
-and loads detailed metadata only when a card is selected. GitHub's source-file
-viewer does not execute an HTML application; use the Markdown index or an HTTP
-server to browse before the project page is deployed.
+Search by backbone, SAE method, activation hook or dictionary width. Open a card
+to view its source configuration, input conventions and checkpoint downloads.
 
-## Browse from a local checkout
+## On the project page
+
+Open **SAE checkpoints** in the project page navigation. Select **Open model
+card** beside a search result to view its details. The URL fragment identifies
+the selected dictionary, so you can copy the URL to share that card directly.
+
+## From a local checkout
 
 Run this command in the repository root:
 
@@ -14,14 +18,9 @@ python -m http.server 8000
 ```
 
 Open <http://localhost:8000/docs/methods/sae/models/web/>. Keep the server running
-while searching and opening cards. Opening `index.html` as a `file://` URL is
-not supported because browsers block the external JSON requests.
+while searching and opening cards; the catalog loads its data over HTTP.
 
-[Browse the Markdown checkpoint repository index](../published/README.md).
+## On GitHub
 
-## Browse from the project page
-
-After these files are merged into the deployment branch and the normal project
-page workflow succeeds, the catalog is served at `sae-models/` under the project
-page. Each repository's deployment generates links for its own repository.
-A model card can be linked directly with `sae-models/#MODEL_ID`.
+Use the [model directory](../published/README.md) to browse checkpoints grouped
+by backbone and open their Markdown cards.
