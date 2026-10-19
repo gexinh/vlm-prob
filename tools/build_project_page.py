@@ -25,6 +25,7 @@ import shutil
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "docs" / "project-page"
 REPORT = ROOT / "docs" / "assets" / "vlmprobe-technical-report.pdf"
+OVERVIEW = ROOT / "docs" / "assets" / "library-overview-sae.svg"
 REPORT_LINK = "assets/vlmprobe-technical-report.pdf"
 REPOSITORIES = ("gexinh/vlm-prob", "gexinh/vlm-probing", "ubc-tea/vlm-probe")
 CATALOG_RESOURCE = ROOT / "src/vlm_probing/sae/resources/published_model_cards.json.gz"
@@ -77,6 +78,8 @@ def build(repository: str, output: Path, *, ref: str | None = None) -> Path:
             raise FileNotFoundError(f"missing project-page source: {SOURCE / name}")
     if not REPORT.is_file():
         raise FileNotFoundError(f"missing latest technical report: {REPORT}")
+    if not OVERVIEW.is_file():
+        raise FileNotFoundError(f"missing current library overview: {OVERVIEW}")
     with REPORT.open("rb") as stream:
         if stream.read(5) != b"%PDF-":
             raise ValueError(f"technical report is not a PDF: {REPORT}")
@@ -93,6 +96,7 @@ def build(repository: str, output: Path, *, ref: str | None = None) -> Path:
         shutil.copy2(SOURCE / name, output / name)
     shutil.copytree(SOURCE / "assets", output / "assets")
     shutil.copy2(REPORT, output / REPORT_LINK)
+    shutil.copy2(OVERVIEW, output / "assets" / OVERVIEW.name)
     # Generate directly in the build tree: each mirror gets its own navigation,
     # and building a site must not rewrite the checked-in documentation.
     payload = json.loads(gzip.decompress(CATALOG_RESOURCE.read_bytes()))

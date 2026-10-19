@@ -6,6 +6,7 @@ on:
     paths:
       - 'docs/project-page/**'
       - 'docs/assets/vlmprobe-technical-report.pdf'
+      - 'docs/assets/library-overview-sae.svg'
       - 'tools/build_project_page.py'
       - 'tools/build_sae_model_pages.py'
       - 'src/vlm_probing/sae/resources/**'

@@ -32,7 +32,7 @@ connection graphs. Capability checks distinguish an unsupported operation from
 a measured zero effect.
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/gexinh/vlm-prob/main/docs/assets/library-protocol.svg" width="100%" alt="Model inputs, adapter configuration, lens/attention/causal tools, and structured results">
+  <img src="https://raw.githubusercontent.com/gexinh/vlm-prob/main/docs/assets/library-overview-sae.svg" width="100%" alt="Model inputs, adapter configuration, lens/attention/causal/SAE tools, and structured results">
 </p>
 
 [Documentation](docs/README.md) · [Demos](demos/README.md) ·
