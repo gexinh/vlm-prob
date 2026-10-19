@@ -3,7 +3,7 @@
 [Home](../README.md)
 
 Start with a model guide, prepare its native inputs, and select a method from the
-three families. The same result format feeds the plotting functions and saved
+available families. The same result format feeds the plotting functions and saved
 demo workflows.
 
 - [Model guides and capability matrix](models/README.md): loading, native inputs, supported sites, and validation scope.
@@ -13,6 +13,7 @@ demo workflows.
 - [Installation and package releases](PACKAGING.md): pip installation, compatible imports, wheels, and PyPI publishing.
 - [Visualization](VISUALIZATION.md): reusable lens heatmaps, image overlays, causal grids, curves, and graphs.
 - [Lens calibration](TRAINING.md): training and validation splits, author checkpoints, persistent optimization, and resumable Jacobian estimation.
+- [SAE development guide](sae.md): sparse dictionary architectures, custom-data training, feature maps and controlled feature edits.
 - [Package architecture](ARCHITECTURE.md): family base classes, adapters, execution, and results.
 - [Custom adapters](ADAPTERS.md): connect another architecture through an explicit contract.
 - [Papers and datasets](REFERENCES.md): original algorithms, author code, and data sources.

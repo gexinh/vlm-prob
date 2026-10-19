@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "vlmprobe"
 dynamic = ["version"]
-description = "Lens, attention, and causal probes for language, vision, and vision-language models"
+description = "Lens, attention, causal and sparse feature probes for language, vision and multimodal models"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = ["torch>=2.2"]
@@ -37,6 +37,7 @@ Report = "https://github.com/ubc-tea/vlm-probe/blob/main/docs/assets/vlmprobe-te
 "Report sources" = "https://github.com/gexinh/vlm-probing-report"
 
 [project.optional-dependencies]
+saelens = ["sae-lens>=6.54,<7"]
 visualization = ["matplotlib>=3.8", "Pillow>=10", "numpy>=1.26"]
 transformers = ["transformers>=5.3,<5.4", "torch>=2.4", "torchvision>=0.19", "accelerate>=1.0", "Pillow>=10"]
 notebooks = ["jupyterlab>=4", "nbclient>=0.10", "matplotlib>=3.8", "Pillow>=10", "numpy>=1.26", "tokenizers>=0.22"]

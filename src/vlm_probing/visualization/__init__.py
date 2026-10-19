@@ -20,3 +20,5 @@ __all__ = ["plot_lens_heatmap", "plot_attention_overlay", "plot_attention_compar
 
 from .path_graphs import plot_head_paths, plot_receiver_paths
 __all__ += ["plot_head_paths", "plot_receiver_paths"]
+from .sae import plot_sae_feature_overlay, plot_sae_activity
+__all__ += ["plot_sae_feature_overlay", "plot_sae_activity"]

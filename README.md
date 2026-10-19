@@ -10,8 +10,8 @@
   <a href="https://gexinh.github.io/vlm-probing/"><img src="https://img.shields.io/badge/Project%20Page-Visit%20Website-3266e5?style=for-the-badge" alt="Visit the vlmprobe project page"></a>
 </p>
 
-vlmprobe brings lens readouts, attention explanations, and causal
-interventions into one model-bound interface. It supports vision-language
+vlmprobe brings lens readouts, attention explanations, causal interventions,
+and trained sparse feature dictionaries into one model-bound interface. It supports vision-language
 models, language models, and a ViT image-classification control. Bind a loaded
 model once, select layers and token groups, and inspect how its internal
 computation relates to a chosen answer.
@@ -22,6 +22,8 @@ computation relates to a chosen answer.
   attributions on the same input.
 - **Causal:** replace activations, isolate paths, block attention routes, or steer
   residual states and measure the resulting change.
+- **SAE:** train ReLU, TopK or Gated dictionaries, inspect sparse features, and
+  intervene on feature activations while preserving reconstruction error.
 
 Explicit adapters handle hook locations, expanded visual-token coordinates,
 and model readouts. Results retain tensors and experiment metadata; shared
@@ -37,6 +39,15 @@ a measured zero effect.
 [Visualization](https://github.com/gexinh/vlm-probing/blob/main/docs/VISUALIZATION.md) ·
 [Technical report](https://github.com/gexinh/vlm-probing/blob/main/docs/assets/vlmprobe-technical-report.pdf) ·
 [Papers and datasets](https://github.com/gexinh/vlm-probing/blob/main/docs/REFERENCES.md)
+
+## SAE development version
+
+This local `dev/sae-v1` branch adds a fourth method family. Install this checkout
+with `python -m pip install -e ".[transformers,visualization]"` to use it; the
+published PyPI release does not include these development additions.
+The [SAE guide](docs/sae.md) covers architecture parameters, training on your own
+data, pretrained SAELens dictionaries, feature maps and controlled feature edits.
+The [version note](docs/versions/sae-v1.md) records scope and validation.
 
 ## Installation
 

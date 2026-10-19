@@ -1,4 +1,4 @@
-"""User-facing model binding and three method collections."""
+"""User-facing model binding and method collections."""
 import torch
 
 from .adapters import CapabilityError, ModelSpec, ProbeInputs, TokenLayout
@@ -26,9 +26,11 @@ class Prober:
         from .api.lenses import LensMethods
         from .api.attention import AttentionMethods
         from .api.causal import CausalMethods
+        from .api.sae import SAEMethods
         self.lens = LensMethods(self)
         self.attention = AttentionMethods(self)
         self.causal = CausalMethods(self)
+        self.sae = SAEMethods(self)
 
     def prepare(self, *, prompt, image=None, layout=None, device=None, **kwargs):
         """Process preformatted text/images; chat templates remain processor-specific."""
@@ -84,6 +86,8 @@ class Prober:
                 break
             propagation.append(i)
         rules = {
+            "sae.features": (residual, "a fitted dictionary bound to an explicit residual hook"),
+            "sae.edit": (residual, "a fitted dictionary and an editable residual hook"),
             "lens.logit": (residual if readout else [], "residual sites and model readout"),
             "lens.tuned": (residual if readout else [], "residual sites and model readout"),
             "lens.jacobian": (residual if readout else [], "residual sites and model readout"),
