@@ -26,7 +26,7 @@ def build_sae_binding(probe, layer, *, model_id, tokenizer_id,
     if hook.get("tensor_slice") is not None:
         hook["tensor_slice"] = list(hook["tensor_slice"])
     return {**identities, "site": site, "layer": layer, "hook": hook,
-            "representation": "native_residual_output",
+            "representation": getattr(probe.adapter, "site_representations", {}).get(site, "native_residual_output"),
             "adapter_model_id": probe.adapter.model_id}
 
 

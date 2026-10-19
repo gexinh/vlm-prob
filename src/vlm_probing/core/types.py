@@ -32,6 +32,8 @@ class ForwardTrace:
 
     @property
     def logits(self) -> Tensor:
+        if self.metadata.get("output_kind") == "representation":
+            raise TypeError("This encoder returns representation vectors, not logits; use trace.output or SAE output metrics.")
         if isinstance(self.output, Tensor):
             return self.output
         value = (self.output.get("logits") if isinstance(self.output, dict)

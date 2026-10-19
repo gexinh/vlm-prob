@@ -1,5 +1,8 @@
 # Sparse autoencoders: train, inspect, and intervene
 
+For the integrated SAELens, ViT-Prisma and Overcomplete providers, model catalog
+and shared probing extensions, see the [SAE platform guide](sae/README.md).
+
 Sparse autoencoders (SAEs) add a fourth family alongside Lens, Attention and
 Causal. They learn a sparse dictionary of directions in a model's activations.
 The model stays frozen. A dictionary feature is an empirical direction, **not a

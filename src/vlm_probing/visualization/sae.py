@@ -23,6 +23,7 @@ def plot_sae_feature_overlay(image, result, *, feature_id, grid_shape,
     if int(selected.sum()) != grid_shape[0] * grid_shape[1]:
         raise ValueError("selected positions do not match the declared visual grid")
     heatmap = values[selected, feature_id].detach().float().cpu().reshape(grid_shape)
+    kwargs.setdefault("signed", bool((heatmap < 0).any()))
     kwargs.setdefault("value_label", "Feature activation")
     return plot_attention_overlay(image, heatmap, image_alpha=image_alpha,
                                   alpha=alpha, ax=ax, **kwargs)

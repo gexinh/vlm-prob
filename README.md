@@ -42,12 +42,14 @@ a measured zero effect.
 
 ## SAE development version
 
-This local `dev/sae-v1` branch adds a fourth method family. Install this checkout
+This local `dev/sae-v2` branch adds a fourth method family. Install this checkout
 with `python -m pip install -e ".[transformers,visualization]"` to use it; the
 published PyPI release does not include these development additions.
-The [SAE guide](docs/sae.md) covers architecture parameters, training on your own
-data, pretrained SAELens dictionaries, feature maps and controlled feature edits.
-The [version note](docs/versions/sae-v1.md) records scope and validation.
+The [SAE platform guide](docs/sae/README.md) covers pretrained checkpoint discovery,
+native training with SAELens, ViT-Prisma and Overcomplete, and shared feature
+maps, profiles and interventions. The [native SAE guide](docs/sae.md) covers the
+built-in ReLU, TopK and Gated implementations.
+The [v2 version note](docs/versions/sae-v2.md) records scope and validation.
 
 ## Installation
 
@@ -211,6 +213,7 @@ src/vlm_probing/
   lenses/        # BaseLens and concrete readout methods
   attention/     # BaseAttention and concrete attention methods
   causal/        # BaseCausal and concrete interventions/estimators
+  sae/           # native dictionaries, optional toolkits, catalog and training
   training/      # calibration, checkpoint import and resume
   visualization/ # shared heatmaps, overlays, curves and graphs
   core/          # results and execution traces
@@ -230,3 +233,18 @@ calibration. The
 [technical report](https://github.com/gexinh/vlm-probing/blob/main/docs/assets/vlmprobe-technical-report.pdf)
 compares real readouts, explanations, and interventions on shared cases across
 five pretrained VLMs, with language and vision controls.
+
+## Credits
+
+The SAE integrations build on these libraries:
+
+- [SAELens](https://github.com/decoderesearch/SAELens): native SAE architectures,
+  training infrastructure and pretrained dictionary registry.
+- [ViT-Prisma](https://github.com/Prisma-Multimodal/ViT-Prisma): vision transformer
+  hooks, visual SAE training and CLIP/DINO dictionary resources.
+- [Overcomplete](https://github.com/KempnerInstitute/overcomplete): vision
+  dictionary-learning architectures, losses and training tools.
+
+Their original implementations, references and licenses are retained through
+the optional backends. Checkpoint sources and licenses are recorded separately
+in the catalog and [provider guides](docs/sae/README.md).

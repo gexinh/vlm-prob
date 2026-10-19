@@ -191,6 +191,7 @@ class TorchModelAdapter(BaseModelAdapter):
             if mutated:
                 raise RuntimeError(f"Gradient captures were mutated in-place downstream: {mutated}")
             return ForwardTrace(output, cache, {"model_id": self.model_id,
+                                "output_kind": self.spec.output_kind if self.spec else None,
                                 "sites": list(names), "grad": grad,
                                 "capture_stage": "after_intervention"})
         finally:

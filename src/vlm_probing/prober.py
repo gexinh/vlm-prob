@@ -88,6 +88,8 @@ class Prober:
         rules = {
             "sae.features": (residual, "a fitted dictionary bound to an explicit residual hook"),
             "sae.edit": (residual, "a fitted dictionary and an editable residual hook"),
+            "sae.profile": (residual, "a fitted dictionary and explicit token positions"),
+            "sae.reconstruct": (residual, "a fitted same-space dictionary and an editable residual hook"),
             "lens.logit": (residual if readout else [], "residual sites and model readout"),
             "lens.tuned": (residual if readout else [], "residual sites and model readout"),
             "lens.jacobian": (residual if readout else [], "residual sites and model readout"),
@@ -117,6 +119,8 @@ class Prober:
             "causal.eap_ig": (list(s.edges), "explicit independently replaceable edge sites"),
         }
         for name, (sites, need) in rules.items():
+            if s.output_kind == "representation" and not name.startswith("sae."):
+                sites, need = [], "representation encoder currently exposes SAE methods; no language/classification logits"
             methods[name] = {"available": bool(sites), "sites": sites,
                              "requires": need, "missing": None if sites else need}
         native_gpt2 = (type(self.model).__module__ == "transformers.models.gpt2.modeling_gpt2"
@@ -129,5 +133,6 @@ class Prober:
             edge_method.update(available=True, missing=None,
                                requires="graph='transformer' for the native GPT-2 residual-message graph")
         return {"model_id": self.adapter.model_id, "adapter": type(self.adapter).__name__,
+                "output_kind": s.output_kind,
                 "methods": methods, "notes": list(s.notes),
                 "layout": "adapter-provided" if s.layout else "explicit ProbeInputs required"}
