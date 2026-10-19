@@ -6,12 +6,19 @@ Remove selected key-to-query attention routes before softmax and measure the out
 
 ## API and parameters
 
+`probe` is a `Prober` bound to a loaded model; `inputs` contains prepared model inputs. The blocks below are API signatures: `*` marks keyword-only parameters, not an argument to copy. The [complete example](#complete-example-input-to-output) defines the model, inputs, and all other variables before running the method.
+
 ```text
 method = probe.causal.knockout(
     *, layers=None, queries="text", keys="visual", joint=False,
 )
 result = method.run(inputs, *, metric)
-trace = method.forward(inputs, *, capture=())  # joint=True only
+
+# For a joint intervened forward, configure joint=True explicitly.
+joint_method = probe.causal.knockout(
+    *, layers=None, queries="text", keys="visual", joint=True,
+)
+trace = joint_method.forward(inputs, *, capture=())
 ```
 
 | Parameter | Default | Meaning and constraints |

@@ -9,10 +9,10 @@ from tools.sync_repositories import changed_paths, is_ancestor, readme_at, rende
 
 
 PERSONAL_README = '''# vlmprobe
-[Project page](https://gexinh.github.io/vlm-probing/)
-[Code](https://github.com/gexinh/vlm-probing)
-![Icon](https://raw.githubusercontent.com/gexinh/vlm-probing/main/icon.svg)
-Install: git+https://github.com/gexinh/vlm-probing.git
+[Project page](https://gexinh.github.io/vlm-prob/)
+[Code](https://github.com/gexinh/vlm-prob)
+![Icon](https://raw.githubusercontent.com/gexinh/vlm-prob/main/icon.svg)
+Install: git+https://github.com/gexinh/vlm-prob.git
 [Report source](https://github.com/gexinh/vlm-probing-report)
 [External](https://github.com/another/library)
 '''
@@ -59,23 +59,71 @@ class RepositorySyncTests(unittest.TestCase):
         expected = render_readme(personal_readme, "ubc-tea/vlm-probe")
         self.assertEqual(readme_at(self.repo, lab), expected)
         self.assertEqual(expected.count("https://ubc-tea.github.io/vlm-probe/"), 1)
-        self.assertNotIn("https://gexinh.github.io/vlm-probing", expected)
+        self.assertNotIn("https://gexinh.github.io/vlm-prob", expected)
         self.assertIn("https://github.com/gexinh/vlm-probing-report", expected)
 
     def test_rendering_retargets_only_own_urls_and_preserves_readme_structure(self):
-        expected = (PERSONAL_README.replace("https://gexinh.github.io/vlm-probing/",
+        expected = (PERSONAL_README.replace("https://gexinh.github.io/vlm-prob/",
                                            "https://ubc-tea.github.io/vlm-probe/")
-                    .replace("https://github.com/gexinh/vlm-probing)",
+                    .replace("https://github.com/gexinh/vlm-prob)",
                              "https://github.com/ubc-tea/vlm-probe)")
-                    .replace("https://github.com/gexinh/vlm-probing.git",
+                    .replace("https://github.com/gexinh/vlm-prob.git",
                              "https://github.com/ubc-tea/vlm-probe.git")
-                    .replace("https://raw.githubusercontent.com/gexinh/vlm-probing/",
+                    .replace("https://raw.githubusercontent.com/gexinh/vlm-prob/",
                              "https://raw.githubusercontent.com/ubc-tea/vlm-probe/"))
         self.assertEqual(render_readme(PERSONAL_README, "ubc-tea/vlm-probe"), expected)
         self.assertEqual(render_readme(expected, "ubc-tea/vlm-probe"), expected)
-        self.assertEqual(render_readme(expected, "gexinh/vlm-probing"), PERSONAL_README)
+        self.assertEqual(render_readme(expected, "gexinh/vlm-prob"), PERSONAL_README)
         crlf = PERSONAL_README.replace("\n", "\r\n")
         self.assertEqual(render_readme(crlf, "ubc-tea/vlm-probe"), expected.replace("\n", "\r\n"))
+
+    def test_legacy_personal_alias_renders_to_current_repo_and_lab(self):
+        legacy = (PERSONAL_README
+                  .replace("gexinh.github.io/vlm-prob/", "gexinh.github.io/vlm-probing/")
+                  .replace("github.com/gexinh/vlm-prob)", "github.com/gexinh/vlm-probing)")
+                  .replace("github.com/gexinh/vlm-prob.git", "github.com/gexinh/vlm-probing.git")
+                  .replace("raw.githubusercontent.com/gexinh/vlm-prob/",
+                           "raw.githubusercontent.com/gexinh/vlm-probing/"))
+        self.assertEqual(render_readme(legacy, "gexinh/vlm-prob"), PERSONAL_README)
+        self.assertEqual(render_readme(PERSONAL_README, "gexinh/vlm-probing"), legacy)
+        self.assertEqual(render_readme(legacy, "ubc-tea/vlm-probe"),
+                         render_readme(PERSONAL_README, "ubc-tea/vlm-probe"))
+        self.assertIn("https://github.com/gexinh/vlm-probing-report", legacy)
+
+    def test_renaming_keeps_paths_queries_fragments_and_other_repo_names(self):
+        original = '''[Method](https://github.com/gexinh/vlm-probing/blob/main/docs/API.md?plain=1#sae)
+[Page](https://gexinh.github.io/vlm-probing/sae-models/?method=topk#model)
+[Report](https://github.com/gexinh/vlm-probing-report/blob/main/main.tex)
+[Other](https://github.com/gexinh/vlm-prob-other)
+'''
+        expected = '''[Method](https://github.com/gexinh/vlm-prob/blob/main/docs/API.md?plain=1#sae)
+[Page](https://gexinh.github.io/vlm-prob/sae-models/?method=topk#model)
+[Report](https://github.com/gexinh/vlm-probing-report/blob/main/main.tex)
+[Other](https://github.com/gexinh/vlm-prob-other)
+'''
+        self.assertEqual(render_readme(original, "gexinh/vlm-prob"), expected)
+
+    def test_sync_after_repo_rename_accepts_historical_lab_readme(self):
+        # The lab's existing README was rendered from the previous repository
+        # name; its history must still be retained when personal links change.
+        legacy = render_readme(PERSONAL_README, "gexinh/vlm-probing")
+        (self.repo / "README.md").write_text(legacy)
+        old_base = self.commit("old personal name")
+        self.run_git(self.repo, "push", "personal", "main")
+        self.run_git(self.repo, "push", "lab", "main")
+        (self.repo / "README.md").write_text(render_readme(legacy, "ubc-tea/vlm-probe"))
+        self.run_git(self.repo, "add", "README.md")
+        self.run_git(self.repo, "commit", "-m", "historical lab README")
+        old_lab = self.run_git(self.repo, "rev-parse", "HEAD")
+        self.run_git(self.repo, "push", "lab", "main")
+        self.run_git(self.repo, "reset", "--hard", old_base)
+        (self.repo / "README.md").write_text(PERSONAL_README)
+        target = self.commit("new personal name")
+        synchronize(self.repo, ("personal", "lab"), "main", True)
+        new_lab = self.head("lab")
+        self.assert_matching_trees(target, new_lab)
+        self.assertTrue(is_ancestor(self.repo, old_lab, new_lab))
+        self.assertTrue(is_ancestor(self.repo, target, new_lab))
 
     def test_check_does_not_push_and_push_only_changes_lab_readme(self):
         previous = self.head("personal")

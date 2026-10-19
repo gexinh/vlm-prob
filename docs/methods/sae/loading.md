@@ -37,10 +37,10 @@ identifies the author weights and source conventions. The loading helper
 preserves its per-token layer normalization and verifies the supported
 backbone/hook mapping. No training dataset or `.fit(...)` call is required.
 
-Install the version of the library from this branch:
+Install the current library from GitHub:
 
 ```bash
-python -m pip install "vlmprobe[sae,transformers,visualization] @ git+https://github.com/gexinh/vlm-prob.git@dev/sae-v4"
+python -m pip install "vlmprobe[sae,transformers,visualization] @ git+https://github.com/gexinh/vlm-prob.git@main"
 ```
 
 Run this complete script from a writable directory. The first run downloads the

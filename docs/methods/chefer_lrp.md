@@ -6,6 +6,8 @@ Run the CVPR 2021 author-rule relevance backend on a native ViT classifier. This
 
 ## API and parameters
 
+`probe` is a `Prober` bound to a loaded ViT classifier; `pixel_values` is its processed image tensor. The blocks below are API signatures: `*` marks keyword-only parameters, not an argument to copy. The [complete example](#complete-example) defines the model, inputs, and all other variables before running the method.
+
 ```text
 method = probe.attention.dtd_lrp(*, method="transformer_attribution", start_layer=0, device=None)
 result = method.run(pixel_values, *, target=None)

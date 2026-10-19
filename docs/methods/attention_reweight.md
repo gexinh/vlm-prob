@@ -6,6 +6,8 @@ Rescale selected attention probabilities and rerun the model to measure how the 
 
 ## API and parameters
 
+`probe` is a `Prober` bound to a loaded model; `inputs` contains prepared model inputs. The blocks below are API signatures: `*` marks keyword-only parameters, not an argument to copy. The [complete example](#complete-example) defines the model, inputs, and all other variables before running the method.
+
 ```text
 method = probe.attention.reweight(*, layers=None, queries="text", keys="visual", weight=2.0, renormalize=True)
 result = method.run(inputs, *, metric=None)

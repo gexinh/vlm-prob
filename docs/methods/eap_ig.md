@@ -6,16 +6,27 @@ Rank residual-message edges using input-path integrated gradients, then test pro
 
 ## API and parameters
 
+`probe` is a `Prober` bound to a loaded model; `inputs` contains prepared model inputs. The blocks below are API signatures: `*` marks keyword-only parameters, not an argument to copy. The [complete example](#complete-example-input-to-output) defines the model, inputs, and all other variables before running the method.
+
+The two configurations below select their graph explicitly. The factory's
+default is `graph="activation"`; use `graph="transformer"` for the GPT-2 path.
+
 ```text
+# Original input-embedding-path algorithm on the native GPT-2 graph.
 method = probe.causal.eap_ig(
-    *, edges=None, steps=32, graph="activation", quadrature="left",
+    *, edges=None, steps=32, graph="transformer", quadrature="left",
 )
 attribution = method.run(
     inputs, *, donor, metric, alignment="position", progress=None,
-)  # graph="transformer"
+)
+
+# Separate activation-space variant; requires adapter-declared edge captures.
+activation_method = probe.causal.eap_ig(
+    *, edges=None, steps=32, graph="activation", quadrature="left",
+)
 activation_result = activation_method.run(
     inputs, *, source, metric, alignment="strict",
-)  # graph="activation"
+)
 ```
 
 | Parameter | Default | Meaning and constraints |

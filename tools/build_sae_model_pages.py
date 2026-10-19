@@ -68,7 +68,7 @@ def card_section(card, method_links=True):
 
 def build(*, repository=None, ref=None, site_url=None):
     repository = repository or os.environ.get("GITHUB_REPOSITORY", "gexinh/vlm-prob")
-    ref = ref or os.environ.get("GITHUB_REF_NAME", "dev/sae-v4")
+    ref = ref or os.environ.get("GITHUB_REF_NAME", "main")
     site_url = site_url or "https://"+repository.split("/")[0]+".github.io/"+repository.split("/")[1]+"/sae-models/"
     payload = json.loads(gzip.decompress(RESOURCE.read_bytes()))
     cards = payload['models']

@@ -6,6 +6,8 @@ Compose residual attention transitions across layers to summarize indirect token
 
 ## API and parameters
 
+`probe` is a `Prober` bound to a loaded model; `inputs` contains prepared model inputs. The blocks below are API signatures: `*` marks keyword-only parameters, not an argument to copy. The [complete example](#complete-example) defines the model, inputs, and all other variables before running the method.
+
 ```text
 method = probe.attention.rollout(*, layers=None, head_reduction="mean", residual=True)
 result = method.run(inputs, *, metric=None)

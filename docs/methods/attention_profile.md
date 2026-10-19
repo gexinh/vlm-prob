@@ -6,6 +6,8 @@ Measure attention entropy, concentration, and mass assigned to explicitly chosen
 
 ## API and parameters
 
+`probe` is a `Prober` bound to a loaded model; `inputs` contains prepared model inputs. The blocks below are API signatures: `*` marks keyword-only parameters, not an argument to copy. The [complete example](#complete-example) defines the model, inputs, and all other variables before running the method.
+
 ```text
 method = probe.attention.profile(*, layers=None, queries="all", groups=None, include_attention=False)
 result = method.run(inputs, *, metric=None)

@@ -6,16 +6,29 @@ Explain a fixed model score using attention probabilities, gradients, and inform
 
 ## API and every parameter
 
+`probe` is a `Prober` bound to a loaded model; `inputs` contains prepared model inputs. The blocks below are API signatures: `*` marks keyword-only parameters, not an argument to copy. The [complete example](#complete-example-raw-image-to-five-fresh-maps) defines the model, inputs, and all other variables before running the method.
+
 ```text
-probe.attention.grad_cam(*, layers=None, queries=None, keys=None, normalize=False)
-probe.attention.attribution(*, layers=None, queries=None, keys=None, steps=20, quadrature="right")
-probe.attention.tam(*, layers=None, queries=None, keys=None, steps=20,
-                    quadrature="right", input_key="pixel_values", start_layer=0,
-                    residual_normalize=True)
-probe.attention.beyond_intuition(*, variant="head", layers=None, queries=None,
-                                keys=None, steps=20, quadrature="right",
-                                input_key="pixel_values", start_layer=0)
-result = method.run(inputs, *, metric=None, baseline=None)
+grad_cam = probe.attention.grad_cam(*, layers=None, queries=None, keys=None, normalize=False)
+grad_cam_result = grad_cam.run(inputs, *, metric=None)
+
+attattr = probe.attention.attribution(
+    *, layers=None, queries=None, keys=None, steps=20, quadrature="right",
+)
+attattr_result = attattr.run(inputs, *, metric=None)
+
+tam = probe.attention.tam(
+    *, layers=None, queries=None, keys=None, steps=20,
+    quadrature="right", input_key="pixel_values", start_layer=0,
+    residual_normalize=True,
+)
+tam_result = tam.run(inputs, *, metric=None, baseline=None)
+
+beyond = probe.attention.beyond_intuition(
+    *, variant="head", layers=None, queries=None, keys=None, steps=20,
+    quadrature="right", input_key="pixel_values", start_layer=0,
+)
+beyond_result = beyond.run(inputs, *, metric=None, baseline=None)
 ```
 
 | Parameter | Default | Methods and meaning / constraints |

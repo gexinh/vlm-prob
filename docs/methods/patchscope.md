@@ -6,10 +6,12 @@ Replace one target-prompt residual with a source representation and inspect the 
 
 ## API and parameters
 
+`probe` is a `Prober` bound to a loaded model; `inputs` contains prepared model inputs. The blocks below are API signatures: `*` marks keyword-only parameters, not an argument to copy. The [complete example](#complete-live-example) defines the model, inputs, and all other variables before running the method.
+
 ```text
-probe.lens.patchscope(*, layers, source_position, target_layer,
+method = probe.lens.patchscope(*, layers, source_position, target_layer,
                      target_position, target=None, mapping=None)
-method.run(inputs, *, target_inputs)
+result = method.run(inputs, *, target_inputs)
 ```
 
 | Parameter | Default | Meaning and constraints |

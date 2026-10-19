@@ -6,11 +6,13 @@ Estimate a mean downstream residual Jacobian, transport a representation, and de
 
 ## API and parameters
 
+`probe` is a `Prober` bound to a loaded model; `inputs` contains prepared model inputs. The blocks below are API signatures: `*` marks keyword-only parameters, not an argument to copy. The [complete example](#complete-live-example) defines the model, inputs, and all other variables before running the method.
+
 ```text
-probe.lens.jacobian(*, layers=None, tokens="all", binding=None)
+method = probe.lens.jacobian(*, layers=None, tokens="all", binding=None)
 method.fit(inputs, *, skip_first=16, exclude_last=True,
            target_mask=None, max_sources=None, seed=0)
-method.run(inputs)
+result = method.run(inputs)
 method.save(directory)
 method.load(directory)
 ```

@@ -5,6 +5,10 @@
 
 ## Use existing weights
 
+The snippets in this reference assume `probe` is a `Prober` bound to your loaded
+backbone and processor, and `inputs` is a prepared input batch. The linked
+[complete loading example](loading.md) constructs all three from scratch.
+
 ```python
 # Native dictionary saved by this library; no fitting is needed.
 method = probe.sae.load("outputs/dictionary", device="cpu")
@@ -31,18 +35,26 @@ automatic source-format or backbone compatibility.
 
 ## Configure and fit a new dictionary
 
+Here `probe`, `train_inputs` and `validation_inputs` are constructed in a
+method's complete example, such as [ReLU SAE](relu.md#complete-live-example).
+
 ```python
+from vlmprobe.sae import SAETrainingConfig
+
 method = probe.sae.topk(layer=0, tokens="visual", d_sae=1024, k=32)
-# Every inventory entry is also available through:
-method = probe.sae.method("topk", layer=0, tokens="visual", d_sae=1024, k=32)
-method.fit(train_inputs, validation_inputs, output_dir="outputs/fit",
-           training=SAETrainingConfig(...), train_ids=None, validation_ids=None,
-           preprocessing_id="caller-prepared:unverified", max_cache_bytes=1 << 30,
-           provenance=None)
+history = method.fit(
+    train_inputs, validation_inputs, output_dir="outputs/fit",
+    training=SAETrainingConfig(max_steps=200, batch_size=128),
+    preprocessing_id="my-independent-training-split-v1",
+)
 method.save("outputs/dictionary", model_card=None, registry_dir=None)
 loaded = probe.sae.load("outputs/dictionary", tokens=None, binding=None,
                         registry_dir=None, artifact_dir=None, device="cpu")
+result = loaded.run(validation_inputs[0])
 ```
+
+Every named factory is also available through
+`probe.sae.method("topk", layer=0, tokens="visual", d_sae=1024, k=32)`.
 
 `.fit(...)` trains the SAE encoder/decoder and any method-specific learned
 parameters on activations from the frozen backbone. It does not fine-tune that

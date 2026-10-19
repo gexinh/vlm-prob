@@ -6,6 +6,8 @@ Estimate a residual replacement effect from the receiver gradient and the source
 
 ## API and parameters
 
+`probe` is a `Prober` bound to a loaded model; `inputs` contains prepared model inputs. The blocks below are API signatures: `*` marks keyword-only parameters, not an argument to copy. The [complete example](#complete-example-input-to-output) defines the model, inputs, and all other variables before running the method.
+
 ```text
 method = probe.causal.attribute(*, layers=None, tokens="visual")
 result = method.run(inputs, *, source, metric, alignment="strict")

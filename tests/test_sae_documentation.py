@@ -32,6 +32,10 @@ def test_every_method_has_a_complete_example_and_shared_resources():
         text = page.read_text()
         assert re.search(r"^## .*API", text, flags=re.M), page
         assert "models/README.md" in text and "training/README.md" in text, page
+        signature = re.search(r"```text\s*\n(.*?)```", text, flags=re.S).group(1)
+        assert signature.startswith(f"method = probe.sae.{method['name']}("), page
+        assert "history = method.fit(" in signature, page
+        assert "**Usage sequence.**" in text, page
         blocks = re.findall(r"```python\s*\n(.*?)```", text, flags=re.S)
         assert blocks, page
         complete = [block for block in blocks if "Prober(" in block and ".fit(" in block and ".run(" in block]

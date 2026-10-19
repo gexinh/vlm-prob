@@ -6,10 +6,12 @@ Learn a separate affine translator at each residual layer while leaving the supp
 
 ## API and parameters
 
+`probe` is a `Prober` bound to a loaded model; `inputs` contains prepared model inputs. The blocks below are API signatures: `*` marks keyword-only parameters, not an argument to copy. The [complete example](#complete-live-example) defines the model, inputs, and all other variables before running the method.
+
 ```text
-probe.lens.tuned(*, layers=None, tokens="last_prompt", binding=None)
+method = probe.lens.tuned(*, layers=None, tokens="last_prompt", binding=None)
 method.fit(inputs, *, steps=100, lr=1e-3)
-method.run(inputs)
+result = method.run(inputs)
 ```
 
 | Parameter | Default | Meaning and constraints |

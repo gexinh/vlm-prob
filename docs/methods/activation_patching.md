@@ -6,6 +6,8 @@ Replace selected residual activations with those from a paired input, then measu
 
 ## API and parameters
 
+`probe` is a `Prober` bound to a loaded model; `inputs` contains prepared model inputs. The blocks below are API signatures: `*` marks keyword-only parameters, not an argument to copy. The [complete example](#complete-example-input-to-output) defines the model, inputs, and all other variables before running the method.
+
 ```text
 method = probe.causal.patch(*, layers=None, tokens="visual")
 result = method.run(inputs, *, source, metric, alignment="strict")

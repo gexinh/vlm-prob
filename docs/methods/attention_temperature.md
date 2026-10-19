@@ -6,6 +6,8 @@ Change attention sharpness inside the model and measure the score change. This i
 
 ## API and parameters
 
+`probe` is a `Prober` bound to a loaded model; `inputs` contains prepared model inputs. The blocks below are API signatures: `*` marks keyword-only parameters, not an argument to copy. The [complete example](#complete-example) defines the model, inputs, and all other variables before running the method.
+
 ```text
 method = probe.attention.temperature(*, layers=None, queries="all", temperature=1.0)
 result = method.run(inputs, *, metric=None)

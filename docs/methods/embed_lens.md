@@ -6,9 +6,11 @@ Inspect the vocabulary embeddings nearest to projected visual tokens.
 
 ## API and parameters
 
+`probe` is a `Prober` bound to a loaded model; `inputs` contains prepared model inputs. The blocks below are API signatures: `*` marks keyword-only parameters, not an argument to copy. The [complete example](#complete-live-example) defines the model, inputs, and all other variables before running the method.
+
 ```text
-probe.lens.embed(*, tokens="visual", token_groups=None)
-method.run(inputs, *, top_k=10, vocabulary_chunk_size=8192)
+method = probe.lens.embed(*, tokens="visual", token_groups=None)
+result = method.run(inputs, *, top_k=10, vocabulary_chunk_size=8192)
 ```
 
 | Parameter | Default | Meaning and constraints |

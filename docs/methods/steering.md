@@ -6,13 +6,20 @@ Add a supplied residual direction, or construct an image-specific direction from
 
 ## API and parameters
 
+`probe` is a `Prober` bound to a loaded model; `inputs` contains prepared model inputs. The blocks below are API signatures: `*` marks keyword-only parameters, not an argument to copy. The [complete example](#complete-example-input-to-output) defines the model, inputs, and all other variables before running the method.
+
 ```text
 method = probe.causal.steer(
     *, layers=None, tokens="visual", strength=1.0, preserve_norm=False, joint=False,
 )
 result = method.run(inputs, *, direction, metric)
-trace = method.forward(inputs, *, direction, capture=())       # joint=True
-output = method.generate(inputs, *, direction, max_new_tokens=64, do_sample=False)
+
+# Joint forwarding and generation need a joint steering configuration.
+joint_method = probe.causal.steer(
+    *, layers=None, tokens="visual", strength=1.0, preserve_norm=False, joint=True,
+)
+trace = joint_method.forward(inputs, *, direction, capture=())
+output = joint_method.generate(inputs, *, direction, max_new_tokens=64, do_sample=False)
 ```
 
 | Parameter | Default | Meaning and constraints |

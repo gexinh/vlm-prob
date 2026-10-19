@@ -23,12 +23,36 @@ reproducing an upstream projected-coefficient optimizer.
 
 ## API and parameters
 
+**Call signatures.** These describe the arguments, including keyword-only
+parameters marked by `*`; they are API notation rather than a standalone
+Python script. The factory returns `method`, and `.fit(...)` returns `history`.
+
 ```text
-probe.sae.archetypal_jumprelu(*, layer, tokens="all", d_sae=None, expansion_factor=4, **parameters)
-method.fit(train_inputs, validation_inputs, *, output_dir, training=None,
+method = probe.sae.archetypal_jumprelu(*, layer, tokens="all", d_sae=None, expansion_factor=4, **parameters)
+history = method.fit(train_inputs, validation_inputs, *, output_dir, training=None,
            train_ids=None, validation_ids=None, preprocessing_id="caller-prepared:unverified",
            max_cache_bytes=1073741824, provenance=None)
 result = method.run(inputs)
+```
+
+**Usage sequence.** The [complete live example](#complete-live-example)
+constructs `probe`, `train_inputs`, `validation_inputs`, and `test_inputs`.
+With those inputs, create the method before fitting or running it:
+
+```python
+from vlmprobe.sae import SAETrainingConfig
+
+method = probe.sae.archetypal_jumprelu(
+    layer=0, tokens="visual", d_sae=32,
+    archetypal_candidates=32, archetypal_delta=0.2,
+    jumprelu_threshold=0.1, l0_coefficient=0.02,
+)
+history = method.fit(
+    train_inputs, validation_inputs,
+    output_dir="outputs/sae_archetypal_jumprelu/api_training",
+    training=SAETrainingConfig(max_steps=24, batch_size=16, lr=0.003, seed=7),
+)
+result = method.run(test_inputs)
 ```
 
 The factory configures this algorithm; it does not train or download a dictionary.
@@ -92,7 +116,7 @@ normalization, source independence, early stopping and resume constraints.
 
 ## Complete live example
 
-Install `python -m pip install "vlmprobe[sae,transformers,visualization] @ git+https://github.com/gexinh/vlm-prob.git@dev/sae-v4"`.
+Install `python -m pip install "vlmprobe[sae,transformers,visualization] @ git+https://github.com/gexinh/vlm-prob.git@main"`.
 This complete script downloads no weights or dataset: it creates a small random
 ViT and independent synthetic images, captures real residuals, trains the
 selected algorithm, evaluates a held-out image and calls the library's plotting

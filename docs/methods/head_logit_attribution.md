@@ -6,6 +6,8 @@ Project attention-head outputs into the vocabulary under one fixed final normali
 
 ## API and parameters
 
+`probe` is a `Prober` bound to a loaded model; `inputs` contains prepared model inputs. The blocks below are API signatures: `*` marks keyword-only parameters, not an argument to copy. The [complete example](#complete-example) defines the model, inputs, and all other variables before running the method.
+
 ```text
 method = probe.attention.head_logits(*, layers=None)
 result = method.run(inputs, *, metric=None)

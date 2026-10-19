@@ -6,11 +6,13 @@ Fit a vocabulary decoder for each attention head and inspect the learned head re
 
 ## API and parameters
 
+`probe` is a `Prober` bound to a loaded model; `inputs` contains prepared model inputs. The blocks below are API signatures: `*` marks keyword-only parameters, not an argument to copy. The [complete example](#complete-live-example) defines the model, inputs, and all other variables before running the method.
+
 ```text
-probe.lens.attention(*, layers=None, tokens="last_prompt", binding=None)
+method = probe.lens.attention(*, layers=None, tokens="last_prompt", binding=None)
 method.fit(inputs, *, steps=100, lr=1e-3,
            initial_unembedding=None, initial_bias=None)
-method.run(inputs)
+result = method.run(inputs)
 ```
 
 | Parameter | Default | Meaning and constraints |
