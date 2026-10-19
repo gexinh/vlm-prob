@@ -1,10 +1,12 @@
 # SAE models and checkpoints
 
-Browse **9,660 published SAE checkpoints** across 151 author weight repositories,
+Browse **9,660 published SAE checkpoint variants** across 151 author weight repositories,
 covering GPT-2, Gemma, Llama, Qwen, CLIP and DINO backbones. Each dictionary has
 our own information card with its method, source model, activation hook,
 available dimensions and input conventions, plus direct weight/repository links.
 Published names that resolve to the same checkpoint are merged as aliases.
+A checkpoint count includes different layers, dictionary widths, sparsity settings
+and training runs; it is not a count of distinct backbone models.
 
 [Browse every checkpoint repository](published/README.md) ·
 [Searchable catalog: web and local browsing](web/README.md) ·
@@ -15,16 +17,40 @@ The repository index and paginated model cards render directly on GitHub.
 The interactive catalog searches a separate index and loads individual model
 details on demand; use the linked browsing instructions to open it.
 
-| Published collection | Methods | Our model information | Checkpoint weights |
-| --- | --- | --- | --- |
-| GPT-2 feature-splitting dictionaries | ReLU | [GPT-2 layer 8](published/jbloom-gpt2-small-feature-splitting-experiment-layer-8-dbe4582b-p1.md#gpt2-layer8-relu-768) | [Download](https://huggingface.co/jbloom/GPT2-Small-Feature-Splitting-Experiment-Layer-8/resolve/174d298f1633aab71e440685c3292ce8108a5a73/blocks.8.hook_resid_pre_768/sae_weights.safetensors) |
-| Gemma Scope | JumpReLU | [Gemma-2 dictionary](published/google-gemma-scope-2b-pt-att-da0daf1e-p1.md#sae-40fd7a489d37f2b8bd438f17) | [Checkpoint files](https://huggingface.co/google/gemma-scope-2b-pt-att/tree/main/layer_0/width_16k/average_l0_104) |
-| Gemma Scope 2 | JumpReLU | [Gemma-3 dictionary](published/google-gemma-scope-2-4b-pt-568216a4-p5.md#sae-821c7f9ab3a7f8afbd9678fd) | [Checkpoint files](https://huggingface.co/google/gemma-scope-2-4b-pt/tree/main/attn_out/layer_17_width_16k_l0_big) |
-| Qwen Scope | TopK | [Qwen dictionary](published/qwen-sae-res-qwen3-1-7b-base-w32k-l0-100-f6e0808c-p1.md#sae-91dd570b8052f3f388447247) | [Download](https://huggingface.co/Qwen/SAE-Res-Qwen3-1.7B-Base-W32K-L0_100/resolve/main/layer0.sae.pt) |
-| Goodfire Llama dictionaries | ReLU | [Llama-3.1 layer 19](published/goodfire-llama-3-1-8b-instruct-sae-l19-c605baef-p1.md#sae-67c6bcd9c84048110d5346b4) | [Download](https://huggingface.co/Goodfire/Llama-3.1-8B-Instruct-SAE-l19/resolve/main/Llama-3.1-8B-Instruct-SAE-l19.pth) |
-| CLIP ViT-B/32 patch dictionaries | ReLU | [CLIP layer 11](published/prisma-multimodal-sparse-autoencoder-clip-b-32-sae-vanilla-x64-layer-11-hook-resid-post-l1-1e-0-19d81acc-p1.md#clip-b32-layer11-relu-49152) | [Download](https://huggingface.co/Prisma-Multimodal/sparse-autoencoder-clip-b-32-sae-vanilla-x64-layer-11-hook_resid_post-l1-1e-05/resolve/2b1cb17ffb8b06e7f45a699dfc97d417f9879be4/weights.pt) |
-| CLIP CLS dictionaries | TopK | [CLS-only layer 11](published/prisma-multimodal-sae-top-k-64-cls-only-layer-11-hook-resid-post-5eda9b30-p1.md#sae-0fafbffebcc920f372943f8f) | [Download](https://huggingface.co/Prisma-Multimodal/sae-top_k-64-cls_only-layer_11-hook_resid_post/resolve/73611b78df558947515c213b56be74c3b2be91f0/weights.pt) |
-| DINO ViT-B/16 dictionaries | ReLU | [DINO layer 0](published/prisma-multimodal-dino-vanilla-x64-all-patches-0-resid-post-507-98-3a6c7680-p1.md#sae-f1ea8668fa9868f9acfb0a14) | [Download](https://huggingface.co/Prisma-Multimodal/DINO-vanilla-x64-all_patches_0-resid_post-507-98/resolve/c44792cf34df589b145a8f9f2d7751e9e0d4c6f3/weights.pt) |
+## Published weight examples by method
+
+The following are example entry points, **not a complete model list or a claim
+that only these methods have pretrained weights**. Use the complete repository
+index or searchable catalog above for the full snapshot.
+
+| SAE method | Example model information in this repository | Author configuration |
+| --- | --- | --- |
+| [ReLU + L1](../relu.md) | [GPT-2 feature splitting](published/jbloom-gpt2-small-feature-splitting-experiment-layer-8-dbe4582b-p1.md#gpt2-layer8-relu-768), [Goodfire Llama](published/goodfire-llama-3-1-8b-instruct-sae-l19-c605baef-p1.md#sae-67c6bcd9c84048110d5346b4), [CLIP patches](published/prisma-multimodal-sparse-autoencoder-clip-b-32-sae-vanilla-x64-layer-11-hook-resid-post-l1-1e-0-19d81acc-p1.md#clip-b32-layer11-relu-49152), [DINO](published/prisma-multimodal-dino-vanilla-x64-all-patches-0-resid-post-507-98-3a6c7680-p1.md#sae-f1ea8668fa9868f9acfb0a14) | Follow the individual cards for the exact source configuration and weight links. |
+| [TopK](../topk.md) | [GPT-2 OAI layer 0](published/jbloom-gpt2-small-oai-v5-32k-resid-post-saes-c2dcb058-p1.md#sae-6783018355728933dae6d812), [Qwen Scope](published/qwen-sae-res-qwen3-1-7b-base-w32k-l0-100-f6e0808c-p1.md#sae-91dd570b8052f3f388447247), [CLIP CLS](published/prisma-multimodal-sae-top-k-64-cls-only-layer-11-hook-resid-post-5eda9b30-p1.md#sae-0fafbffebcc920f372943f8f) | [GPT-2 configuration](https://huggingface.co/jbloom/GPT2-Small-OAI-v5-32k-resid-post-SAEs/blob/21df74db7b9f690cd2403a20485cf75f46330d0d/v5_32k_layer_0.pt/cfg.json) |
+| [JumpReLU](../jumprelu.md) | [Gemma Scope](published/google-gemma-scope-2b-pt-att-da0daf1e-p1.md#sae-40fd7a489d37f2b8bd438f17), [Gemma Scope 2](published/google-gemma-scope-2-4b-pt-568216a4-p5.md#sae-821c7f9ab3a7f8afbd9678fd) | Follow the individual cards for the exact source configuration and weight links. |
+| [Gated](../gated.md) | [Pythia Gated dictionary](published/canrager-lm-sae-f1118512-p1.md#sae-21911514d66bc703e7143b75) | [GatedAutoEncoder / GatedSAETrainer](https://huggingface.co/canrager/lm_sae/blob/main/pythia70m_sweep_gated_ctx128_0730/resid_post_layer_3/trainer_0/config.json) |
+| [BatchTopK](../batchtopk.md) | [Llama-3.1 BatchTopK dictionary](published/andyrdt-saes-llama-3-1-8b-instruct-8ffd883b-p1.md#sae-2c2c35702492e87a6b39f81e) | [BatchTopKSAE / BatchTopKTrainer](https://huggingface.co/andyrdt/saes-llama-3.1-8b-instruct/blob/main/resid_post_layer_11/trainer_1/config.json) |
+| [Matryoshka BatchTopK](../matryoshka_batchtopk.md) | [Gemma-2 Matryoshka dictionary](published/adamkarvonen-saebench-gemma-2-2b-width-2pow12-date-0108-04a978f7-p1.md#sae-cbd3b7eaf315451abbf902c4) | [MatryoshkaBatchTopKSAE / trainer](https://huggingface.co/adamkarvonen/saebench_gemma-2-2b_width-2pow12_date-0108/blob/main/MatryoshkaBatchTopK_gemma-2-2b__0108/resid_post_layer_12/trainer_0/config.json) |
+
+Some records in the current snapshot retain an unclassified method label even
+though the author's checkpoint configuration identifies the algorithm. In
+particular, 40 Gated, 20 BatchTopK and 18 Matryoshka BatchTopK entries are already
+included among the 1,117 unclassified records. The linked configurations above
+identify representative examples. An empty method-filter result does not
+establish that a method has no published weights.
+
+Published checkpoint availability differs across algorithms and backbones.
+The [method index](../README.md) lists the library's trainable recipes; it does
+not promise a pretrained dictionary for every recipe, backbone or layer. This
+snapshot is also not an exhaustive inventory of all author releases: for
+example, the separately published [RA-SAE DINOv2 dictionary](https://huggingface.co/matybohacek/RA-SAE-DINOv2-32k)
+is outside these indexed source listings. Its source artifact is not an
+automatically supported native loading recipe.
+
+A model information card provides discovery and download information. Automatic
+`probe.sae.from_pretrained(...)` loading currently supports the pinned GPT-2
+layer-0 TopK recipe. Other source checkpoints need compatible conversion and
+exact backbone/hook/preprocessing binding; see the [loading guide](../loading.md).
 
 The five [vision backbone cards](backbones.md) describe DINOv2, SigLIP, ViT,
 ResNet-V2-BiT and ConvNeXt models used for activation collection in Overcomplete.
