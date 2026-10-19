@@ -1,6 +1,6 @@
 # Published SAE checkpoint repositories
 
-[Model hub](../README.md) · [Standalone searchable catalog](../catalog.html)
+[Model hub](../README.md) · [Web browsing instructions](../web/README.md)
 
 | Checkpoint repository | Base model | Dictionaries | Pages |
 | --- | --- | ---: | ---: |

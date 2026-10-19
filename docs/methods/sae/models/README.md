@@ -7,11 +7,13 @@ available dimensions and input conventions, plus direct weight/repository links.
 Published names that resolve to the same checkpoint are merged as aliases.
 
 [Browse every checkpoint repository](published/README.md) ·
-[Open the standalone searchable catalog](catalog.html) ·
+[Searchable catalog: web and local browsing](web/README.md) ·
+[Load a pretrained SAE without training](../loading.md) ·
 [Vision backbones for training](backbones.md)
 
-The searchable HTML page includes its data and can be downloaded and opened
-locally. The Markdown cards below are also readable directly on GitHub.
+The repository index and paginated model cards render directly on GitHub.
+The interactive catalog searches a separate index and loads individual model
+details on demand; use the linked browsing instructions to open it.
 
 | Published collection | Methods | Our model information | Checkpoint weights |
 | --- | --- | --- | --- |
@@ -47,10 +49,11 @@ backbones = list_models(artifact_kind="backbone")
 
 These are author-published model records, not a claim that every raw weight
 format is automatically runnable with an arbitrary Hugging Face backbone.
-Download the selected checkpoint, preserve its exact model/hook/preprocessing,
-and convert a supported tensor layout using `import_checkpoint` before
-`probe.sae.load(...)`. The [shared API](../API.md) describes native artifact
-conversion and binding. Fields absent from the source remain unspecified.
+Use the [pretrained loading guide](../loading.md) for supported automatic
+download/conversion recipes and existing native dictionaries. Other author
+formats require an explicit conversion with the exact model/hook/preprocessing;
+the [shared API](../API.md) describes that binding. Fields absent from the source
+remain unspecified.
 
 The metadata snapshot uses the pinned SAELens and ViT-Prisma published listings
 and source loading recipes; it includes same-activation SAE dictionaries and

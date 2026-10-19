@@ -67,9 +67,9 @@ def _construct(config, binding, weights, *, architecture, source_format):
     normalization = config.get("normalize_activations", "none")
     if normalization in {None, "none"}:
         normalization = "none"
-    elif source_format == "prisma" and normalization == "constant_norm_rescale":
+    elif source_format in {"prisma", "saelens"} and normalization == "constant_norm_rescale":
         normalization = "constant_norm"
-    elif source_format == "prisma" and normalization == "layer_norm":
+    elif source_format in {"prisma", "saelens"} and normalization == "layer_norm":
         normalization = "layer_norm"
     else:
         raise ValueError("source runtime/folded normalization must be explicitly converted; this variant is unsupported")
@@ -80,7 +80,7 @@ def _construct(config, binding, weights, *, architecture, source_format):
         raise ValueError("source decoder does not reconstruct the same activation space")
     native = SAEConfig(architecture=architecture, d_in=d_in, d_sae=d_sae, k=k,
         normalize_decoder=False, input_normalization=normalization,
-        normalization_std_correction=1 if source_format == "prisma" else 0,
+        normalization_std_correction=1 if source_format in {"prisma", "saelens"} else 0,
         apply_decoder_bias_to_input=config.get("apply_b_dec_to_input", True),
         use_decoder_bias=True, rescale_acts_by_decoder_norm=config.get("rescale_acts_by_decoder_norm", False))
     dtype = _tensor(weights, "W_enc", (d_in, d_sae)).dtype
@@ -112,13 +112,24 @@ def _saelens(config, weights, binding, *, legacy_config=None):
         if legacy_config != "feature_splitting_v2":
             raise ValueError("legacy config lacks an architecture; specify the reviewed legacy_config variant")
         config.update(architecture="standard", normalize_activations="none", apply_b_dec_to_input=True)
+    activation = config.get("activation_fn", config.get("activation_fn_str", "relu"))
+    # SAELens <6 represented OpenAI's TopK checkpoints as Standard + TopK.
+    # Follow its pinned handle_pre_6_0_config migration rather than replacing
+    # the sparse activation with ReLU based on the old architecture label.
+    if config["architecture"] == "standard" and activation == "topk":
+        if type(config.get("activation_fn_kwargs", {}).get("k")) is not int:
+            raise ValueError("legacy Standard/TopK checkpoint requires explicit activation_fn_kwargs.k")
+        config["architecture"] = "topk"
+        config["k"] = config["activation_fn_kwargs"]["k"]
+    if type(config.get("normalize_activations")) is bool:
+        config["normalize_activations"] = "expected_average_only_in" if config["normalize_activations"] else "none"
     architecture = {"standard": "relu", "gated": "gated", "topk": "topk", "abstopk": "abstopk", "jumprelu": "jumprelu"}.get(config["architecture"])
     if architecture is None:
         raise ValueError("this source architecture is not yet a supported exact native tensor conversion")
     for name in ("scaling_factor", "finetuning_scaling_factor"):
         if name in weights and not torch.equal(weights[name], torch.ones_like(weights[name])):
             raise ValueError("nontrivial finetuning scaling requires an explicit converter and is not silently discarded")
-    if config.get("activation_fn_str", "relu") not in {"relu", "topk"}:
+    if activation not in {"relu", "topk"} or (architecture == "gated" and activation != "relu"):
         raise ValueError("unsupported legacy activation function")
     binding = _binding(config, binding, source_format="saelens")
     return _construct(config, binding, weights, architecture=architecture, source_format="saelens")

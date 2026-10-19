@@ -24,6 +24,7 @@ and measure the effect of feature edits.
 | Quantized SAE | [API and example](qsae.md) |
 
 [Model cards and checkpoints](models/README.md) ·
+[Use a pretrained SAE](loading.md) ·
 [Training on your data](training/README.md) ·
 [Shared API](API.md) · [Algorithm reference](ALGORITHMS.md) ·
 [Image-to-feature tutorial](examples/README.md) · [Sources](SOURCES.md)

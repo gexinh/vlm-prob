@@ -289,9 +289,18 @@ class FittedSAEMethod:
                 evidence.update(numerical_parity="not_evaluated_after_state_change",
                                 semantic_quality="not_evaluated_after_state_change",
                                 training_validation="stale_after_state_change")
+                evidence["tensor_integrity"] = "checksum_recorded"
                 self.sae.training_metadata = {**getattr(self.sae, "training_metadata", {}),
                                               "state_modified_since_model_card": True}
-        if getattr(self.sae, "source_metadata", {}).get("conversion"):
+                previous_verification = getattr(self.sae, "source_metadata", {}).get("pretrained_verification")
+                if previous_verification:
+                    self.sae.source_metadata = {**self.sae.source_metadata,
+                        "pretrained_verification": {**previous_verification,
+                            "status": "invalidated_after_state_change"}}
+        source = getattr(self.sae, "source_metadata", {})
+        pretrained = source.get("pretrained_verification", {})
+        if source.get("conversion") and not (
+                pretrained.get("status") == "passed" and self._weight_identity_verified):
             evidence["backbone_compatibility"] = "not_verified"
         return save_artifact(self.sae, path, model_card={"evidence": evidence, **(model_card or {})},
                              registry_dir=registry_dir)
@@ -305,6 +314,16 @@ class SAEMethods:
         """Configure a native algorithm; fit/load and run use one shared contract."""
         return FittedSAEMethod(self.probe, architecture, layer, tokens,
                               d_sae=d_sae, expansion_factor=expansion_factor, **parameters)
+
+    def from_pretrained(self, card_id, *, cache_dir=None, device="cpu"):
+        """Load an explicitly supported author SAE without training.
+
+        Registered recipes verify pinned source/backbone tensors, tokenizer and
+        the native activation hook, then reuse a safe native artifact cache.
+        Other published model cards remain available for explicit conversion.
+        """
+        from ..sae.pretrained import load_pretrained
+        return load_pretrained(self.probe, card_id, cache_dir=cache_dir, device=device)
 
     def load(self, path_or_card, *, tokens=None, binding=None, registry_dir=None,
              artifact_dir=None, device="cpu"):

@@ -1,8 +1,35 @@
 # SAE API
 
-[SAE hub](README.md) · [Complete runnable example](examples/README.md)
+[SAE hub](README.md) · [Complete runnable example](examples/README.md) ·
+[Pretrained loading without fitting](loading.md)
 
-## Configure, fit and load
+## Use existing weights
+
+```python
+# Native dictionary saved by this library; no fitting is needed.
+method = probe.sae.load("outputs/dictionary", device="cpu")
+result = method.run(inputs)
+
+# Published GPT-2 layer-0 TopK recipe; downloads and converts the author weights.
+# The already-loaded backbone/tokenizer must match this recipe exactly.
+method = probe.sae.from_pretrained(
+    "sae-6783018355728933dae6d812", cache_dir="outputs/sae_cache", device="cpu",
+)
+result = method.run(inputs)
+```
+
+The [complete inference-only example](loading.md) includes the matching
+backbone, tokenizer, fresh input and visualization. `from_pretrained` accepts
+only implemented conversion recipes. A catalog record alone does not imply
+automatic source-format or backbone compatibility.
+
+| Loading parameter | Default | Meaning |
+| --- | --- | --- |
+| `card_id` | Required | Published model ID with an implemented automatic loading recipe. |
+| `cache_dir` | `None` | Source checkpoint download cache and converted native-artifact cache; defaults to the Hugging Face cache root. |
+| `device` | `"cpu"` | Device for the loaded SAE dictionary; backbone placement remains caller-owned. |
+
+## Configure and fit a new dictionary
 
 ```python
 method = probe.sae.topk(layer=0, tokens="visual", d_sae=1024, k=32)
@@ -16,6 +43,13 @@ method.save("outputs/dictionary", model_card=None, registry_dir=None)
 loaded = probe.sae.load("outputs/dictionary", tokens=None, binding=None,
                         registry_dir=None, artifact_dir=None, device="cpu")
 ```
+
+`.fit(...)` trains the SAE encoder/decoder and any method-specific learned
+parameters on activations from the frozen backbone. It does not fine-tune that
+backbone. Loading a trained dictionary and calling `.run(...)` performs
+inference without optimizer updates. A pretrained backbone and a pretrained SAE
+are separate sets of weights; one does not supply the other. See the
+[inference-only guide](loading.md) for complete loading examples.
 
 `layer` is one zero-based residual layer from `describe()`. `tokens` accepts the
 common token selector (`all`, `visual`, `text`, `last_prompt`, positions or a

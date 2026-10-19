@@ -80,6 +80,29 @@ def test_tokenizer_backend_normalizer_is_not_replaced_by_vocabulary_only_identit
     assert processor_identity(first) == before  # per-call HF padding is recorded by prepared inputs instead.
 
 
+def test_identical_tokenizer_rules_remain_portable_between_cache_paths(tmp_path):
+    first, second = Tokenizer(), Tokenizer()
+    first.init_kwargs = {"vocab_file": "/cache/one/vocab.json", "merges_file": "/cache/one/merges.txt",
+                         "add_prefix_space": False}
+    second.init_kwargs = {"vocab_file": "/other/cache/vocab.json", "merges_file": "/other/cache/merges.txt",
+                          "add_prefix_space": False}
+    assert processor_identity(first) == processor_identity(second)
+    second.init_kwargs["add_prefix_space"] = True
+    assert processor_identity(first) != processor_identity(second)
+
+    # Without a serialized backend, compare source bytes rather than filenames.
+    del first.backend_tokenizer
+    del second.backend_tokenizer
+    a, b = tmp_path / "a.vocab", tmp_path / "b.vocab"
+    a.write_text('{"hello": 1}')
+    b.write_bytes(a.read_bytes())
+    first.init_kwargs = {"vocab_file": str(a)}
+    second.init_kwargs = {"vocab_file": str(b)}
+    assert processor_identity(first) == processor_identity(second)
+    b.write_text('{"hello": 2}')
+    assert processor_identity(first) != processor_identity(second)
+
+
 def test_slow_bpe_merges_and_explicit_image_processor_are_part_of_identity():
     first, second = Tokenizer(), Tokenizer()
     first.bpe_ranks = {("a", "b"): 0, ("b", "c"): 1}

@@ -1,0 +1,106 @@
+{
+  "scope": "Exact displayed inference-only documentation code executed with published GPT-2 and author SAE weights; no dictionary or backbone training.",
+  "model_card_id": "sae-6783018355728933dae6d812",
+  "backbone": {
+    "repo_id": "openai-community/gpt2",
+    "revision": "607a30d783dfa663caf39e06633721c8d4cfcd7e",
+    "dtype": "float32",
+    "attention": "eager"
+  },
+  "source_verification": {
+    "status": "passed",
+    "recipe_id": "gpt2-oai-v5-layer0-topk32",
+    "card_id": "sae-6783018355728933dae6d812",
+    "recipe_sha256": "878fd1b634e7fec31cb9ad1ac5be73cab3327b1c5508fd6f4793646751e753bc",
+    "native_state_sha256": "8dbc49ef837b5275563fc72a931a364168ba814705a77712bb07e41365507cfb",
+    "base_repo_id": "openai-community/gpt2",
+    "base_revision": "607a30d783dfa663caf39e06633721c8d4cfcd7e",
+    "base_weights_sha256": "248dfc3911869ec493c76e65bf2fcf7f615828b0254c12b473182f0f81d3a707",
+    "base_config_sha256": "0daed7749b4f02b8f76240d5444551d7b08712dab4d0adb8239c56ba823bb7b4",
+    "source_revision": "21df74db7b9f690cd2403a20485cf75f46330d0d",
+    "source_weights_sha256": "ebc8b6af7ebe5485809248f43df4bcdae0ddd59f28201412438cd5b43eb9db80",
+    "source_config_sha256": "fd63d16a61ee0b220cb0a54c90ac3d1ded94f75a06688d8f0ea85fdc40bb2c38",
+    "checks": [
+      "pinned_weight_and_config_sha256",
+      "canonical_gpt2_class_config_and_modules",
+      "every_backbone_parameter_equals_pinned_hf_tensor",
+      "matching_tokenizer_identity",
+      "explicit_residual_post_native_hook",
+      "exact_source_dictionary_tensor_conversion"
+    ],
+    "extractor_scope": "Audited no-processing GPT2 residual-post0 mapping; no upstream SAE SDK or TransformerLens execution is claimed."
+  },
+  "input_text": "The pathologist examines the tissue under a microscope.",
+  "feature_shape": [
+    10,
+    32768
+  ],
+  "positions": [
+    [
+      0,
+      0
+    ],
+    [
+      0,
+      1
+    ],
+    [
+      0,
+      2
+    ],
+    [
+      0,
+      3
+    ],
+    [
+      0,
+      4
+    ],
+    [
+      0,
+      5
+    ],
+    [
+      0,
+      6
+    ],
+    [
+      0,
+      7
+    ],
+    [
+      0,
+      8
+    ],
+    [
+      0,
+      9
+    ]
+  ],
+  "mean_active_features": 32.0,
+  "minimum_active_features": 32,
+  "maximum_active_features": 32,
+  "raw_reconstruction_mse": 0.061978086829185486,
+  "training_updates": 0,
+  "semantic_quality_evaluated": false,
+  "torch": "2.6.0+cu124",
+  "transformers": "5.3.0",
+  "code_sha256": "7ba299d2ad4fb43cea0fa863dcf2f26554029b8db30b815c29c2d3a1a37e13e0",
+  "figure_sha256": "413b372cee9fcf233c6fd47dbc07d3742089687334502165d491e39f8147833e",
+  "native_reload": {
+    "code_sha256": "9e60f4fa4c51906decbe6edf2d029fc45d4d0cab57713179be89ab5b37f12867",
+    "feature_shape": [
+      5,
+      32768
+    ],
+    "raw_reconstruction_mse": 0.06953709572553635,
+    "reconstruction_score_change": [
+      0.5605697631835938
+    ],
+    "ablation_score_change": [
+      1.7334213256835938
+    ],
+    "training_updates": 0,
+    "cache_path_independence": "published example uses backbone/dictionary aliases; native example uses default HF cache"
+  }
+}

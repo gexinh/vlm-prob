@@ -5,6 +5,7 @@ import hashlib
 import json
 import math
 from functools import wraps
+from pathlib import Path
 
 import torch
 
@@ -96,7 +97,23 @@ def processor_identity(processor):
     if hasattr(tokenizer, "bpe_ranks"):
         value["bpe_ranks"] = _identity_value(tokenizer.bpe_ranks)
     if hasattr(tokenizer, "init_kwargs"):
-        value["tokenizer_configuration"] = _configuration_identity(tokenizer.init_kwargs)
+        configuration = dict(tokenizer.init_kwargs)
+        source_files = set(getattr(tokenizer, "vocab_files_names", {})) | {
+            "vocab_file", "merges_file", "tokenizer_file", "added_tokens_file",
+            "special_tokens_map_file", "tokenizer_config_file", "chat_template_file",
+        }
+        for name in source_files & configuration.keys():
+            if "tokenizer_backend" in value:
+                # The complete runtime backend already includes vocabulary,
+                # merge ranks, added tokens and normalization rules. Source
+                # filenames describe where these were loaded, not behavior.
+                configuration.pop(name)
+            elif isinstance(configuration[name], (str, Path)) and Path(configuration[name]).is_file():
+                # Slow/custom tokenizers may not expose a complete backend.
+                # Preserve file semantics without binding to a cache location.
+                configuration[name] = {"file_sha256": hashlib.sha256(
+                    Path(configuration[name]).read_bytes()).hexdigest()}
+        value["tokenizer_configuration"] = _configuration_identity(configuration)
     value["tokenizer_options"] = {key: _identity_value(getattr(tokenizer, key)) for key in (
         "model_max_length", "padding_side", "truncation_side", "clean_up_tokenization_spaces",
         "split_special_tokens", "do_lower_case", "add_prefix_space") if hasattr(tokenizer, key)}

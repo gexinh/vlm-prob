@@ -7,6 +7,9 @@ on:
       - 'docs/project-page/**'
       - 'docs/assets/vlmprobe-technical-report.pdf'
       - 'tools/build_project_page.py'
+      - 'tools/build_sae_model_pages.py'
+      - 'src/vlm_probing/sae/resources/**'
+      - 'docs/methods/sae/models/**'
       - '.github/workflows/deploy-project-page.yml'
   workflow_dispatch:
 

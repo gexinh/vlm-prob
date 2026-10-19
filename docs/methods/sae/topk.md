@@ -30,8 +30,10 @@ result = method.run(inputs)
 ```
 
 The factory configures this algorithm; it does not train or download a dictionary.
-Call `.fit(...)` once on frozen-model activations, or use
-`probe.sae.load("my_dictionary")` with an existing compatible artifact.
+Call `.fit(...)` to train the SAE on frozen-model activations. To analyze with
+an existing dictionary, skip fitting and follow [pretrained loading](loading.md):
+`probe.sae.load("my_dictionary").run(inputs)` loads a compatible native artifact;
+supported published checkpoints use `probe.sae.from_pretrained(...)`.
 
 | Parameter | Default | Meaning and constraints |
 | --- | --- | --- |
