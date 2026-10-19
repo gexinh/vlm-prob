@@ -94,3 +94,14 @@ Measured evidence is recorded in `runs/sae_backends_v3/verification_summary.json
 and the local run index. Source/import guards and license/file-hash checks are
 part of the normal suite. Synthetic integration checks are not evidence of
 semantic concept quality.
+
+## Reader-facing documentation update
+
+The review branch README now lists all ten SAE families/training variants with
+implementation coverage, exposes the full CPU image-to-training-to-probing
+workflow and its generated visualization, and documents custom-data extraction,
+training and pretrained resource discovery. Internal repository links now follow
+the current branch rather than opening the older main documentation. The
+standalone `examples/sae_quickstart.py` computes every intermediate result from
+new image inputs and uses no prepared result cache. This changes the tutorial
+and documentation; SAE algorithms and runtime APIs remain those verified above.

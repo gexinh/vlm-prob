@@ -1,6 +1,6 @@
 # Sparse features across language and vision
 
-[Home](../../README.md) / [Native SAE guide](../sae.md)
+[Home](../../README.md) / [All SAE methods](../../README.md#sae-methods) / [Complete quick start](../../examples/sae_quickstart.py) / [Native SAE guide](../sae.md)
 
 VLMProbe combines a versioned checkpoint catalog, pinned SAE cores bundled in
 our package, and shared probing tools. The selected SAELens, ViT-Prisma and

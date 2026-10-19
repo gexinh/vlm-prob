@@ -58,7 +58,28 @@ algorithms and their implemented scope.
 | [Attention Knockout](attention_knockout.md) | `probe.causal.knockout(...)` | Block selected query-to-key attention paths before softmax. |
 | [EAP / EAP-IG](eap_ig.md) | `probe.causal.eap_ig(graph="transformer", ...)` | Attribute independently replaceable GPT-2 edges along an input-embedding path, then evaluate retained circuits with actual forwards. |
 | [Residual Steering](steering.md) | `probe.causal.steer(...)` | Add a supplied direction to selected residuals and measure the output change. |
-| [Visual Steering Vector (VSV)](steering.md#per-image-visual-steering-vsv) | `probe.causal.vsv(positive, negative, ...)` | Build per-image residual directions from image and text-only inputs; configure a joint steering run. |
+| [Visual Steering Vector (VSV)](steering.md#training-free-per-image-vsv-constructor) | `probe.causal.vsv(positive, negative, ...)` | Build per-image residual directions from image and text-only inputs; configure a joint steering run. |
+
+## Sparse Autoencoders (SAE)
+
+The fourth family trains or loads sparse dictionaries, measures their features
+and performs feature interventions through the same model-bound interface.
+The [README method table](../../README.md#sae-methods) lists all ten integrated
+families/training variants and their implementations.
+
+| Operation | Public API | Guide |
+| --- | --- | --- |
+| Train a native ReLU/TopK/Gated SAE | `SparseAutoencoder(SAEConfig(...))`, `train_sae(...)` | [Native training and full parameter tables](../sae.md) |
+| Train/load a bundled implementation | `train_backend(...)`, `load_sae(...)`, or backend-specific factories | [SAELens](../sae/saelens.md) · [ViT-Prisma](../sae/prisma.md) · [Overcomplete](../sae/overcomplete.md) |
+| Inspect features | `probe.sae.features(...)`, `probe.sae.profile(...)` | [Shared result/visualization API](../sae/README.md#shared-probing-and-visualization) |
+| Measure reconstruction/feature effects | `probe.sae.reconstruct(...)`, `probe.sae.edit(...)` | [Complete CPU workflow](../../README.md#sae-quick-start) |
+| Discover pretrained dictionaries | `list_pretrained(...)` | [Catalog and checkpoint compatibility](../sae/README.md#discover-checkpoints-without-loading-weights) |
+
+For this SAE preview, install the `dev/sae-v3` branch following the
+[README instructions](../../README.md#installation); the released PyPI package
+has not yet incorporated these additions. The
+[standalone CPU example](../../examples/sae_quickstart.py) constructs inputs,
+executes real model forwards, trains, reloads and visualizes results.
 
 ## Running the examples
 
