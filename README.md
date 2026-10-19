@@ -42,10 +42,10 @@ a measured zero effect.
 
 ## Installation
 
-Python 3.10+ is required. Install the current library from GitHub:
+Python 3.10+ is required. Install release **1.0.0** from GitHub:
 
 ```bash
-python -m pip install "vlmprobe[sae,transformers,visualization] @ git+https://github.com/gexinh/vlm-prob.git@main"
+python -m pip install "vlmprobe[sae,transformers,visualization] @ git+https://github.com/gexinh/vlm-prob.git@v1.0.0"
 ```
 
 The published package is also available on [PyPI](https://pypi.org/project/vlmprobe/):
