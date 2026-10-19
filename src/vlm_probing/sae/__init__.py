@@ -1,10 +1,13 @@
-"""Sparse dictionary kernels and an optional, lazily loaded external backend."""
-from .models import SAEConfig, SparseAutoencoder, validate_sae_binding
-from .external import SAELensAdapter
+"""Native sparse dictionary methods, one trainer, artifacts and model cards."""
+from .models import BaseSAE, SAEConfig, SparseAutoencoder, validate_sae_binding
 from .binding import build_sae_binding
-from .providers import (list_backends, list_pretrained, catalog_provenance,
-                        load_sae, wrap_sae, train_backend)
+from .registry import list_methods, get_method, method_config
+from .training import SAETrainingConfig, fit_sae, train_sae
+from .artifacts import save_artifact, load_artifact
+from .cards import list_models, get_model_card, load_model, register_model_card
+from .importers import import_checkpoint
 
-__all__ = ["SAEConfig", "SparseAutoencoder", "SAELensAdapter",
-           "build_sae_binding", "validate_sae_binding", "list_backends",
-           "list_pretrained", "catalog_provenance", "load_sae", "wrap_sae", "train_backend"]
+__all__ = ["BaseSAE", "SAEConfig", "SparseAutoencoder", "validate_sae_binding",
+           "build_sae_binding", "list_methods", "get_method", "method_config",
+           "SAETrainingConfig", "fit_sae", "train_sae", "save_artifact", "load_artifact",
+           "list_models", "get_model_card", "load_model", "register_model_card", "import_checkpoint"]

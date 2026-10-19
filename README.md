@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/assets/vlm-probing-icon.svg" width="112" alt="vlmprobe icon">
+  <img src="https://raw.githubusercontent.com/gexinh/vlm-probing/main/docs/assets/vlm-probing-icon.svg" width="112" alt="vlmprobe icon">
 </p>
 
 <h1 align="center">vlmprobe</h1>
@@ -11,8 +11,8 @@
 </p>
 
 vlmprobe brings lens readouts, attention explanations, causal interventions,
-and trained sparse feature dictionaries into one model-bound interface. It supports vision-language
-models, language models, native vision encoders, and a ViT image-classification control. Bind a loaded
+and sparse autoencoders into one model-bound interface. It supports vision-language
+models, language models, and a ViT image-classification control. Bind a loaded
 model once, select layers and token groups, and inspect how its internal
 computation relates to a chosen answer.
 
@@ -22,9 +22,9 @@ computation relates to a chosen answer.
   attributions on the same input.
 - **Causal:** replace activations, isolate paths, block attention routes, or steer
   residual states and measure the resulting change.
-- **SAE:** train and load sparse dictionaries, inspect visual or text features,
-  and intervene on feature activations. Ten SAE families/training variants are
-  available through native and bundled research implementations.
+
+- **SAE:** train or load sparse dictionaries, inspect feature activity, and
+  measure feature interventions with reconstruction controls.
 
 Explicit adapters handle hook locations, expanded visual-token coordinates,
 and model readouts. Results retain tensors and experiment metadata; shared
@@ -33,7 +33,7 @@ connection graphs. Capability checks distinguish an unsupported operation from
 a measured zero effect.
 
 <p align="center">
-  <img src="docs/assets/library-protocol.svg" width="100%" alt="Model inputs, adapter configuration, lens/attention/causal tools, and structured results">
+  <img src="https://raw.githubusercontent.com/gexinh/vlm-probing/main/docs/assets/library-protocol.svg" width="100%" alt="Model inputs, adapter configuration, lens/attention/causal tools, and structured results">
 </p>
 
 [Documentation](docs/README.md) · [Demos](demos/README.md) ·
@@ -41,78 +41,51 @@ a measured zero effect.
 [Technical report](docs/assets/vlmprobe-technical-report.pdf) ·
 [Papers and datasets](docs/REFERENCES.md)
 
-[SAE methods](#sae-methods) · [SAE quick start](#sae-quick-start) ·
-[Train on your data](#train-on-your-own-data) · [Pretrained SAE resources](#pretrained-sae-resources)
-
-## SAE Methods
-
-The following **10 SAE families/training variants** are implemented. The
-selected SAELens, ViT-Prisma and Overcomplete cores are bundled at fixed source
-revisions; no official toolkit package is installed or selected at runtime.
-
-| Method | What it does | Available implementations |
-| --- | --- | --- |
-| ReLU + L1 | Learns nonnegative features using reconstruction and sparsity losses. | Native · SAELens (`standard`) · Prisma · Overcomplete |
-| Gated SAE | Separates feature selection from feature magnitude. | Native · SAELens · Prisma |
-| TopK SAE | Retains the largest `k` nonnegative features per activation vector. | Native · SAELens · Prisma · Overcomplete |
-| JumpReLU SAE | Learns feature thresholds and retains above-threshold activations. | SAELens · Overcomplete |
-| AbsTopK SAE | Selects by absolute magnitude and retains signed feature values. | SAELens |
-| Matching Pursuit SAE | Iteratively selects dictionary atoms to explain the remaining residual. | SAELens |
-| BatchTopK SAE | Shares the sparse activation budget across a training batch. | SAELens · Overcomplete |
-| Matryoshka BatchTopK SAE | Trains nested dictionary widths with reconstruction objectives. | SAELens training; JumpReLU inference export |
-| Relaxed Archetypal TopK SAE | Uses training-data archetypes plus bounded dictionary relaxation. | Overcomplete |
-| Relaxed Archetypal JumpReLU SAE | Combines the archetypal dictionary with learned feature thresholds. | Overcomplete |
-
-Choose the implementation with its own constructor/training options, then use
-one shared `probe.sae` interface for analysis:
-
-| Implementation | Construction and training | Full parameter and usage guide |
-| --- | --- | --- |
-| Native | `SparseAutoencoder(SAEConfig(...))` → `train_sae(...)` | [ReLU / TopK / Gated](docs/sae.md) |
-| SAELens | `saelens.train(config=..., activation_source=..., ...)` | [Eight training architectures, sample budgets and checkpoints](docs/sae/saelens.md) |
-| ViT-Prisma | `prisma.train(config=..., dataset=..., eval_dataset=..., ...)` | [ReLU / TopK / Gated, image inputs and native hooks](docs/sae/prisma.md) |
-| Overcomplete | `overcomplete.create(...)` → `overcomplete.train(...)` | [Six architectures, losses and validation](docs/sae/overcomplete.md) |
-
-Architecture names do not imply identical training recipes. In BatchTopK,
-SAELens `k` is an average count per vector; Overcomplete `top_k` is a total count
-across the training batch. Native TopK omits AuxK, and Overcomplete's default
-JumpReLU objective is MSE + L1. Exact options and objectives are documented in
-the implementation guides above.
-
 ## Installation
 
-Python 3.10+ is required. **The SAE preview is on `dev/sae-v3` and has not been
-released on PyPI.** Install this branch to use the SAE methods above:
+Python 3.10+ is required. **The native SAE v4 integration is a development
+preview.** Install this branch to use the fourth family:
 
 ```bash
-python -m pip install "vlmprobe[sae,transformers,visualization] @ git+https://github.com/gexinh/vlm-prob.git@dev/sae-v3"
+python -m pip install "vlmprobe[sae,transformers,visualization] @ git+https://github.com/gexinh/vlm-prob.git@dev/sae-v4"
 ```
 
-To run the repository examples or develop locally:
-
-```bash
-git clone --branch dev/sae-v3 --single-branch https://github.com/gexinh/vlm-prob.git
-cd vlm-prob
-python -m pip install -e ".[sae,transformers,visualization]"
-```
-
-The `sae` extra installs generic numerical/download dependencies, including
-Einops, NumPy, Safetensors and Hugging Face Hub. The SAE implementation source
-is included in VLMProbe; it does not depend on installed `sae-lens`, `vit-prisma`,
-`overcomplete` or TransformerLens packages.
-
-For the released Lens / Attention / Causal package, install from
-[PyPI](https://pypi.org/project/vlmprobe/):
+For the released Lens, Attention and Causal library, install from [PyPI](https://pypi.org/project/vlmprobe/):
 
 ```bash
 python -m pip install "vlmprobe[transformers,visualization]"
 ```
 
-The base package (`pip install vlmprobe`) requires only PyTorch. Add
-`visualization` for plots, `transformers` for Hugging Face model support, and
-`notebooks` for Jupyter. Model and SAE weights are downloaded separately.
-The import name is **`vlmprobe`**; existing `vlm_probing` imports remain compatible.
-See the [package guide](docs/PACKAGING.md) for wheels and release publication.
+For tensor methods and custom PyTorch adapters, install the base package:
+
+```bash
+python -m pip install vlmprobe
+```
+
+The Python import name is **`vlmprobe`**. Existing `vlm_probing` imports remain
+compatible, including adapter registration and saved Python objects.
+
+```python
+import vlmprobe
+
+probe = vlmprobe.Prober(model, processor)  # use your loaded model
+result = probe.lens.logit(tokens="last_prompt").run(inputs)
+```
+
+The base package requires only PyTorch. The `transformers` extra targets
+Transformers 5.3.x and includes Accelerate, Torchvision, and Pillow;
+`visualization` provides the plotting dependencies. Add `notebooks` when using
+Jupyter. Model weights and complete datasets are downloaded separately.
+
+For the latest development code, install directly from GitHub:
+
+```bash
+python -m pip install "vlmprobe[transformers,visualization] @ git+https://github.com/gexinh/vlm-probing.git"
+```
+
+To develop the library in a checkout, use
+`python -m pip install -e ".[transformers,visualization,notebooks]"`.
+The [package guide](docs/PACKAGING.md) covers wheels and release publication.
 
 ## Quick Start
 
@@ -184,7 +157,6 @@ explicitly, or use complete-answer metrics for interventions.
 | `probe.lens / probe.attention / probe.causal / probe.sae` | Configure a method in one of four families. |
 | `method.run(inputs, ...)` | Execute a probe and return `ProbeResult`. |
 | `method.fit_batches(...)` / `method.load(...)` | Calibrate or restore Tuned/Attention Lens; Jacobian Lens has a separate estimator. |
-| `probe.sae.features / profile / reconstruct / edit` | Inspect a trained SAE and measure feature interventions. |
 | `result.save(directory)` | Save CPU tensors and JSON metadata. |
 
 [The API guide](docs/API.md) covers selectors, complete-answer metrics,
@@ -195,200 +167,10 @@ Every [method guide](docs/methods/README.md) includes parameter defaults and a c
 A [small CPU example](examples/prober_quickstart.py)
 exercises the API without downloading pretrained weights.
 
-## SAE Quick Start
-
-This complete CPU example uses the bundled Prisma vision core and the native
-TopK SAE trainer. It creates independent synthetic image splits, runs a frozen
-random ViT to collect activations, trains and reloads an SAE, and visualizes
-held-out features. It needs no model download or prepared result cache.
-Random-backbone feature IDs are not named semantic concepts.
-
-From a repository checkout, run the [same workflow](examples/sae_quickstart.py):
-
-```bash
-python examples/sae_quickstart.py --output-dir outputs/sae_quickstart
-```
-
-Or run the full code below after installing this branch:
-
-```python
-"""CPU image-to-SAE workflow; random ViT features are not named concepts."""
-import hashlib
-import json
-from pathlib import Path
-import tempfile
-
-import matplotlib
-matplotlib.use("Agg")
-import matplotlib.pyplot as plt
-from PIL import Image
-import torch
-from vlmprobe import Prober, visualization as viz
-from vlmprobe.sae import SAEConfig, SparseAutoencoder, build_sae_binding
-from vlmprobe.sae.training import train_sae
-from vlmprobe.sae.backends import prisma
-from vlmprobe.sae.backends.prisma import HookedViT, HookedViTConfig
-
-base = Path("outputs/sae_quickstart")
-base.mkdir(parents=True, exist_ok=True)
-output = Path(tempfile.mkdtemp(prefix="run-", dir=base))  # Every run is fresh.
-torch.manual_seed(42)
-torch.set_num_threads(1)
-model = HookedViT(HookedViTConfig(
-    n_layers=2, d_model=16, d_head=4, d_mlp=32, n_heads=4, n_channels=3,
-    patch_size=8, image_size=32, device="cpu", model_name="tiny-image-demo",
-    return_type="pre_logits",
-)).eval().requires_grad_(False)
-# Independent image splits; these exact RGB tensors are the model inputs.
-def images(seed, count):
-    generator = torch.Generator().manual_seed(seed)
-    pixels = torch.randint(0, 64, (count, 3, 32, 32), generator=generator)
-    pixels[:, :, 8:24, 8:24] += torch.randint(64, 192, (count, 3, 1, 1), generator=generator)
-    return pixels.float() / 255
-train_images, validation_images, test_images = images(11, 32), images(22, 8), images(33, 2)
-digest = hashlib.sha256()
-for name, value in sorted(model.state_dict().items()):
-    digest.update(name.encode() + value.detach().numpy().tobytes())
-model_id = "tiny-image-demo@" + digest.hexdigest()
-probe = Prober(model, adapter=prisma.make_model_adapter(model, model_id=model_id, layers=[1]))
-binding = build_sae_binding(probe, 1, model_id=model_id, tokenizer_id="none:vision-only",
-    preprocessing_id="RGB32-unit-interval-patch8", calibration_id="independent-image-seeds11-22")
-@torch.no_grad()
-def capture(batch):
-    site = binding["site"]
-    hidden = probe.adapter.run({"input": batch}, capture=[site]).activations[site]
-    return hidden[:, 1:].flatten(0, 1).detach()  # Exclude CLS; keep spatial patches.
-train_vectors, validation_vectors = capture(train_images), capture(validation_images)
-# Fourfold dictionary expansion; TopK keeps at most four active features per patch.
-sae = SparseAutoencoder(SAEConfig(architecture="topk", d_in=16, d_sae=64, k=4, seed=42), binding=binding)
-history = train_sae(sae, list(train_vectors.split(64)), list(validation_vectors.split(64)),
-    output / "sae", epochs=8, lr=1e-3, patience=4, seed=42,
-    provenance={"train_image_ids": list(range(32)), "validation_image_ids": list(range(32, 40))})
-sae = SparseAutoencoder.load(history["checkpoint"], expected_binding=binding)
-common = dict(layer=1, sae=sae, binding=binding, tokens="visual")
-inputs = {"input": test_images}
-features = probe.sae.features(**common).run(inputs)
-profile = probe.sae.profile(**common, top_k=3).run(inputs)
-reconstruction = probe.sae.reconstruct(**common).run(inputs)
-feature_id = int(sae.encode(validation_vectors).detach().abs().mean(0).argmax())
-edited = probe.sae.edit(**common, feature_ids=[feature_id], scale=0).run(inputs)
-for name, result in {"features": features, "profile": profile,
-                     "reconstruction": reconstruction, "ablation": edited}.items():
-    result.save(output / name)
-image = Image.fromarray((test_images[0].permute(1, 2, 0) * 255).round().byte().numpy())
-figure, axes = plt.subplots(1, 2, figsize=(10, 4))
-viz.plot_sae_feature_overlay(image, features, feature_id=feature_id, grid_shape=(4, 4),
-    image_alpha=.2, alpha=1., ax=axes[0])
-viz.plot_sae_activity(features, top_k=12, ax=axes[1])
-figure.suptitle("Random ViT workflow demonstration: feature IDs are not named concepts")
-figure.savefig(output / "sae_visualization.png", dpi=160, bbox_inches="tight")
-plt.close(figure)
-summary = {"features_shape": list(features.tensors["features"].shape),
-    "positions_shape": list(features.tensors["positions"].shape), "selected_feature": feature_id,
-    "best_validation_loss": history["best_validation_loss"], "output": str(output)}
-(output / "summary.json").write_text(json.dumps(summary, indent=2) + "\n")
-print(json.dumps(summary, indent=2))
-```
-
-Expected outputs are `features_shape=[32, 64]` and `positions_shape=[32, 2]`:
-two held-out images × 16 spatial patches, with 64 dictionary features per patch.
-The fresh output directory contains the selected SAE checkpoint, training
-history, feature statistics, reconstruction/ablation results and this figure:
-
-![SAE CPU workflow: held-out feature overlay and feature firing frequencies](docs/assets/sae/quickstart.png)
-
-The overlay uses `image_alpha=0.2` and full feature-map opacity. This tiny model
-returns representation vectors, so interventions expose `baseline_output` and
-`edited_output`; language/classification models retain their logits.
-
-| Main example option | Meaning |
-| --- | --- |
-| `layer=1` | Capture the second ViT block, using zero-based indices. |
-| `d_in=16`, `d_sae=64` | Model activation width and number of dictionary features. |
-| `k=4` | Keep at most four active TopK features per spatial patch. |
-| `epochs=8`, `lr=1e-3` | Maximum training epochs and Adam learning rate. |
-| `patience=4` | Stop after four non-improving validation epochs. |
-| `tokens="visual"` | Analyze spatial patch tokens, excluding CLS. |
-| `scale=0` | Ablate the chosen feature while preserving reconstruction error. |
-
-The same analysis calls accept a fitted dictionary from any supported backend:
-
-| Call | Result |
-| --- | --- |
-| `probe.sae.features(...)` | Sparse activations, reconstructions, reconstruction error and token coordinates. |
-| `probe.sae.profile(...)` | Firing frequencies, signed activation statistics and top activating positions. |
-| `probe.sae.reconstruct(...)` | A reconstruction-only replacement control and the resulting model output. |
-| `probe.sae.edit(..., feature_ids=[...], scale=0)` | A measured feature intervention, with output changes and optional task scores. |
-| `viz.plot_sae_feature_overlay(...)` / `viz.plot_sae_activity(...)` | Spatial feature overlays and feature firing-frequency plots. |
-
-For pretrained backbones and your own images/text, follow the
-[model guides](docs/models/README.md) and retain the matching model, layer,
-normalization and preprocessing in `build_sae_binding(...)`.
-
-## Train on Your Own Data
-
-Create a JSONL manifest before extracting activations. Each source group must
-belong to only one split; use document, source image, slide or patient groups
-as appropriate. For example, `my_data/manifest.jsonl`:
-
-```jsonl
-{"id":"train-001","split":"train","group":"document-1","text":"Describe the cellular morphology."}
-{"id":"val-001","split":"validation","group":"document-2","text":"Describe the tissue architecture."}
-{"id":"test-001","split":"test","group":"document-3","text":"Describe the observed nuclei."}
-```
-
-The following text-model workflow downloads GPT-2, captures real frozen-model
-activations and trains a native TopK SAE:
-
-```bash
-python examples/cache_sae_activations.py \
-  --manifest my_data/manifest.jsonl --model gpt2 --layer 7 --tokens text \
-  --output outputs/my_sae/activations.pt --device cpu
-python examples/train_sae.py \
-  --activations outputs/my_sae/activations.pt --architecture topk \
-  --d-sae 1024 --k 32 --epochs 10 --batch-size 256 --lr 1e-3 \
-  --output-dir outputs/my_sae/training --device cpu
-```
-
-For a supported VLM, add an `image` path to each manifest row and use the
-extractor's `--vlm --tokens visual` options with that model's checkpoint and
-an available layer. The [own-data guide](docs/sae.md#use-your-own-dataset-with-the-command-line-workflows)
-explains manifests, activation bundles, hyperparameters, validation selection,
-resuming and held-out evaluation. The CLI above trains native ReLU/TopK/Gated;
-use the [SAELens](docs/sae/saelens.md), [Prisma](docs/sae/prisma.md) or
-[Overcomplete](docs/sae/overcomplete.md) training protocols for their other
-architectures. Each guide includes full parameter definitions and runnable code.
-
-## Pretrained SAE Resources
-
-Search the bundled catalog without downloading model weights:
-
-```python
-from vlmprobe.sae import list_backends, list_pretrained
-
-print(list_backends())
-llama_saes = list_pretrained("saelens", model="llama", limit=5)
-clip_saes = list_pretrained("prisma", model="CLIP", query="hook_resid_post", limit=5)
-print(llama_saes[0])
-print(clip_saes[0])
-```
-
-| Source | Available discovery resources | Loading guide |
-| --- | --- | --- |
-| SAELens | 13,857 registry entries, including GPT-2, Gemma, Llama and Goodfire releases. | [Pinned checkpoint loader and required binding](docs/sae/saelens.md#load-or-wrap-a-dictionary) |
-| ViT-Prisma | 71 CLIP/DINO SAEs in the 82-resource table; the other 11 entries are transcoders. | [CLIP starter and native HookedViT conventions](docs/sae/prisma.md#pretrained-discovery-and-loading) |
-| Overcomplete | Train or load your dictionary; no central pretrained SAE registry. | [Loading and model-bound probing](docs/sae/overcomplete.md#existing-dictionaries-and-model-bound-probing) |
-
-Catalog entries are candidates, not checkpoints verified on every model. Match
-the exact backbone, native hook, normalization and preprocessing before loading.
-Transcoders and temporal SAEs have different contracts and are not accepted by
-the same-space SAE adapters. See the [SAE platform guide](docs/sae/README.md) for
-catalog provenance, supported formats and the full API.
-
 ## Model Support
 
-Eight VLM families have explicit adapters. Text-only GPT-2/Llama, native
-HookedViT encoders for SAE analysis, and a ViT classifier provide complementary controls. Availability is method-specific;
+Eight VLM families have explicit adapters. Text-only GPT-2/Llama and a ViT
+classifier provide complementary controls. Availability is method-specific;
 see the [capability matrix](docs/models/README.md).
 
 | Family | Example checkpoint | Guide |
@@ -403,7 +185,6 @@ see the [capability matrix](docs/models/README.md).
 | Pixtral | Pixtral-12B-2409 | [Usage](docs/models/pixtral.md) |
 | Language models | GPT-2 / Llama | [GPT-2](docs/models/gpt2.md) · [Llama](docs/models/llama.md) |
 | Vision classifier | ViT-B/16 | [Usage](docs/models/vit.md) |
-| Vision encoder (SAE) | Native HookedViT residual/MLP activations; explicit preprocessing | [Image-to-feature example](docs/sae/prisma.md) |
 
 ## Methods
 
@@ -416,8 +197,33 @@ from paper methods.
 | Lens | [Logit](docs/methods/logit_lens.md) · [Tuned](docs/methods/tuned_lens.md) · [Attention Lens](docs/methods/attention_lens.md) · [Jacobian](docs/methods/jacobian_lens.md) · [EmbedLens](docs/methods/embed_lens.md) · [Patchscopes](docs/methods/patchscope.md) |
 | Attention | [Rollout](docs/methods/attention_rollout.md) · [Grad-CAM, ATTATTR, TAM, Beyond Intuition](docs/methods/attention_maps.md) · [Generic relevance](docs/methods/attention_relevance.md) · [ViT DTD/LRP](docs/methods/chefer_lrp.md) |
 | Causal | [Activation patching](docs/methods/activation_patching.md) · [IOI-style path patching](docs/methods/path_patching.md) · [Attribution patching](docs/methods/attribution_patching.md) · [Attention Knockout](docs/methods/attention_knockout.md) · [EAP / EAP-IG](docs/methods/eap_ig.md) · [Residual steering / VSV](docs/methods/steering.md) |
-| SAE | [All ten families](#sae-methods) · [Native training](docs/sae.md) · [SAELens](docs/sae/saelens.md) · [ViT-Prisma](docs/sae/prisma.md) · [Overcomplete](docs/sae/overcomplete.md) |
+| SAE | [Methods](docs/sae/methods/README.md) · [Model cards](docs/sae/models/README.md) · [Training](docs/sae/training/README.md) · [Examples](docs/sae/examples/README.md) |
 | Supporting tools | [Attention profile](docs/methods/attention_profile.md) · [Head logit attribution](docs/methods/head_logit_attribution.md) · [Probability reweighting](docs/methods/attention_reweight.md) · [Temperature](docs/methods/attention_temperature.md) |
+
+## SAE preview
+
+SAE is the fourth method family. Algorithm names select native implementations;
+one trainer handles activation normalization, held-out validation, budgets,
+resume and artifacts. No official SAE toolkit is required at runtime.
+
+```python
+from vlmprobe.sae import SAETrainingConfig, list_methods, list_models
+
+print([entry["name"] for entry in list_methods()])
+method = probe.sae.topk(layer=0, tokens="visual", d_sae=1024, k=32)
+# Prepared training and held-out input batches; the backbone stays frozen.
+method.fit(train_inputs, validation_inputs, output_dir="outputs/sae",
+           training=SAETrainingConfig(epochs=10, batch_size=256))
+result = method.run(inputs)
+```
+
+Use the [complete image-to-feature example](docs/sae/examples/README.md) or run
+`python examples/sae_quickstart.py --output-dir outputs/sae_quickstart`.
+The [SAE hub](docs/sae/README.md) contains methods, parameter tables,
+checkpoint conversion, training and model-card workflows. Published pretrained
+cards require completed end-to-end validation. Feature IDs require empirical
+interpretation. The full algorithm inventory and deferred variants are in the
+[method audit](docs/sae/methods/README.md).
 
 ## Package Architecture
 
@@ -430,8 +236,7 @@ src/vlm_probing/
   lenses/        # BaseLens and concrete readout methods
   attention/     # BaseAttention and concrete attention methods
   causal/        # BaseCausal and concrete interventions/estimators
-  sae/           # dictionaries, stable backend interfaces, catalog and training
-  _vendor/       # pinned research cores with original licenses and provenance
+  sae/           # native dictionaries, one trainer, artifacts and model cards
   training/      # calibration, checkpoint import and resume
   visualization/ # shared heatmaps, overlays, curves and graphs
   core/          # results and execution traces
@@ -454,16 +259,8 @@ five pretrained VLMs, with language and vision controls.
 
 ## Credits
 
-The SAE integrations build on these libraries:
-
-- [SAELens](https://github.com/decoderesearch/SAELens): native SAE architectures,
-  training infrastructure and pretrained dictionary registry.
-- [ViT-Prisma](https://github.com/Prisma-Multimodal/ViT-Prisma): vision transformer
-  hooks, visual SAE training and CLIP/DINO dictionary resources.
-- [Overcomplete](https://github.com/KempnerInstitute/overcomplete): vision
-  dictionary-learning architectures, losses and training tools.
-
-Selected core source files are bundled at audited revisions, with original
-licenses, provenance and documented local changes. The official packages are
-not runtime dependencies. Checkpoint sources and licenses are recorded separately
-in the catalog and [provider guides](docs/sae/README.md).
+SAE integration draws on [SAELens](https://github.com/decoderesearch/SAELens),
+[ViT-Prisma](https://github.com/Prisma-Multimodal/ViT-Prisma) and
+[Overcomplete](https://github.com/KempnerInstitute/overcomplete).
+Our native algorithms and checkpoint converters retain source attribution and
+MIT license notices; see [SAE provenance](docs/sae/SOURCES.md).

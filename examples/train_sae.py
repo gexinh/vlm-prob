@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Train native ReLU, TopK or Gated SAEs from your own frozen activations.
+"""Train any native SAE method from your own frozen activations.
 
 Portable input is a weights-only-safe .pt bundle with binding, train/validation/
 test[N,D], and groups={split: [source group per activation row]}. Alternatively,
@@ -8,6 +8,7 @@ convert the separate pathology pilot's native visual-feature cache once.
 from __future__ import annotations
 
 import argparse
+from dataclasses import asdict
 import hashlib
 import io
 import json
@@ -141,6 +142,8 @@ def pathology_bundle(cache_dir: Path, layer: int, model_source: Path):
 
 
 def main(argv=None):
+    from vlmprobe.sae.registry import list_methods, method_config
+
     parser = argparse.ArgumentParser(description=__doc__)
     source = parser.add_mutually_exclusive_group(required=True)
     source.add_argument("--activations", type=Path)
@@ -150,14 +153,25 @@ def main(argv=None):
     parser.add_argument("--export-bundle", type=Path)
     parser.add_argument("--prepare-only", action="store_true")
     parser.add_argument("--output-dir", type=Path)
-    parser.add_argument("--architecture", choices=["relu", "topk", "gated"], default="topk")
+    parser.add_argument("--architecture", "--method", dest="architecture",
+                        choices=[row["name"] for row in list_methods()], default="topk")
+    parser.add_argument("--method-config", type=Path,
+                        help="JSON object of SAEConfig hyperparameters; overrides --k/--l1-coefficient")
     parser.add_argument("--d-sae", type=int, default=4096)
     parser.add_argument("--k", type=int, default=32)
     parser.add_argument("--l1-coefficient", type=float, default=.01)
     parser.add_argument("--epochs", type=int, default=10)
+    budget = parser.add_mutually_exclusive_group()
+    budget.add_argument("--max-steps", type=int, help="Maximum optimizer updates, overriding epochs")
+    budget.add_argument("--max-vectors", type=int, help="Maximum update activation vectors, overriding epochs")
     parser.add_argument("--batch-size", type=int, default=512)
     parser.add_argument("--lr", type=float, default=1e-3)
     parser.add_argument("--patience", type=int, default=3)
+    parser.add_argument("--min-delta", type=float, default=1e-4)
+    parser.add_argument("--normalization", choices=["rms", "none"], default="rms",
+                        help="Global train-only scalar calibration; method input normalization remains independent")
+    parser.add_argument("--grad-clip", type=float, default=5.)
+    parser.add_argument("--progress-every", type=int, default=20)
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--threads", type=int, default=4)
     parser.add_argument("--device", default="cuda:0" if torch.cuda.is_available() else "cpu")
@@ -185,32 +199,44 @@ def main(argv=None):
         return
     if args.output_dir is None:
         parser.error("--output-dir is required for training")
-    from vlmprobe.sae import SAEConfig, SparseAutoencoder
-    from vlmprobe.sae.training import evaluate_sae, train_sae
+    from vlmprobe.sae import SparseAutoencoder
+    from vlmprobe.sae.training import SAETrainingConfig, evaluate_sae, fit_sae
+
+    overrides = {}
+    if args.method_config:
+        overrides = json.loads(args.method_config.read_text())
+        if not isinstance(overrides, dict):
+            parser.error("--method-config must contain a JSON object")
+        reserved = {"architecture", "d_in", "d_sae", "seed"} & overrides.keys()
+        if reserved:
+            parser.error(f"--method-config cannot replace identity/width/seed fields: {sorted(reserved)}")
+    config = method_config(args.architecture, d_in=splits["train"].shape[-1],
+        d_sae=args.d_sae, **{"k": args.k, "l1_coefficient": args.l1_coefficient,
+                           "seed": args.seed, **overrides})
+    training = SAETrainingConfig(epochs=args.epochs, max_steps=args.max_steps,
+        max_vectors=args.max_vectors, batch_size=args.batch_size, lr=args.lr,
+        patience=args.patience, min_delta=args.min_delta, normalization=args.normalization,
+        seed=args.seed, device=args.device, resume=not args.no_resume,
+        grad_clip=args.grad_clip, progress_every=args.progress_every)
 
     args.output_dir.mkdir(parents=True, exist_ok=True)
     status = args.output_dir / "run_status.json"
     atomic_json(status, {"state": "training", "architecture": args.architecture, "splits": summary})
     started = time.monotonic()
     try:
-        generator = torch.Generator().manual_seed(args.seed)
-        loaders = {name: DataLoader(values, batch_size=args.batch_size, shuffle=name == "train",
-            generator=generator if name == "train" else None, num_workers=0) for name, values in splits.items()}
-        config = SAEConfig(architecture=args.architecture, d_in=splits["train"].shape[-1],
-            d_sae=args.d_sae, k=args.k, l1_coefficient=args.l1_coefficient, seed=args.seed)
         model = SparseAutoencoder(config, binding=bundle["binding"], device=args.device)
         bundle_path = args.export_bundle or args.activations
         provenance = {"bundle_sha256": digest_file(bundle_path) if bundle_path else None,
                       "source": bundle.get("provenance", {}), "splits": summary,
                       "batch_size": args.batch_size, "source_groups_disjoint": True}
-        history = train_sae(model, loaders["train"], loaders["validation"], args.output_dir,
-            epochs=args.epochs, lr=args.lr, patience=args.patience, seed=args.seed,
-            resume=not args.no_resume, provenance=provenance)
-        # No test positions are consulted until validation-selected weights reload.
+        history = fit_sae(model, splits["train"], splits["validation"], args.output_dir,
+                          training=training, provenance=provenance)
+        # No test positions enter fitting or validation-based selection.
         reference_mean = torch.tensor(history["normalization"]["mean"])
-        validation = evaluate_sae(model, loaders["validation"], reference_mean=reference_mean)
-        test = evaluate_sae(model, loaders["test"], reference_mean=reference_mean)
-        metrics = {"state": "complete", "architecture": args.architecture, "configuration": config.__dict__,
+        validation = evaluate_sae(model, DataLoader(splits["validation"], batch_size=args.batch_size), reference_mean=reference_mean)
+        test = evaluate_sae(model, DataLoader(splits["test"], batch_size=args.batch_size), reference_mean=reference_mean)
+        metrics = {"state": "complete", "architecture": args.architecture, "configuration": asdict(config),
+            "training_configuration": asdict(training), "budget": history["budget"],
             "binding": model.binding, "provenance": provenance, "normalization": history["normalization"],
             "best_epoch": history["best_epoch"], "validation": validation, "test": test,
             "checkpoint": str(args.output_dir / "best.pt"), "elapsed_seconds": time.monotonic() - started,

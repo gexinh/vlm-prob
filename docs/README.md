@@ -13,8 +13,8 @@ demo workflows.
 - [Installation and package releases](PACKAGING.md): pip installation, compatible imports, wheels, and PyPI publishing.
 - [Visualization](VISUALIZATION.md): reusable lens heatmaps, image overlays, causal grids, curves, and graphs.
 - [Lens calibration](TRAINING.md): training and validation splits, author checkpoints, persistent optimization, and resumable Jacobian estimation.
-- [SAE platform](sae/README.md): language/vision checkpoint catalogs, SAELens, ViT-Prisma and Overcomplete training, shared probing and visualization.
-- [Native SAE guide](sae.md): built-in sparse dictionaries and full custom-data training examples.
+- [SAE platform](sae/README.md): native methods, one training engine, model cards, checkpoint imports and visualization.
+- [SAE tutorial](sae/examples/README.md): a complete live image-to-feature workflow, including training and plots.
 - [Package architecture](ARCHITECTURE.md): family base classes, adapters, execution, and results.
 - [Custom adapters](ADAPTERS.md): connect another architecture through an explicit contract.
 - [Papers and datasets](REFERENCES.md): original algorithms, author code, and data sources.

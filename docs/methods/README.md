@@ -62,52 +62,15 @@ algorithms and their implemented scope.
 
 ## Sparse Autoencoders (SAE)
 
-The fourth family trains or loads sparse dictionaries, measures their features
-and performs feature interventions through the same model-bound interface.
-The [README method table](../../README.md#sae-methods) lists all ten integrated
-families/training variants and their implementations.
+The fourth family provides native sparse dictionaries and one fit/load/run
+interface for language, vision and multimodal activations.
 
-| Operation | Public API | Guide |
+| Task | API | Guide |
 | --- | --- | --- |
-| Train a native ReLU/TopK/Gated SAE | `SparseAutoencoder(SAEConfig(...))`, `train_sae(...)` | [Native training and full parameter tables](../sae.md) |
-| Train/load a bundled implementation | `train_backend(...)`, `load_sae(...)`, or backend-specific factories | [SAELens](../sae/saelens.md) · [ViT-Prisma](../sae/prisma.md) · [Overcomplete](../sae/overcomplete.md) |
-| Inspect features | `probe.sae.features(...)`, `probe.sae.profile(...)` | [Shared result/visualization API](../sae/README.md#shared-probing-and-visualization) |
-| Measure reconstruction/feature effects | `probe.sae.reconstruct(...)`, `probe.sae.edit(...)` | [Complete CPU workflow](../../README.md#sae-quick-start) |
-| Discover pretrained dictionaries | `list_pretrained(...)` | [Catalog and checkpoint compatibility](../sae/README.md#discover-checkpoints-without-loading-weights) |
+| Configure an algorithm | `probe.sae.relu/topk/gated/jumprelu/...` | [Method inventory and references](../sae/methods/README.md) |
+| Train on native model inputs | `method.fit(train_inputs, validation_inputs, ...)` | [Training](../sae/training/README.md) |
+| Read features and top activating positions | `method.run(...)`, `method.profile(...)` | [API](../sae/API.md) |
+| Measure reconstruction and feature interventions | `method.reconstruct()`, `method.edit(...)` | [Complete example](../sae/examples/README.md) |
+| Browse and load model cards | `list_models(...)`, `probe.sae.load(...)` | [Models](../sae/models/README.md) |
 
-For this SAE preview, install the `dev/sae-v3` branch following the
-[README instructions](../../README.md#installation); the released PyPI package
-has not yet incorporated these additions. The
-[standalone CPU example](../../examples/sae_quickstart.py) constructs inputs,
-executes real model forwards, trains, reloads and visualizes results.
-
-## Running the examples
-
-Install `python -m pip install "vlmprobe[transformers,visualization]"` for the
-pretrained examples. For notebooks, clone the repository and install
-`python -m pip install -e ".[transformers,visualization,notebooks]"`.
-Model downloads and compute requirements are stated on each page. Example
-calibrations teach the workflow; they are not validated research checkpoints.
-
-The [notebooks](../../demos/README.md) walk through raw input preparation and
-compute results before plotting them. The [model guides](../models/README.md#use-any-supported-method)
-explain how to switch the loading and input block while retaining the common
-method API. The optional [TinyModel example](../../examples/prober_quickstart.py)
-is an architecture/API smoke test with synthetic IDs, not a pretrained semantic
-demonstration or a prerequisite for these method pages.
-
-## Shared conventions
-
-`layers=None` selects available method sites; indices are zero-based. Tokens may
-be `"all"`, `"visual"`, `"text"`, `"last_prompt"`, a position/list, or a boolean
-`[B,T]` mask. Positions refer to the expanded language sequence. `"last_prompt"`
-means the last valid token unless an explicit prompt mask is supplied.
-
-In output shapes, `L` is the number of selected layers, `B` batch size, `T/Q`
-sequence/query length, `H` heads, `V` vocabulary size, and `N` packed selected
-positions. Lens `positions[N,2]` maps packed rows to batch/token coordinates.
-Layer metadata preserves the chosen order. Results default to detached CPU tensors;
-`result.save(directory)` writes tensors and JSON metadata.
-
-See [the full API](../API.md), [custom adapters](../ADAPTERS.md), and the
-[paper index](../REFERENCES.md) for shared contracts and sources.
+Install the development branch using the [README instructions](../../README.md#installation).

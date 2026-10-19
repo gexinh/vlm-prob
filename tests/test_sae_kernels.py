@@ -1,14 +1,12 @@
 """Scientific contracts for native sparse encoders and portable artifacts."""
 from copy import deepcopy
 from pathlib import Path
-from types import SimpleNamespace
 import tempfile
 import unittest
 
 import torch
-from torch import nn
 
-from vlmprobe.sae import SAEConfig, SAELensAdapter, SparseAutoencoder
+from vlmprobe.sae import SAEConfig, SparseAutoencoder
 
 
 def binding():
@@ -107,39 +105,6 @@ class SAEKernelTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "positive scalar"):
                 model.set_normalization_(scale)
 
-    def test_external_backend_uses_exact_encode_decode_and_rejects_scaling(self):
-        class FakeSAE(nn.Module):
-            def __init__(self):
-                super().__init__()
-                self.weight = nn.Parameter(torch.eye(5))
-                self.cfg = SimpleNamespace(d_in=5, d_sae=5, architecture=lambda: "standard",
-                    normalize_activations="none", apply_b_dec_to_input=False,
-                    reshape_activations="none", metadata=SimpleNamespace(hook_layer=0))
-
-            def encode(self, raw):
-                return raw @ self.weight
-
-            def decode(self, features):
-                return features @ self.weight.T
-
-        source = FakeSAE()
-        wrapped = SAELensAdapter(source, binding(), expected_binding=binding())
-        query = torch.randn(3, 5)
-        self.assertTrue(torch.equal(wrapped(query)[0], query))
-        self.assertFalse(wrapped.source_metadata["apply_b_dec_to_input"])
-        source.cfg.normalize_activations = "constant_norm_rescale"
-        with self.assertRaisesRegex(ValueError, "normalize_activations='none'"):
-            SAELensAdapter(source, binding())
-        source.cfg.normalize_activations = "none"
-        source.cfg.metadata.model_name = "another-base-model"
-        with self.assertRaisesRegex(ValueError, "declared model differs"):
-            SAELensAdapter(source, binding())
-        source.cfg.metadata.model_name = "toy"
-        source.cfg.metadata.hook_name = "blocks.0.hook_resid_post"
-        with self.assertRaisesRegex(ValueError, "backend_hook_name"):
-            SAELensAdapter(source, binding())
-        explicit = {**binding(), "backend_hook_name": "blocks.0.hook_resid_post"}
-        self.assertEqual(SAELensAdapter(source, explicit).config.d_in, 5)
 
 
 if __name__ == "__main__":

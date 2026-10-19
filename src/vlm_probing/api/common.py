@@ -1,4 +1,4 @@
-"""Shared execution helpers; algorithms remain in the three method families."""
+"""Shared execution helpers for the model-bound method families."""
 from collections.abc import Mapping
 from functools import wraps
 

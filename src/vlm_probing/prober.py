@@ -132,7 +132,9 @@ class Prober:
         if native_gpt2:
             edge_method.update(available=True, missing=None,
                                requires="graph='transformer' for the native GPT-2 residual-message graph")
+        from .sae.registry import list_methods
         return {"model_id": self.adapter.model_id, "adapter": type(self.adapter).__name__,
                 "output_kind": s.output_kind,
+                "sae_methods": list_methods(),
                 "methods": methods, "notes": list(s.notes),
                 "layout": "adapter-provided" if s.layout else "explicit ProbeInputs required"}
