@@ -94,12 +94,12 @@ weights, and fitted probe artifacts remain external. The
 
 ## Sparse autoencoders
 
-The [SAE method inventory](sae/methods/README.md) maps each native algorithm and
-explicit recipe to its primary paper/source. The fourth family includes ReLU
+The [SAE method inventory](methods/sae/ALGORITHMS.md) maps each native algorithm and
+explicit recipe to its primary paper/source. Sparse dictionary methods include ReLU
 and Gated dictionaries, positive/signed TopK, learned JumpReLU thresholds,
 batch/nested sparsity budgets, archetypal dictionary constraints, pursuit and
-experimental quantized codes. [Source provenance](sae/SOURCES.md) records pinned
+experimental quantized codes. [Source provenance](methods/sae/SOURCES.md) records pinned
 SAELens, ViT-Prisma and Overcomplete revisions, preserved licenses, and scope.
-[Model-card workflows](sae/models/README.md) preserve training provenance and
+[Model-card workflows](methods/sae/models/README.md) preserve training provenance and
 require end-to-end validation for published pretrained cards. The CPU tutorial uses procedural images and a
 random tiny ViT, not a claimed benchmark dataset.

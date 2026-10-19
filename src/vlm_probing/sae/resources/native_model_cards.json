@@ -1,4 +1,21 @@
 {
   "schema": "vlmprobe-native-model-catalog-v1",
-  "models": []
+  "catalog_resource": "published_model_cards.json.gz",
+  "counts": {
+    "published_listing_rows": 10089,
+    "registry_aliases_merged": 429,
+    "sae_dictionaries": 9660,
+    "backbones": 5,
+    "checkpoint_repositories": 151,
+    "methods": {
+      "relu": 75,
+      "topk": 556,
+      "unknown": 1129,
+      "jumprelu": 7900
+    },
+    "excluded_non_sae_contracts": {
+      "transcoder": 3847,
+      "temporal_sae": 3
+    }
+  }
 }

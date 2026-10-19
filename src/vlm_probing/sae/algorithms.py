@@ -4,7 +4,7 @@ JumpReLU/Step surrogate conventions follow the MIT-licensed SAELens reference
 (Joseph Bloom and contributors), including the option to pass STE gradients to
 the input. Signed TopK follows the MIT-licensed AbsTopK reference (GoXzascc).
 Matching pursuit follows its classical greedy residual algorithm. See
-docs/sae/methods/README.md and retained source licenses for precise provenance.
+docs/methods/sae/ALGORITHMS.md and retained source licenses for precise provenance.
 No upstream package or vendored SAE class is imported here.
 """
 from __future__ import annotations

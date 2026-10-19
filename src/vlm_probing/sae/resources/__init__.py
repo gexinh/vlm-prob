@@ -1,1 +1,1 @@
-"""Reviewed pretrained SAE registry; unverified model records are excluded."""
+"""Published author checkpoint metadata and model information."""

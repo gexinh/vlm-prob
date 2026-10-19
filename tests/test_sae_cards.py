@@ -1,4 +1,4 @@
-"""Our model catalog is small, evidence-bounded and independent of providers."""
+"""Published model metadata and local native artifact contracts."""
 import json
 from pathlib import Path
 import sys
@@ -34,34 +34,55 @@ def _model_bound_dictionary(*, fingerprinted=False, imported=False):
     return probe, sae, binding, inputs
 
 
-def test_release_registry_contains_no_unverified_pretrained_models():
-    assert list_models() == []
-    assert list_models(modality="vision") == []
-    assert list_models(method="topk") == []
-    for old_id in ("gpt2-layer8-relu-768-imported", "clip-b32-layer11-relu-49152-imported"):
-        with pytest.raises(KeyError):
-            get_model_card(old_id)
+def test_published_model_information_is_unified_and_deduplicated():
+    cards = list_models()
+    assert len(cards) == 9660
+    assert len({card["id"] for card in cards}) == len(cards)
+    assert len({(c["download"]["repo_id"], c["download"]["path"]) for c in cards}) == len(cards)
+    assert {card["status"] for card in cards} == {"published"}
+    assert {card["artifact_kind"] for card in cards} == {"sae"}
+    assert sum(len(card["registry_aliases"]) for card in cards) == 10089
+    assert all("transcoder" not in str(c["origin"].get("conversion_recipe", "")) for c in cards)
+    assert len(list_models(artifact_kind="backbone")) == 5
+    assert len(list_models(artifact_kind=None)) == 9665
+    assert len(list_models(method="topk", modality="vision")) == 12
+    assert all(card["method"] == "unknown" for card in list_models(method="unknown", limit=3))
 
 
-@pytest.mark.parametrize("status,verification", [
-    ("local", {}),
-    ("imported", {"end_to_end": "passed", "report": "verification.md"}),
-    ("validated", {}),
-    ("validated", {"end_to_end": "failed", "report": "verification.md"}),
-    ("validated", {"end_to_end": "passed"}),
-])
-def test_release_registry_fails_closed_on_unverified_insertions(tmp_path, monkeypatch, status, verification):
-    from vlm_probing.sae import cards
+def test_published_cards_have_direct_weights_and_our_own_information_pages():
+    cards = list_models(artifact_kind=None)
+    root = Path(__file__).resolve().parents[1]
+    pages = {}
+    for card in cards:
+        page, anchor = card["links"]["card"].split("#")
+        assert page.startswith("docs/methods/sae/models/")
+        path = root / page
+        assert path.is_file(), page
+        if path not in pages:
+            pages[path] = path.read_text()
+        assert f'id="{anchor}"' in pages[path], card["id"]
+        assert card["links"]["checkpoint"].startswith(("https://huggingface.co/", "https://dl.fbaipublicfiles.com/"))
+        assert card["links"]["repository"].startswith(("https://huggingface.co/", "https://github.com/facebookresearch/dinov2"))
+        if card["artifact_kind"] == "sae":
+            assert "candidate" not in card["id"]
+            assert "/resolve/" in card["links"]["checkpoint"] or "/tree/" in card["links"]["checkpoint"]
+    assert len(pages) == 308  # 307 paginated SAE pages plus one backbone page.
 
-    resources = tmp_path / "resources"
-    resources.mkdir()
-    card = {"schema": cards.CARD_SCHEMA, "id": "not-release-ready", "title": "Unverified dictionary",
-            "method": "relu", "status": status, "modality": "language", "evidence": {},
-            "verification": verification}
-    (resources / "native_model_cards.json").write_text(json.dumps({"models": [card]}))
-    monkeypatch.setattr(cards, "files", lambda _: tmp_path)
-    with pytest.raises(ValueError, match="passed end-to-end verification report"):
-        cards.list_models()
+
+def test_published_download_metadata_preserves_known_source_settings():
+    gpt2 = get_model_card("gpt2-layer8-relu-768")
+    assert gpt2["dimensions"] == {"activation": 768, "features": 768}
+    assert gpt2["input_conventions"]["model_from_pretrained_kwargs"] == {"center_writing_weights": True}
+    assert len(gpt2["download"]["sha256"]) == 64
+    clip = get_model_card("clip-b32-layer11-relu-49152")
+    assert clip["dimensions"] == {"activation": 768, "features": 49152}
+    assert clip["image_geometry"]["patch_grid"] == [7, 7]
+    assert clip["download"]["revision"] == "2b1cb17ffb8b06e7f45a699dfc97d417f9879be4"
+    with pytest.raises(ValueError, match="download its weights and use import_checkpoint"):
+        load_model(clip["id"])
+    # Cards are descriptive copies; callers cannot mutate the packaged records.
+    clip["dimensions"]["activation"] = -1
+    assert get_model_card(clip["id"])["dimensions"]["activation"] == 768
 
 
 def test_locally_trained_card_discovery_rendering_and_loading(tmp_path):
@@ -81,7 +102,7 @@ def test_locally_trained_card_discovery_rendering_and_loading(tmp_path):
     assert len(cards) == 1
     card = get_model_card("trained-domain-topk-v1", registry_dir=tmp_path / "registry")
     assert card["evidence"]["backbone_compatibility"] == "exact_weight_fingerprint_and_native_hook"
-    assert list_models() == []  # Explicit local registration never publishes a release.
+    assert all(c["id"] != card["id"] for c in list_models())  # Local registration is explicit.
     restored = probe.sae.load(card["id"], registry_dir=tmp_path / "registry")
     torch.testing.assert_close(restored.run(validation).tensors["features"],
                                fitted.run(validation).tensors["features"])
@@ -90,7 +111,7 @@ def test_locally_trained_card_discovery_rendering_and_loading(tmp_path):
     assert "My domain dictionary" in md.read_text()
     assert "trained-domain-topk-v1" in page.read_text()
     assert "<!doctype html>" in page.read_text()
-    assert list_models(registry_dir=tmp_path / "registry", method="relu") == []
+    assert list_models(registry_dir=tmp_path / "registry", method="relu", include_builtin=False) == []
 
 
 @pytest.mark.parametrize("imported", [False, True])

@@ -62,15 +62,24 @@ algorithms and their implemented scope.
 
 ## Sparse Autoencoders (SAE)
 
-The fourth family provides native sparse dictionaries and one fit/load/run
-interface for language, vision and multimodal activations.
+Learn sparse feature dictionaries from frozen-model activations, inspect their
+activity, and measure feature interventions with reconstruction controls.
 
-| Task | API | Guide |
+| Method | Public factory | What it does |
 | --- | --- | --- |
-| Configure an algorithm | `probe.sae.relu/topk/gated/jumprelu/...` | [Method inventory and references](../sae/methods/README.md) |
-| Train on native model inputs | `method.fit(train_inputs, validation_inputs, ...)` | [Training](../sae/training/README.md) |
-| Read features and top activating positions | `method.run(...)`, `method.profile(...)` | [API](../sae/API.md) |
-| Measure reconstruction and feature interventions | `method.reconstruct()`, `method.edit(...)` | [Complete example](../sae/examples/README.md) |
-| Browse and load model cards | `list_models(...)`, `probe.sae.load(...)` | [Models](../sae/models/README.md) |
+| [ReLU](sae/relu.md) | `probe.sae.relu(...)` | Nonnegative features with L1 sparsity. |
+| [TopK](sae/topk.md) | `probe.sae.topk(...)` | Per-vector positive TopK selection. |
+| [Gated](sae/gated.md) | `probe.sae.gated(...)` | Separate feature selection from activation magnitude. |
+| [JumpReLU](sae/jumprelu.md) | `probe.sae.jumprelu(...)` | Learn feature thresholds with a surrogate-gradient sparsity objective. |
+| [AbsTopK](sae/abstopk.md) | `probe.sae.abstopk(...)` | Keep the largest absolute activations with their signs. |
+| [BatchTopK](sae/batchtopk.md) | `probe.sae.batchtopk(...)` | Allocate a sparsity budget across a training minibatch. |
+| [Matryoshka BatchTopK](sae/matryoshka_batchtopk.md) | `probe.sae.matryoshka_batchtopk(...)` | Train nested dictionary prefixes with shared sparse codes. |
+| [Archetypal TopK](sae/archetypal_topk.md) | `probe.sae.archetypal_topk(...)` | Constrain TopK dictionary atoms with training-data anchors. |
+| [Archetypal JumpReLU](sae/archetypal_jumprelu.md) | `probe.sae.archetypal_jumprelu(...)` | Combine learned thresholds and an archetypal dictionary. |
+| [Matching Pursuit](sae/matching_pursuit.md) | `probe.sae.matching_pursuit(...)` | Greedily encode residuals with nonnegative coefficients. |
+| [Signed MP](sae/signed_matching_pursuit.md) | `probe.sae.signed_matching_pursuit(...)` | Greedily encode residuals with signed coefficients. |
+| [Nonnegative OMP](sae/orthogonal_matching_pursuit.md) | `probe.sae.orthogonal_matching_pursuit(...)` | Refit nonnegative coefficients jointly on selected support. |
+| [Signed OMP](sae/signed_orthogonal_matching_pursuit.md) | `probe.sae.signed_orthogonal_matching_pursuit(...)` | Refit signed coefficients by least squares. |
+| [QSAE](sae/qsae.md) | `probe.sae.qsae(...)` | Use learned scalar quantization levels; an experimental recipe. |
 
-Install the development branch using the [README instructions](../../README.md#installation).
+[Model cards](sae/models/README.md) · [Training](sae/training/README.md) · [Shared API](sae/API.md)

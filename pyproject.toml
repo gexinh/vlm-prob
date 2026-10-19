@@ -52,4 +52,4 @@ version = {attr = "vlm_probing.__version__"}
 
 [tool.setuptools.package-data]
 "vlm_probing._vendor.chefer2021" = ["LICENSE", "README.md"]
-"vlm_probing.sae" = ["resources/*.json", "licenses/*.txt"]
+"vlm_probing.sae" = ["resources/*.json", "resources/*.json.gz", "licenses/*.txt"]

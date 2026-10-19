@@ -142,4 +142,6 @@ for method in list_methods():
 print(len(list_methods()),len(list_models()))
 '''
     completed = subprocess.run([sys.executable, "-c", source], check=True, capture_output=True, text=True)
-    assert completed.stdout.strip() == "14 0"
+    method_count, model_count = map(int, completed.stdout.split())
+    assert method_count == 14
+    assert model_count > 0  # Author checkpoint cards load from packaged metadata without an official toolkit.

@@ -22,7 +22,6 @@ computation relates to a chosen answer.
   attributions on the same input.
 - **Causal:** replace activations, isolate paths, block attention routes, or steer
   residual states and measure the resulting change.
-
 - **SAE:** train or load sparse dictionaries, inspect feature activity, and
   measure feature interventions with reconstruction controls.
 
@@ -43,14 +42,13 @@ a measured zero effect.
 
 ## Installation
 
-Python 3.10+ is required. **The native SAE v4 integration is a development
-preview.** Install this branch to use the fourth family:
+Python 3.10+ is required. Install the version documented on this branch:
 
 ```bash
 python -m pip install "vlmprobe[sae,transformers,visualization] @ git+https://github.com/gexinh/vlm-prob.git@dev/sae-v4"
 ```
 
-For the released Lens, Attention and Causal library, install from [PyPI](https://pypi.org/project/vlmprobe/):
+The published package is also available on [PyPI](https://pypi.org/project/vlmprobe/):
 
 ```bash
 python -m pip install "vlmprobe[transformers,visualization]"
@@ -76,12 +74,6 @@ The base package requires only PyTorch. The `transformers` extra targets
 Transformers 5.3.x and includes Accelerate, Torchvision, and Pillow;
 `visualization` provides the plotting dependencies. Add `notebooks` when using
 Jupyter. Model weights and complete datasets are downloaded separately.
-
-For the latest development code, install directly from GitHub:
-
-```bash
-python -m pip install "vlmprobe[transformers,visualization] @ git+https://github.com/gexinh/vlm-probing.git"
-```
 
 To develop the library in a checkout, use
 `python -m pip install -e ".[transformers,visualization,notebooks]"`.
@@ -154,7 +146,7 @@ explicitly, or use complete-answer metrics for interventions.
 | `Prober(model, processor=None)` | Bind a caller-owned model and resolve its adapter. |
 | `probe.describe()` | Inspect available methods, sites, and missing capabilities. |
 | `probe.prepare(prompt=..., image=..., device=...)` | Convert formatted text and images into native inputs. |
-| `probe.lens / probe.attention / probe.causal / probe.sae` | Configure a method in one of four families. |
+| `probe.lens / probe.attention / probe.causal / probe.sae` | Configure a model-bound analysis method. |
 | `method.run(inputs, ...)` | Execute a probe and return `ProbeResult`. |
 | `method.fit_batches(...)` / `method.load(...)` | Calibrate or restore Tuned/Attention Lens; Jacobian Lens has a separate estimator. |
 | `result.save(directory)` | Save CPU tensors and JSON metadata. |
@@ -197,33 +189,8 @@ from paper methods.
 | Lens | [Logit](docs/methods/logit_lens.md) · [Tuned](docs/methods/tuned_lens.md) · [Attention Lens](docs/methods/attention_lens.md) · [Jacobian](docs/methods/jacobian_lens.md) · [EmbedLens](docs/methods/embed_lens.md) · [Patchscopes](docs/methods/patchscope.md) |
 | Attention | [Rollout](docs/methods/attention_rollout.md) · [Grad-CAM, ATTATTR, TAM, Beyond Intuition](docs/methods/attention_maps.md) · [Generic relevance](docs/methods/attention_relevance.md) · [ViT DTD/LRP](docs/methods/chefer_lrp.md) |
 | Causal | [Activation patching](docs/methods/activation_patching.md) · [IOI-style path patching](docs/methods/path_patching.md) · [Attribution patching](docs/methods/attribution_patching.md) · [Attention Knockout](docs/methods/attention_knockout.md) · [EAP / EAP-IG](docs/methods/eap_ig.md) · [Residual steering / VSV](docs/methods/steering.md) |
-| SAE | [Methods](docs/sae/methods/README.md) · [Model cards](docs/sae/models/README.md) · [Training](docs/sae/training/README.md) · [Examples](docs/sae/examples/README.md) |
+| SAE | [ReLU](docs/methods/sae/relu.md) · [TopK](docs/methods/sae/topk.md) · [Gated](docs/methods/sae/gated.md) · [JumpReLU](docs/methods/sae/jumprelu.md) · [AbsTopK](docs/methods/sae/abstopk.md) · [BatchTopK](docs/methods/sae/batchtopk.md) · [Matryoshka BatchTopK](docs/methods/sae/matryoshka_batchtopk.md) · [Archetypal TopK](docs/methods/sae/archetypal_topk.md) · [Archetypal JumpReLU](docs/methods/sae/archetypal_jumprelu.md) · [Matching Pursuit](docs/methods/sae/matching_pursuit.md) · [Signed MP](docs/methods/sae/signed_matching_pursuit.md) · [Nonnegative OMP](docs/methods/sae/orthogonal_matching_pursuit.md) · [Signed OMP](docs/methods/sae/signed_orthogonal_matching_pursuit.md) · [QSAE](docs/methods/sae/qsae.md) |
 | Supporting tools | [Attention profile](docs/methods/attention_profile.md) · [Head logit attribution](docs/methods/head_logit_attribution.md) · [Probability reweighting](docs/methods/attention_reweight.md) · [Temperature](docs/methods/attention_temperature.md) |
-
-## SAE preview
-
-SAE is the fourth method family. Algorithm names select native implementations;
-one trainer handles activation normalization, held-out validation, budgets,
-resume and artifacts. No official SAE toolkit is required at runtime.
-
-```python
-from vlmprobe.sae import SAETrainingConfig, list_methods, list_models
-
-print([entry["name"] for entry in list_methods()])
-method = probe.sae.topk(layer=0, tokens="visual", d_sae=1024, k=32)
-# Prepared training and held-out input batches; the backbone stays frozen.
-method.fit(train_inputs, validation_inputs, output_dir="outputs/sae",
-           training=SAETrainingConfig(epochs=10, batch_size=256))
-result = method.run(inputs)
-```
-
-Use the [complete image-to-feature example](docs/sae/examples/README.md) or run
-`python examples/sae_quickstart.py --output-dir outputs/sae_quickstart`.
-The [SAE hub](docs/sae/README.md) contains methods, parameter tables,
-checkpoint conversion, training and model-card workflows. Published pretrained
-cards require completed end-to-end validation. Feature IDs require empirical
-interpretation. The full algorithm inventory and deferred variants are in the
-[method audit](docs/sae/methods/README.md).
 
 ## Package Architecture
 
@@ -263,4 +230,4 @@ SAE integration draws on [SAELens](https://github.com/decoderesearch/SAELens),
 [ViT-Prisma](https://github.com/Prisma-Multimodal/ViT-Prisma) and
 [Overcomplete](https://github.com/KempnerInstitute/overcomplete).
 Our native algorithms and checkpoint converters retain source attribution and
-MIT license notices; see [SAE provenance](docs/sae/SOURCES.md).
+MIT license notices; see [SAE provenance](docs/methods/sae/SOURCES.md).

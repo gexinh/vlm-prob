@@ -1,7 +1,9 @@
-"""Reviewed public SAE models and explicitly registered local artifacts."""
+"""Published SAE model information and registered native artifacts."""
 from __future__ import annotations
 
 from copy import deepcopy
+from functools import lru_cache
+import gzip
 import html
 from importlib.resources import files
 import json
@@ -32,6 +34,8 @@ def validate_model_card(card):
     evidence = card.get("evidence")
     if not isinstance(evidence, dict):
         raise ValueError("model card requires separate numerical and backbone evidence")
+    if card.get("artifact_kind", "sae") not in {"sae", "backbone"}:
+        raise ValueError("model card artifact_kind must be sae or backbone")
     return card
 
 
@@ -74,20 +78,17 @@ def make_model_card(config, binding, *, state_sha256, is_fitted=False, metadata=
     return validate_model_card(card)
 
 
+@lru_cache(maxsize=1)
 def _builtin_cards():
     resource = files(__package__).joinpath("resources/native_model_cards.json")
     with resource.open("r", encoding="utf-8") as stream:
         payload = json.load(stream)
-    result = []
-    for value in payload["models"]:
-        card = validate_model_card(value)
-        verification = card.get("verification", {})
-        if (card["status"] != "validated" or verification.get("end_to_end") != "passed"
-                or not isinstance(verification.get("report"), str)
-                or not verification["report"].strip()):
-            raise ValueError("released SAE model cards require validated status and a passed end-to-end verification report")
-        result.append(card)
-    return result
+    catalog_name = payload.get("catalog_resource")
+    if catalog_name != "published_model_cards.json.gz":
+        raise ValueError("unsupported published SAE catalog resource")
+    with files(__package__).joinpath("resources/" + catalog_name).open("rb") as stream:
+        catalog = json.loads(gzip.decompress(stream.read()))
+    return tuple(validate_model_card(value) for value in catalog["models"])
 
 
 def _local_cards(registry_dir):
@@ -110,11 +111,12 @@ def _local_cards(registry_dir):
 
 
 def list_models(*, modality=None, method=None, status=None, query=None,
-                registry_dir=None, include_builtin=True, limit=None):
-    """List reviewed public models and the caller's explicit local registry.
+                artifact_kind="sae", registry_dir=None, include_builtin=True, limit=None):
+    """Search author-published SAE weights and explicit local artifacts.
 
-    There are currently no released pretrained models. Training and registering
-    a local artifact makes it discoverable only in the selected registry.
+    Backbone resources are available with artifact_kind="backbone"; use None
+    for both kinds. Published information includes direct checkpoint links and
+    our own card pages. It does not automatically convert raw author weights.
     """
     if limit is not None and (type(limit) is not int or limit < 1):
         raise ValueError("limit must be a positive integer")
@@ -124,6 +126,8 @@ def list_models(*, modality=None, method=None, status=None, query=None,
     rows.update({card["id"]: card for card in _local_cards(registry_dir)})
     selected = []
     for card in sorted(rows.values(), key=lambda value: value["id"]):
+        if artifact_kind is not None and card.get("artifact_kind", "sae") != artifact_kind:
+            continue
         if modality is not None and card.get("modality") != modality:
             continue
         if method is not None and card["method"] != method:
@@ -139,9 +143,13 @@ def list_models(*, modality=None, method=None, status=None, query=None,
 
 
 def get_model_card(card_id, *, registry_dir=None):
-    for card in list_models(registry_dir=registry_dir):
+    # Avoid deep-copying the complete published catalog for one lookup.
+    for card in reversed(_local_cards(registry_dir)):
         if card["id"] == card_id:
-            return card
+            return deepcopy(card)
+    for card in _builtin_cards():
+        if card["id"] == card_id:
+            return deepcopy(card)
     raise KeyError(f"unknown native SAE model card: {card_id}")
 
 
@@ -162,13 +170,15 @@ def load_model(card_id, *, binding=None, expected_binding=None, registry_dir=Non
     """Load a registered artifact using its saved native binding.
 
     The model-bound public loader additionally verifies the actual runtime
-    backbone and processor fingerprints. Listing a local card does not publish
-    that model in the reviewed release registry.
+    backbone and processor fingerprints. Author-published raw checkpoints need
+    an explicit supported conversion before they become native artifacts.
     """
     from .artifacts import load_artifact
     from .models import validate_sae_binding
     card = get_model_card(card_id, registry_dir=registry_dir)
     local = artifact_dir or card.get("artifact", {}).get("resolved_path")
+    if local is None:
+        raise ValueError("published checkpoint information is not a native artifact; download its weights and use import_checkpoint, or supply artifact_dir for a converted artifact")
     if binding is None:
         binding = expected_binding
     if binding is None and local is not None:
@@ -180,8 +190,6 @@ def load_model(card_id, *, binding=None, expected_binding=None, registry_dir=Non
     binding = validate_sae_binding(binding)
     if expected_binding is not None and validate_sae_binding(expected_binding) != binding:
         raise ValueError("expected binding differs from the supplied binding")
-    if local is None:
-        raise ValueError("model card must resolve to a native artifact directory or checkpoint")
     return load_artifact(local, expected_binding=binding, device=device)
 
 
