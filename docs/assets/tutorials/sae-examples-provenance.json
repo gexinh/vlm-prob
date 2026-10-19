@@ -1,0 +1,248 @@
+{
+  "scope": "CPU execution of displayed random-ViT SAE method examples",
+  "torch": "2.6.0+cu124",
+  "transformers": "5.3.0",
+  "semantic_quality_evaluated": false,
+  "methods": [
+    {
+      "method": "relu",
+      "success": true,
+      "code_sha256": "fc9532a4e2a1829f3be28e4f5946f705fe980d730d8909dea1df69d806f3b775",
+      "figure_sha256": "b947f4a14758b93067fd3074bd9a7af6ab36a8c1c8f18df39ea4b9ffc2659c97",
+      "feature_shape": [
+        16,
+        32
+      ],
+      "mean_test_l0": 12.875,
+      "training_steps": 24,
+      "training_positions": 96,
+      "validation_positions": 32,
+      "validation_mse": 0.004229004571765652,
+      "validation_fvu": 0.46352912771663213,
+      "inference_artifact_roundtrip": "identical state; features rtol=1e-5, atol=1e-6"
+    },
+    {
+      "method": "topk",
+      "success": true,
+      "code_sha256": "4bb51e2bb07d9c4633ae4598589803216dff73455bf4844b4ed998aa3d00b2a0",
+      "figure_sha256": "05ab5cc9642430a0f0acf80ea7e9a5bc1b751e01a2b6fe71ae329c7e0324deff",
+      "feature_shape": [
+        16,
+        32
+      ],
+      "mean_test_l0": 4.0,
+      "training_steps": 24,
+      "training_positions": 96,
+      "validation_positions": 32,
+      "validation_mse": 0.004882115844588664,
+      "validation_fvu": 0.5351147913062921,
+      "inference_artifact_roundtrip": "identical state; features rtol=1e-5, atol=1e-6"
+    },
+    {
+      "method": "gated",
+      "success": true,
+      "code_sha256": "37ee2fc76dce678653e65a74d7975db780e59cdd494cd88745c8f85526311357",
+      "figure_sha256": "b2a2f1c96bbbcdba93c9e2feb75dfc9b3ea58d517b222e50cb5f8ed8e16e088c",
+      "feature_shape": [
+        16,
+        32
+      ],
+      "mean_test_l0": 12.8125,
+      "training_steps": 24,
+      "training_positions": 96,
+      "validation_positions": 32,
+      "validation_mse": 0.003921794853622868,
+      "validation_fvu": 0.42985674683827724,
+      "inference_artifact_roundtrip": "identical state; features rtol=1e-5, atol=1e-6"
+    },
+    {
+      "method": "jumprelu",
+      "success": true,
+      "code_sha256": "0d512c80c682343bc448b6378dca620af4b8f377a3c30385a72ca777b7e5961a",
+      "figure_sha256": "0f6ebd96d6fdd4b492a2fa4350e4b172279c242b3538cbaf4807dc382103299d",
+      "feature_shape": [
+        16,
+        32
+      ],
+      "mean_test_l0": 4.625,
+      "training_steps": 24,
+      "training_positions": 96,
+      "validation_positions": 32,
+      "validation_mse": 0.00469509801644433,
+      "validation_fvu": 0.5146163006387805,
+      "inference_artifact_roundtrip": "identical state; features rtol=1e-5, atol=1e-6"
+    },
+    {
+      "method": "abstopk",
+      "success": true,
+      "code_sha256": "23c5296bdf2a003ca8585bcb85a3f01cd9dac8c92183afaa2aa8827205cd2ac9",
+      "figure_sha256": "427551fefc42533367de8c777e590376c08a957f29707e86a0165c4ad8e61b67",
+      "feature_shape": [
+        16,
+        32
+      ],
+      "mean_test_l0": 4.0,
+      "training_steps": 24,
+      "training_positions": 96,
+      "validation_positions": 32,
+      "validation_mse": 0.0048879166286919275,
+      "validation_fvu": 0.5357505987048959,
+      "inference_artifact_roundtrip": "identical state; features rtol=1e-5, atol=1e-6"
+    },
+    {
+      "method": "batchtopk",
+      "success": true,
+      "code_sha256": "a684a32b357f451c2f844546341af66770a116d9d06911b6b7f4965c3b7546db",
+      "figure_sha256": "a5bd31e50553924b803f266d25277bffd8ff6cfcd2a0f166251434f26625845d",
+      "feature_shape": [
+        16,
+        32
+      ],
+      "mean_test_l0": 3.5625,
+      "training_steps": 24,
+      "training_positions": 96,
+      "validation_positions": 32,
+      "validation_mse": 0.004844406913935008,
+      "validation_fvu": 0.5309816229834879,
+      "inference_artifact_roundtrip": "identical state; features rtol=1e-5, atol=1e-6"
+    },
+    {
+      "method": "matryoshka_batchtopk",
+      "success": true,
+      "code_sha256": "c1180bcd1774db0e0902ff48a03692d86b1dd423ab4de65f487cab34ae2c9669",
+      "figure_sha256": "9509ac9a509e60e7b5c53fc893e506c9cee87101f62d8ec2cafadf98b6cf2a9e",
+      "feature_shape": [
+        16,
+        32
+      ],
+      "mean_test_l0": 3.6875,
+      "training_steps": 24,
+      "training_positions": 96,
+      "validation_positions": 32,
+      "validation_mse": 0.004771812391709081,
+      "validation_fvu": 0.5230247444809091,
+      "inference_artifact_roundtrip": "identical state; features rtol=1e-5, atol=1e-6"
+    },
+    {
+      "method": "matching_pursuit",
+      "success": true,
+      "code_sha256": "768f7bec17cfcf4f9f503ccbcc0126edc904eebef550b799c60cfc7a9c6d0d02",
+      "figure_sha256": "4b3be2867e566076d840af9b1070f6a33d6eebde578fe1912d922140b296a1d3",
+      "feature_shape": [
+        16,
+        32
+      ],
+      "mean_test_l0": 3.9375,
+      "training_steps": 24,
+      "training_positions": 96,
+      "validation_positions": 32,
+      "validation_mse": 0.003086302918319259,
+      "validation_fvu": 0.3382808590818184,
+      "inference_artifact_roundtrip": "identical state; features rtol=1e-5, atol=1e-6"
+    },
+    {
+      "method": "archetypal_topk",
+      "success": true,
+      "code_sha256": "53f93387aa45bd16afef05ca7d3916decff5ad38917243b139aded1fbc9b8110",
+      "figure_sha256": "2c46f265823a011b24e2f19650ae39879d82a1cadbdc443f72a585ee2b168caa",
+      "feature_shape": [
+        16,
+        32
+      ],
+      "mean_test_l0": 4.0,
+      "training_steps": 24,
+      "training_positions": 96,
+      "validation_positions": 32,
+      "validation_mse": 0.012009844279840257,
+      "validation_fvu": 1.3163647729807717,
+      "inference_artifact_roundtrip": "identical state; features rtol=1e-5, atol=1e-6"
+    },
+    {
+      "method": "archetypal_jumprelu",
+      "success": true,
+      "code_sha256": "80a39c2ede62448ba978fe058e11d8cdc59dafeb0577bcc518c4abd87a77089b",
+      "figure_sha256": "61c142d04ce64b48b93b1609eaa2537f446c9df202f045990105bbd37bb835e4",
+      "feature_shape": [
+        16,
+        32
+      ],
+      "mean_test_l0": 5.75,
+      "training_steps": 24,
+      "training_positions": 96,
+      "validation_positions": 32,
+      "validation_mse": 0.011667330853202812,
+      "validation_fvu": 1.2788228533194734,
+      "inference_artifact_roundtrip": "identical state; features rtol=1e-5, atol=1e-6"
+    },
+    {
+      "method": "signed_matching_pursuit",
+      "success": true,
+      "code_sha256": "8b23a41d7097d63371c3b7a1a759376d3d0006602183d27ee68f89e63f530617",
+      "figure_sha256": "438e2428e22c8bde7fca3e21ffaefdcb77ad04948c196f3b5433ee8c50f01a3b",
+      "feature_shape": [
+        16,
+        32
+      ],
+      "mean_test_l0": 4.0,
+      "training_steps": 24,
+      "training_positions": 96,
+      "validation_positions": 32,
+      "validation_mse": 0.0025135512457737036,
+      "validation_fvu": 0.27550318204978813,
+      "inference_artifact_roundtrip": "identical state; features rtol=1e-5, atol=1e-6"
+    },
+    {
+      "method": "orthogonal_matching_pursuit",
+      "success": true,
+      "code_sha256": "1a277c5130944d62c9e986e878df1c38e6e1b373074ccd0a85ad589ad11e0c44",
+      "figure_sha256": "1090b800e3e5931cc0759b8086bf66abfde862db6ad52063ca31a9afe594daeb",
+      "feature_shape": [
+        16,
+        32
+      ],
+      "mean_test_l0": 4.0,
+      "training_steps": 24,
+      "training_positions": 96,
+      "validation_positions": 32,
+      "validation_mse": 0.0029165362434983772,
+      "validation_fvu": 0.3196732181205267,
+      "inference_artifact_roundtrip": "identical state; features rtol=1e-5, atol=1e-6"
+    },
+    {
+      "method": "signed_orthogonal_matching_pursuit",
+      "success": true,
+      "code_sha256": "414a2c1034eb1829ca9c2d36f2c3822f581b93a1a10e6fa575b942b95fdb3e44",
+      "figure_sha256": "99cea90a0ff976e9a8d1b6c8ffdd93c1d555b25c613681b689f5d43011eeb748",
+      "feature_shape": [
+        16,
+        32
+      ],
+      "mean_test_l0": 4.0,
+      "training_steps": 24,
+      "training_positions": 96,
+      "validation_positions": 32,
+      "validation_mse": 0.0022389766586427386,
+      "validation_fvu": 0.2454078447887001,
+      "inference_artifact_roundtrip": "identical state; features rtol=1e-5, atol=1e-6"
+    },
+    {
+      "method": "qsae",
+      "success": true,
+      "code_sha256": "7f0be578d2a79cf2aaac8263ccff02d7065eb971b4823eefe668c7a4bc8cfd05",
+      "figure_sha256": "2c837a1402cf592f6f1f9172a4807d103c76b254543d06715f43d900f5e46ec7",
+      "feature_shape": [
+        16,
+        32
+      ],
+      "mean_test_l0": 32.0,
+      "training_steps": 24,
+      "training_positions": 96,
+      "validation_positions": 32,
+      "validation_mse": 0.0032629466237138064,
+      "validation_fvu": 0.35764227174730123,
+      "inference_artifact_roundtrip": "identical state; features rtol=1e-5, atol=1e-6"
+    }
+  ],
+  "errors": [],
+  "success": true
+}

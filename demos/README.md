@@ -1,68 +1,79 @@
-# Demonstrations
+# Live walkthroughs
 
-These notebooks show what an input is, where a probe acts, and what its readout
-or intervention changes. Each uses one or two real examples. The default mode
-loads compact **actual model measurements**, redraws them through
-`vlm_probing.visualization`, and needs no downloaded model or GPU. The notebooks
-retain their executed outputs for GitHub viewing.
+Each notebook starts with raw text or images, loads a model, prepares native
+inputs and prompts, calls `vlmprobe`, inspects the returned tensors and draws
+figures with `vlmprobe.visualization`. Calibrated lens notebooks also show the
+independent training/validation split and fitting code. No notebook loads saved
+probe tensors or pre-rendered figures as its computed result.
 
-Install the notebook environment from the repository root:
+## Start here
+
+Clone the repository to obtain the notebooks and attributed raw input samples:
 
 ```bash
-pip install -e '.[notebooks,visualization]'
+git clone https://github.com/ubc-tea/vlm-probe.git
+cd vlm-probe
+python -m pip install -e ".[transformers,visualization,notebooks]"
 jupyter lab demos
 ```
 
-| Notebook | Input and model | Demonstration |
+Open a notebook and run its cells in order. The first run downloads its model
+if necessary. Most notebooks select CUDA when available; GPT-2 also runs on CPU.
+The VLM examples use SmolVLM-500M and one image to keep the walkthrough practical.
+Integration, exact Jacobians and dense Attention Lens fitting cost more than
+ordinary readouts; the relevant cells state their cost and any explicit opt-in.
+
+| Notebook | Default input/model | Visible workflow |
 | --- | --- | --- |
-| [Text lenses](lens_comparison_demo.ipynb) | Two author IOI prompts; GPT-2 small | Logit, Tuned, all-layer Jacobian, and fitted Attention Lens readouts on the same inputs. |
-| [VLM lenses](vlm_lens_demo.ipynb) | Two GQA shirt questions; LLaVA-1.5-7B | Logit/Tuned readouts, visual-token lexical neighbors, and configured Patchscope transfer. |
-| [ViT attention](attention_comparison_demo.ipynb) | Author cat/dog and elephant/zebra examples; ViT-B/16 | Eight attention maps and measured patch-deletion curves. |
-| [VLM attention](vlm_attention_comparison_demo.ipynb) | The same GQA examples; LLaVA-1.5-7B | Eight decoder attention analyses with a fixed complete-answer score. |
-| [Activation and attribution patching](activation_patching_demo.ipynb) | Yellow-shirt GQA input; SmolVLM-500M and LLaVA-1.5-7B | Residual/token sensitivity, measured replacement versus local gradient estimate. |
-| [Attention Knockout](attention_knockout_demo.ipynb) | Two boxed GQA examples; LLaVA-1.5-7B | Nine-layer route blocking and target-versus-other image-region scans. |
-| [Path Patching](path_patching_demo.ipynb) | Two published VRUBench paper prompts; Qwen2.5-VL-3B/7B | Genuine IOI-style head-output freezing and receiver-only replay. |
-| [Residual Steering / VSV](steering_vsv_demo.ipynb) | COCO2014 images 310196 and 210789; LLaVA-1.5-7B | Changed captions, fixed-prefix token ranks, and steering-strength responses. |
-| [EAP / EAP-IG](eap_ig_demo.ipynb) | Two author IOI pairs; GPT-2 small | Explicit edge scores and actual full-complement circuit recovery. |
+| [Text lenses](lens_comparison_demo.ipynb) | IOI text; pretrained GPT-2 | Tokenization → Logit → independent Tuned calibration → readouts and plots; complete optional Attention/Jacobian fitting and Patchscope. |
+| [VLM lenses](vlm_lens_demo.ipynb) | GQA image/question; SmolVLM-500M | Image/chat processing → Logit and EmbedLens → independent COCO-image calibration → Tuned and Patchscope → plots. |
+| [ViT attention](attention_comparison_demo.ipynb) | Raw image; pretrained ViT-B/16 | Processed image/grid → fixed class score → attention maps including DTD/LRP → overlays. |
+| [VLM attention](vlm_attention_comparison_demo.ipynb) | GQA image/question; SmolVLM-500M | Chat input → teacher-forced full-answer score → eight attention analyses → aligned image overlays. |
+| [Activation and attribution patching](activation_patching_demo.ipynb) | Published IOI pair; GPT-2 | Explicit base/donor tokenization → fixed answer margin → actual versus estimated replacement effects → curves. |
+| [Attention Knockout](attention_knockout_demo.ipynb) | GQA image/question; SmolVLM-500M | Input and complete-answer score → image/text route blocking across layers → measured score changes and plot. |
+| [Path Patching](path_patching_demo.ipynb) | Published IOI pair; GPT-2 | Base/donor inputs → selected sender/receiver heads → controlled replay, identity check and path plots. |
+| [Residual Steering / VSV](steering_vsv_demo.ipynb) | COCO snowboarding photo; SmolVLM-500M | Image/text-only pair → per-image direction → live generation at several strengths → captions and score curves. |
+| [EAP / EAP-IG](eap_ig_demo.ipynb) | Published IOI pair; GPT-2 | Token alignment and margin → explicit transformer-edge attribution → actual retained-circuit evaluation → plots. |
 
-The model/data/metric are stated in each notebook. Snapshots preserve native
-vocabulary IDs, values, layer coordinates, and source hashes. Replay changes
-plotting only; it does not run new interventions or train probes. These small
-examples do not support dataset-level performance claims.
+The short calibration splits teach the training protocol; they do not produce
+research-quality decoders. Keep showcase inputs out of fitting, and use the
+[training guide](../docs/TRAINING.md) to scale with independent document/image
+splits and immutable artifact identities. The default text-lens path skips the
+expensive dense Attention Lens and exact Jacobian sections explicitly; their
+complete training code remains visible and runs when enabled.
 
-## Run a model again
+## Change a checkpoint or input
 
-Install `pip install -e '.[transformers,notebooks,visualization]'`, then set
-`RERUN = True` in a notebook. Configure a model and a cache if desired:
+Notebook configuration uses the same optional environment names:
 
 ```bash
-export HF_HOME="$HOME/.cache/vlm-probing/huggingface"
 export VLM_PROBING_DEVICE="cuda:0"
-export VLM_PROBING_MODEL="llava-hf/llava-1.5-7b-hf"
+export VLM_PROBING_MODEL="HuggingFaceTB/SmolVLM-500M-Instruct"
 ```
 
-Leave `VLM_PROBING_MODEL` unset to use the notebook's default model. The ViT demo
-instead accepts `VLM_PROBING_VIT_MODEL`; its default public Hugging Face checkpoint
-differs from the archived author's checkpoint. No model weights are bundled.
-The optional run cells make actual public `Prober` calls. Full-head and joint
-window sweeps perform many forwards and are intentionally opt-in.
+Set the model override only for a notebook using that model family; unset it
+before opening a GPT-2 or ViT notebook. `VLM_PROBING_OUTPUT` selects the output
+directory. Each notebook exposes its raw input and prompt in code. The
+[model guides](../docs/models/README.md#use-any-supported-method) explain how to
+replace model-specific loading/preprocessing while retaining the method API.
+Do not reuse another checkpoint's tokenizer, fitted lens, visual grid or layer IDs.
 
-Model loading, dataset preparation, probe configuration, and plotting are
-separate. For a different dataset, prepare native inputs and explicit masks;
-then reuse the same probe and plotting APIs. The GQA preparation in
-[inputs.py](inputs.py) is specifically the paper-aligned LLaVA square-pad recipe;
-other processors should supply their own input coordinates. A compatible model
-adapter is still required: inspect `probe.describe()` before a costly run.
+The [method pages](../docs/methods/README.md) give full API/default/constraint
+tables and standalone scripts under [examples/tutorials](../examples/tutorials).
+Use these when you want one method rather than a whole family comparison.
 
-Tuned, Attention, and Jacobian lenses require matching fitted artifacts. Set
-`VLM_PROBING_LENS_CONFIG` to a JSON file following
-[lens-config.example.json](lens-config.example.json); directories resolve beside
-that config. Use the exact binding metadata recorded when fitting or importing
-the artifact. The configuration example contains explanatory placeholders, not
-trained weights. Logit Lens, lexical EmbedLens, and configured Patchscopes do
-not require fitted decoders. See the [training guide](../docs/TRAINING.md) for
-independent calibration/validation workflows; do not fit on the two display
-examples.
+## Execution records and archived measurements
+
+[validation.json](validation.json) records live walkthrough verification;
+[the tutorial preview directory](../docs/assets/tutorials) contains figures
+produced by the example code and their provenance. Stored notebook outputs are
+for reading on GitHub; running the notebook computes fresh results.
+
+The existing `snapshots/` directory retains historical report measurements with
+source identities. These are reference archives, not a prerequisite, fallback
+or source of computed results in the tutorials. Existing input/data helpers
+support historical experiments; the walkthroughs show their essential input
+and target construction directly.
 
 ## Data and provenance
 
@@ -73,8 +84,8 @@ examples.
 | [Transformer Explainability author samples](https://github.com/hila-chefer/Transformer-Explainability/tree/main/samples) | `catdog.png` and `el2.png`, plus their exact processed 224×224 crops. These are illustrative author samples, not a claimed held-out ImageNet split. |
 | [Author IOI pairs](https://github.com/hannamw/eap-ig-faithfulness/tree/main/data/ioi) | Published GPT-2 CSV rows 826 and 475, preserving the author clean/corrupted prompts and BOS convention in the EAP-IG experiment. |
 | [VRUBench paper examples](https://arxiv.org/abs/2604.15294) | Appendix A two-step and Figure 7(c) four-step examples with attributed prompt text and paired changes. These are not a download of the full official benchmark. Release availability in the provenance file is a historical collection-time check. |
-| [WikiText-2](https://huggingface.co/datasets/Salesforce/wikitext), BookCorpus | Independent calibration sources; raw corpora are not bundled. GPT-2 Attention Lens used 4,096 BookCorpus contexts; Jacobian used 256 WikiText-2 train contexts. Validation/test each use 512 separate WikiText-2 contexts. |
-| COCO2014 train / validation | LLaVA Tuned Lens used 1,024 image-caption training examples and 256 separate validation examples, eight text-prediction positions per image; weights and calibration images are not bundled. |
+| [WikiText-2](https://huggingface.co/datasets/Salesforce/wikitext), BookCorpus | Historical report calibration sources; raw corpora are not bundled. The live text tutorial defines a separate small teaching split directly in code. |
+| COCO2014 train / validation | Historical LLaVA calibration used 1,024 training and 256 validation images. The live VLM tutorial explicitly uses two separate bundled COCO images for a short training demonstration and a separate GQA showcase. |
 
 [assets/manifest.json](assets/manifest.json) records the hashes of bundled
 measurements/images and the original archive hashes. Machine-local cache paths
@@ -85,6 +96,5 @@ embedding duplicate base64 PNGs.
 Third-party photos and data retain their original rights; bundling does not
 change their terms. See [image source notices](assets/images/SOURCE_NOTICES.md).
 Method papers and implemented scope are indexed in
-[References](../docs/REFERENCES.md). These notebooks contain result snapshots,
-not trained checkpoints, full datasets, original papers, slide decks, or report
-build outputs.
+[References](../docs/REFERENCES.md). The repository includes attributed input examples and historical measurement
+archives; model weights, fitted checkpoints and full datasets are not bundled.

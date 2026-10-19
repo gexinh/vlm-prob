@@ -90,3 +90,16 @@ are included in the repository. [Demo provenance](../demos/README.md) and
 the image notices identify sample IDs and sources. Complete datasets, model
 weights, and fitted probe artifacts remain external. The
 [training guide](TRAINING.md) records calibration sizes and split requirements.
+
+
+## Sparse autoencoders
+
+The [SAE method inventory](methods/sae/ALGORITHMS.md) maps each native algorithm and
+explicit recipe to its primary paper/source. Sparse dictionary methods include ReLU
+and Gated dictionaries, positive/signed TopK, learned JumpReLU thresholds,
+batch/nested sparsity budgets, archetypal dictionary constraints, pursuit and
+experimental quantized codes. [Source provenance](methods/sae/SOURCES.md) records pinned
+SAELens, ViT-Prisma and Overcomplete revisions, preserved licenses, and scope.
+[Model-card workflows](methods/sae/models/README.md) preserve training provenance and
+require end-to-end validation for published pretrained cards. The CPU tutorial uses procedural images and a
+random tiny ViT, not a claimed benchmark dataset.

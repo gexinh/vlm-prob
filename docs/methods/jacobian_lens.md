@@ -2,58 +2,168 @@
 
 [Home](../../README.md) / [Methods](README.md) / Jacobian Lens
 
-Estimate a layer-to-final-residual Jacobian, transport representations, and decode them.
+Estimate a mean downstream residual Jacobian, transport a representation, and decode the transported vector.
 
-## Implementation
+## API and parameters
 
-Re-run the model with a differentiable residual intervention at the selected layer. Sum final-residual cotangents over valid target positions, average derivatives over selected source positions and prompts, then store `J[out,in]`. Evaluation applies `J @ h` followed by the model readout.
-
-## Example
-
-Use the [small CPU setup](README.md#example-setup) first. For a VLM, use its
-[model guide](../models/README.md) and choose layers reported by `describe()`.
-The calibration example is sized for TinyModel; read the cost and scope notes before fitting a pretrained model.
-
-```python
-lens = probe.lens.jacobian(layers=[0], tokens="all")
-lens.fit(calibration, skip_first=0, exclude_last=False, max_sources=4)
-result = lens.run(evaluation)
-print(result.tensors["transported"].shape)
-print(result.tensors["logits"].shape)
-```
-
-## API
+`probe` is a `Prober` bound to a loaded model; `inputs` contains prepared model inputs. The blocks below are API signatures: `*` marks keyword-only parameters, not an argument to copy. The [complete example](#complete-live-example) defines the model, inputs, and all other variables before running the method.
 
 ```text
-probe.lens.jacobian(*, layers=None, tokens="all", binding=None)
+method = probe.lens.jacobian(*, layers=None, tokens="all", binding=None)
 method.fit(inputs, *, skip_first=16, exclude_last=True,
            target_mask=None, max_sources=None, seed=0)
-method.run(inputs)
+result = method.run(inputs)
 method.save(directory)
 method.load(directory)
 ```
 
-| Parameter | Meaning |
-| --- | --- |
-| `tokens` | Source positions, intersected with valid positions and calibration exclusions. |
-| `skip_first / exclude_last` | Exclude early/final valid positions; override for short prompts. |
-| `target_mask` | Optional boolean `[B,T]` target-position mask. |
-| `max_sources / seed` | Subsample source positions deterministically; does not reduce the number of output-dimension backward passes. |
-| `binding` | Artifact identities, as for Tuned Lens. |
+| Parameter | Default | Meaning and constraints |
+| --- | --- | --- |
+| `layers` | `None` | Source residual layers; a separate matrix is estimated per layer. |
+| `tokens` | `"all"` | Source positions intersected with valid positions and exclusions. |
+| `binding` | `None` | Explicit checkpoint/tokenizer/readout/calibration identities for saving/loading. |
+| `skip_first` | `16` | Nonnegative count of initial valid positions excluded per prompt. Set to `0` for short prompts. |
+| `exclude_last` | `True` | Exclude each prompt's final valid position from retained sources/targets. |
+| `target_mask` | `None` | Optional boolean `[B,T]` target positions; defaults to valid retained positions. |
+| `max_sources` | `None` | Optional positive maximum sampled source positions per prompt. Does not reduce output-dimension backward passes. |
+| `seed` | `0` | RNG seed for source-position subsampling. |
+| `inputs` | Required | Prepared calibration/evaluation input. Every calibration prompt must retain a source and a target. |
 
-Returns a `ProbeResult`: `transported[L,N,D_final]`, `logits[L,N,V]`, and `positions[N,2]`.
+Returns `transported[L,N,D_final]`, `logits[L,N,V]` and `positions[N,2]`.
+`J[out,in]` sums final-residual cotangents at retained targets, averages source
+positions within a prompt and then averages prompts. Evaluation applies `J @ h`
+without an intercept. Fitting estimates derivatives; it does not optimize a
+classifier. Repeated one-batch `fit` replaces the estimate.
 
-## Support and scope
+### Dataset estimator
 
-Supported language-model residual sites and all eight VLM families. Exact fitting needs derivatives for every final hidden dimension; one-batch `fit` uses scalar backward loops. Repeated `fit` replaces the estimate. Do not fit under `torch.inference_mode()`. The transport is linear and has no fitted intercept; it is not a full nonlinear causal explanation.
+```text
+from vlmprobe.training import fit_jacobian_lenses
+method, report = fit_jacobian_lenses(
+    probe, input_batches, *, layers, binding, directory,
+    dim_batch=32, skip_first=16, exclude_last=True, tokens="text",
+    resume=True, checkpoint_every=16, snapshot_counts=(64, 128, 256),
+)
+```
 
-`vlm_probing.training.fit_jacobian_lenses` groups exact basis-vector VJPs,
-merges prompt-weighted estimates across batches and saves resumable state.
-See the [training guide](../TRAINING.md) and
-[text notebook](../../demos/lens_comparison_demo.ipynb), which displays
-independent IOI readouts from an all-layer 256-context calibration. Default
-replay uses saved measurements; a model rerun requires its matching artifact.
+| Parameter | Default | Meaning and constraints |
+| --- | --- | --- |
+| `probe` / `input_batches` | Required | Bound Prober / deterministic re-iterable independent calibration batches. |
+| `layers` / `binding` / `directory` | Required | Selected layers / explicit artifact identities / output directory. |
+| `dim_batch` | `32` | Positive exact basis-vector VJPs grouped per backward call; total derivatives still scale with hidden width. |
+| `skip_first` / `exclude_last` | `16` / `True` | Position exclusions above. |
+| `tokens` | `"text"` | Source-position selector. |
+| `resume` | `True` | Resume matching accumulated prompt-weighted Jacobians. |
+| `checkpoint_every` | `16` | Save resumable state every this many input batches. |
+| `snapshot_counts` | `(64,128,256)` | Save prefix estimates when a processed prompt count exactly reaches one of these values. |
 
-[Paper / source reference](../REFERENCES.md#lens-methods) ·
-[Tensor implementation](../../src/vlm_probing/lenses/jacobian.py) ·
-[Shared result conventions](README.md#shared-conventions)
+Do not fit under `torch.inference_mode()`. Exact calibration scales with hidden
+width and can be expensive even for one source layer. The example deliberately
+uses only two calibration prompts; it demonstrates execution, not convergence.
+
+
+## Input and coordinate conventions
+
+`inputs` is a native model-input dictionary or `ProbeInputs` from `probe.prepare(...)`.
+All examples below are complete scripts; they do not depend on variables from a
+model guide. Install `pip install "vlmprobe[transformers,visualization]"` first.
+`VLM_PROBING_MODEL` may select a compatible local checkpoint; public defaults use
+Hugging Face model IDs. For a VLM, replace only model/processor loading and input
+preparation with its [model guide](../models/README.md); the method call and result
+contract remain the same wherever `probe.describe()` reports support.
+
+Layer indices are zero-based blocks, measured **after** each block. `None` selects
+all available layers; an integer or nonempty list of unique available integers
+selects a subset. Shared `tokens` selectors are `"last_prompt"`, `"all"`, `"visual"`,
+`"text"`, `"prediction"`, a single expanded position, a sequence of positions, or a boolean
+`[batch, expanded_sequence]` mask. `"prediction"` selects the final prompt position and subsequent teacher-forced/generated positions when an explicit prompt mask is supplied. String selectors exclude padding; explicit positions/masks must not select padding. Packed outputs carry
+`positions[N,2] = [batch index, expanded token index]`; `N` is not the original
+unpadded text length when images add tokens.
+
+## Complete live example
+
+```python
+import hashlib
+import json
+import os
+from pathlib import Path
+
+import matplotlib.pyplot as plt
+import torch
+from transformers import AutoTokenizer, GPT2LMHeadModel
+from vlmprobe import Prober
+from vlmprobe.visualization import plot_lens_heatmap
+
+# A pretrained text model, not a random architecture or cached probe result.
+MODEL_ID = os.environ.get("VLM_PROBING_MODEL", "openai-community/gpt2")
+DEVICE = os.environ.get("VLM_PROBING_DEVICE", "cuda:0" if torch.cuda.is_available() else "cpu")
+OUT = Path(os.environ.get("VLM_PROBING_OUTPUT", "outputs/lens_tutorial"))
+OUT.mkdir(parents=True, exist_ok=True)
+torch.manual_seed(0)
+model = GPT2LMHeadModel.from_pretrained(MODEL_ID, attn_implementation="eager").to(DEVICE).eval()
+tokenizer = AutoTokenizer.from_pretrained(MODEL_ID)
+probe = Prober(model, tokenizer)
+print(probe.describe())
+
+def prepare(text):
+    return probe.prepare(prompt=text, device=DEVICE)
+
+prompt = "When Amy and Laura got a snack at the house, Laura decided to give it to"
+inputs = prepare(prompt)
+answer_ids = tokenizer.encode(" Amy", add_special_tokens=False)
+assert len(answer_ids) == 1, "Choose a single target subword for this rank plot."
+answer_id = answer_ids[0]
+# Disjoint strings illustrate the protocol; this tiny split is not a quality benchmark.
+train_texts = [
+    "The child opened a book and began to read.",
+    "A red boat crossed the lake before sunset.",
+    "The baker placed fresh bread beside the window.",
+    "Two friends walked through a quiet garden.",
+]
+validation_texts = [
+    "A musician carried a violin onto the stage.",
+    "The train arrived at the station after midnight.",
+]
+assert not (set(train_texts) & set(validation_texts))
+assert prompt not in train_texts + validation_texts
+train_inputs = [prepare(text) for text in train_texts]
+validation_inputs = [prepare(text) for text in validation_texts]
+split_hash = hashlib.sha256(json.dumps([train_texts, validation_texts]).encode()).hexdigest()
+binding = {
+    "model_id": MODEL_ID + "@" + str(getattr(model.config, "_commit_hash", None) or "local-checkpoint"),
+    "tokenizer_id": tokenizer.name_or_path,
+    "readout_id": "transformer.ln_f+lm_head",
+    "calibration_id": "tutorial-distinct-texts-sha256:" + split_hash,
+}
+# For a release, pin the model/tokenizer revision and hash the local checkpoint
+# if config._commit_hash is unavailable. This binding is caller-declared identity.
+from vlmprobe.training import fit_jacobian_lenses
+
+layers = [model.config.n_layer // 2, model.config.n_layer - 1]
+# Exact VJPs still scale with hidden width: dim_batch changes grouping, not accuracy.
+lens, calibration = fit_jacobian_lenses(
+    probe, train_inputs[:2], layers=layers, binding=binding,
+    directory=OUT / "jacobian-artifact", dim_batch=32,
+    skip_first=0, exclude_last=False, tokens="text", resume=False,
+)
+result = lens.run(inputs)
+print("calibrated prompts:", calibration["prompts"])
+print("transported / logits:", result.tensors["transported"].shape, result.tensors["logits"].shape)
+ax = plot_lens_heatmap(result, target_token_id=answer_id, tokenizer=tokenizer,
+                       title="Jacobian Lens: two-prompt calibration demonstration")
+ax.figure.savefig(OUT / "jacobian.png", dpi=160, bbox_inches="tight")
+plt.show()
+restored = probe.lens.jacobian(layers=layers, tokens="text", binding=binding).load(OUT / "jacobian-artifact")
+```
+
+Run the same code as a script: [lens_jacobian.py](../../examples/tutorials/lens_jacobian.py).
+
+## Output and visualization
+
+Rows are source residual layers and columns are original prompt positions. The map reports vocabulary ranks after a fixed linear transport; it is not a gradient saliency map or an effect of ablating the token. Generalization requires a larger independent calibration corpus.
+
+![Actual pretrained GPT-2 tutorial output](../assets/tutorials/lens-jacobian.png)
+
+The preview is generated by the live tutorial, not a loaded measurement snapshot.
+[Checkpoint hashes, data split and run provenance](../assets/tutorials/lens-provenance.json).
+[Source/reference](../REFERENCES.md#lens-methods) · [Training and artifact protocol](../TRAINING.md).

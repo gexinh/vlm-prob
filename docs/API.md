@@ -255,3 +255,14 @@ tensors = torch.load("outputs/probe/tensors.pt", weights_only=True)
 The accompanying `metadata.json` records the operation. Models and processors
 are not serialized. Execution is scoped to one model forward at a time; concurrent
 or nested execution on the same adapter is unsupported.
+
+
+## Sparse autoencoders
+
+Configure `probe.sae.topk(layer=..., tokens=...)`,
+fit on frozen-model train/validation inputs with `method.fit(...)`, then inspect
+`method.run(...)` and `method.profile(...)`, or measure `method.reconstruct()`
+and `method.edit(...)`. `probe.sae.load(...)` restores the same native interface.
+The [SAE API](methods/sae/API.md) lists every dictionary/training option and result shape;
+the [complete tutorial](methods/sae/examples/README.md) includes image inputs, training,
+native artifacts, model cards and visualization.

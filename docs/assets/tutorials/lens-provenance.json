@@ -1,0 +1,125 @@
+{
+  "schema_version": 1,
+  "description": "Fresh pretrained model tutorial runs; no measurement snapshot was loaded. Small independent calibration splits demonstrate execution, not scientific calibration quality.",
+  "library_source_commit": "2401d5f37c4524d9e5f3ae153cd1190c2c137494",
+  "transformers": "5.3.0",
+  "torch": "2.6.0+cu124",
+  "device": "NVIDIA A100 80GB; float32; eager attention",
+  "figures": {
+    "logit": {
+      "file": "lens-logit.png",
+      "sha256": "7ed479c74ea258daad55b6530d44dd973328389333c1a989e78f4f3e2f1428a7",
+      "source_script": "examples/tutorials/lens_logit.py",
+      "model": "openai-community/gpt2",
+      "fresh_model_execution": true
+    },
+    "tuned": {
+      "file": "lens-tuned.png",
+      "sha256": "18ba7b48b66499ae91f96703a0617047ea4dc57b7b356e6b949344d8aca22c4f",
+      "source_script": "examples/tutorials/lens_tuned.py",
+      "model": "openai-community/gpt2",
+      "fresh_model_execution": true
+    },
+    "attention": {
+      "file": "lens-attention.png",
+      "sha256": "6abc82853fb60ce1c86ca27ec7f11dfeee148bdf45f04bf3630a648c1391229b",
+      "source_script": "examples/tutorials/lens_attention.py",
+      "model": "openai-community/gpt2",
+      "fresh_model_execution": true
+    },
+    "jacobian": {
+      "file": "lens-jacobian.png",
+      "sha256": "b0e312ec9c2263102829f6ae3de6270a40235d39ee0ef9bd1215e83569d06983",
+      "source_script": "examples/tutorials/lens_jacobian.py",
+      "model": "openai-community/gpt2",
+      "fresh_model_execution": true
+    },
+    "patchscope": {
+      "file": "lens-patchscope.png",
+      "sha256": "329a6e9816790ae7c0e1d29c329a35f69884f2158396117f3af2f69eac7eeeec",
+      "source_script": "examples/tutorials/lens_patchscope.py",
+      "model": "openai-community/gpt2",
+      "fresh_model_execution": true
+    },
+    "embed": {
+      "file": "lens-embed.png",
+      "sha256": "a6f33c58752036520f16713095425b91689d53feb803b314c838876aa0c9b375",
+      "source_script": "examples/tutorials/lens_embed.py",
+      "model": "HuggingFaceTB/SmolVLM-500M-Instruct",
+      "fresh_model_execution": true
+    }
+  },
+  "model_files_sha256": {
+    "openai-community/gpt2": {
+      "files": {
+        "config.json": "0daed7749b4f02b8f76240d5444551d7b08712dab4d0adb8239c56ba823bb7b4",
+        "model.safetensors": "248dfc3911869ec493c76e65bf2fcf7f615828b0254c12b473182f0f81d3a707",
+        "tokenizer.json": "8414cab924d8b9b33013f0d221c5862f365ee9be39c5c2bfae8a5a9e970478a6"
+      }
+    },
+    "HuggingFaceTB/SmolVLM-500M-Instruct": {
+      "files": {
+        "config.json": "daacbbca6af3c34e50466c72aed2df4553a08084f6a0551d4ae420a241cb66c6",
+        "model.safetensors": "d05b567eeaf534e83d375551f068ed57b5f52d37c657197f644af5ef9db091a2",
+        "tokenizer.json": "5ece781dc8d2b2f3e2f289ca0ae50b17cfc27dd27bfe7971bb8241e0b964331a"
+      }
+    }
+  },
+  "text_split": {
+    "train": [
+      "The child opened a book and began to read.",
+      "A red boat crossed the lake before sunset.",
+      "The baker placed fresh bread beside the window.",
+      "Two friends walked through a quiet garden."
+    ],
+    "validation": [
+      "A musician carried a violin onto the stage.",
+      "The train arrived at the station after midnight."
+    ],
+    "showcase": "When Amy and Laura got a snack at the house, Laura decided to give it to",
+    "target_subword": " Amy"
+  },
+  "calibration": {
+    "tuned": {
+      "layers": [
+        0,
+        6,
+        11
+      ],
+      "epochs": 2,
+      "batch_size": 16,
+      "lr": 0.001,
+      "train_selected_positions": 36,
+      "validation_selected_positions": 18
+    },
+    "attention": {
+      "layers": [
+        7
+      ],
+      "epochs": 2,
+      "batch_size": 4,
+      "lr": 0.0001,
+      "initialization": "native unembedding",
+      "training_prompt_ends": 4,
+      "validation_prompt_ends": 2,
+      "best_validation_kl": 4.747339248657227
+    },
+    "jacobian": {
+      "layers": [
+        6,
+        11
+      ],
+      "prompts": 2,
+      "dim_batch": 32,
+      "skip_first": 0,
+      "exclude_last": false,
+      "exact_vjp": true
+    }
+  },
+  "raw_visual_input": {
+    "dataset": "GQA",
+    "question_id": "07302654",
+    "image": "demos/assets/images/2341576.jpg",
+    "sha256": "f2f5880022dce631fd23240b2d690a56dd1fa551205c48b16db210b147d2f968"
+  }
+}

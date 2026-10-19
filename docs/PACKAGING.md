@@ -4,7 +4,7 @@
 
 The library, installable distribution, and recommended Python import are
 **`vlmprobe`**. The laboratory repository is **`ubc-tea/vlm-probe`**, with an
-personal copy at **`gexinh/vlm-probing`** with the same library version. Both
+personal copy at **`gexinh/vlm-prob`** with the same library version. Both
 share one PyPI project.
 
 ## Install and import
@@ -32,6 +32,7 @@ and Hugging Face dependencies are loaded only when those features are used.
 | `visualization` | Matplotlib, NumPy, and Pillow for built-in plots. |
 | `transformers` | Supported Transformers 5.3.x, Accelerate, Torchvision, and Pillow. |
 | `notebooks` | Jupyter and the plotting/tokenizer tools used by demos. |
+| `sae` | NumPy, Safetensors and Hugging Face Hub for sparse dictionaries and checkpoint loading. |
 
 For tensor methods and custom PyTorch adapters, the base installation is
 `python -m pip install vlmprobe`.
@@ -93,8 +94,9 @@ workflow action, using PyPI's token-free trusted publishing.
 `pip install vlmprobe` downloads a versioned distribution uploaded to PyPI; it
 does not fetch either repository's current `main`. GitHub pushes alone do not
 update that installation. Both mirrors build the package, but only
-`gexinh/vlm-probing` can execute the PyPI publish job. Keep the existing Trusted
-Publisher and publish each version once. Repository links in package metadata
+`gexinh/vlm-prob` can execute the PyPI publish job. The Trusted Publisher must
+match the current repository name; update an older `vlm-probing` entry before
+publishing after the rename. Publish each version once. Repository links in package metadata
 may point to the lab even while the publishing workflow runs in the personal
 mirror. See [repository synchronization](REPOSITORY_SYNC.md).
 
@@ -105,7 +107,7 @@ with these values:
 | --- | --- |
 | PyPI project name | `vlmprobe` |
 | GitHub owner | `gexinh` |
-| Repository | `vlm-probing` |
+| Repository | `vlm-prob` |
 | Workflow filename | `package.yml` |
 | Environment | `pypi` |
 

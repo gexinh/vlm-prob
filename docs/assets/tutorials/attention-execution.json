@@ -1,0 +1,86 @@
+{
+  "scope": "Fresh model execution; no saved result replay. Illustrative examples, not a full benchmark.",
+  "model": "google/vit-base-patch16-224",
+  "weights_sha256": "1cea07110a4a47edc51420b2dda6f3b8b58e7256e8f44b4ea6aa9696162ccb5d",
+  "note": "Previews use the same native pretrained weights and public raw COCO image as the complete examples. Local paths only avoid downloading the same checkpoint twice.",
+  "raw_image": "https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/coco_sample.png",
+  "raw_image_sha256": "cf6f3c4befa148732c7453e0de5afab00f682427435fead2d88b07a9615cdac2",
+  "fixed_vit_target": {
+    "id": 285,
+    "label": "Egyptian cat"
+  },
+  "integration_steps": 8,
+  "image_alpha": 0.25,
+  "heatmap_alpha": 1,
+  "checks": [
+    {
+      "script": "examples/tutorials/attention_image_methods.py",
+      "exit_code": 0
+    },
+    {
+      "script": "examples/tutorials/attention_profile.py",
+      "exit_code": 0
+    },
+    {
+      "script": "examples/tutorials/attention_rollout.py",
+      "exit_code": 0
+    },
+    {
+      "script": "examples/tutorials/attention_relevance.py",
+      "exit_code": 0
+    },
+    {
+      "script": "examples/tutorials/attention_reweight.py",
+      "exit_code": 0
+    },
+    {
+      "script": "examples/tutorials/attention_temperature.py",
+      "exit_code": 0
+    },
+    {
+      "script": "examples/tutorials/attention_chefer.py",
+      "exit_code": 0
+    },
+    {
+      "script": "examples/tutorials/attention_head_logits.py",
+      "exit_code": 0
+    }
+  ],
+  "checkpoint_revision": "3f49326eb077187dfe1c2a2bb15fbd74e6ab91e3",
+  "head_logit_preview": {
+    "model": "HuggingFaceTB/SmolVLM-500M-Instruct",
+    "prompt": "The capital of France is",
+    "weights_sha256": "d05b567eeaf534e83d375551f068ed57b5f52d37c657197f644af5ef9db091a2"
+  },
+  "notebooks": [
+    {
+      "notebook": "demos/attention_comparison_demo.ipynb",
+      "executed": true,
+      "png_outputs": 2,
+      "seconds": 16.23
+    },
+    {
+      "notebook": "demos/vlm_attention_comparison_demo.ipynb",
+      "executed": true,
+      "png_outputs": 1,
+      "seconds": 14.62
+    },
+    {
+      "notebook": "demos/attention_knockout_demo.ipynb",
+      "executed": true,
+      "png_outputs": 1,
+      "seconds": 12.46
+    }
+  ],
+  "previews": {
+    "attention-maps.png": "1a4dc48c270c455e6755060c3228725ea25e8b8237f88fd5089719b95d048196",
+    "attention-profile.png": "7eea381893e2cc3f3b0f5f025d0184b8b7f72e26f8c981051e538b59f8d3b5b7",
+    "attention-rollout.png": "e68d8bcb2a01956c2874ceb05fa857216a7b624ad38c49bc7e30c5d1589cc437",
+    "attention-relevance.png": "aab871e63c173d448a156002a0e1c61c733fb4ea8974a2aa1c4177faf8ad4a1b",
+    "attention-reweight.png": "0df5b20fa1154752bd958828341c0c6dee8628562bbb21bb5a27f62db7861c82",
+    "attention-temperature.png": "10505a25d38448db55e9980df19edb1248f2d8fe93abe7e98e06999f175240b9",
+    "attention-chefer.png": "7b427c18a1185a5b4322a6d04bad213ebc53af6b2ef93b5b059515da77307c81",
+    "attention-head-logits.png": "5b6cedf72e157c621475a67ed727a76b6eb608a0b6fd294563ece9691be7bce2"
+  },
+  "environment_prefix": "VLM_PROBING_"
+}

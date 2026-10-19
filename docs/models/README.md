@@ -7,6 +7,50 @@ VLM families below use native Transformers classes. Each guide provides a full
 loading and image-input example. [Llama](llama.md) and [GPT-2](gpt2.md) provide text controls;
 [ViT](vit.md) provides a pure-vision classification control.
 
+## Use any supported method
+
+**Model-specific code loads the model and prepares its inputs. Method calls use
+the same public API across adapters.** A short call in a model guide
+is an example, not an exhaustive list of supported methods. Use the
+[method guides](../methods/README.md) for each complete workflow, including
+parameters, required calibration or reference inputs, outputs and plotting.
+
+After the loading/input block in any model guide, inspect the actual binding:
+
+```python
+capabilities = probe.describe()["methods"]
+for name, item in capabilities.items():
+    if item["available"]:
+        print(name, "supported layers:", item["sites"])
+    else:
+        print(name, "unavailable:", item["missing"])
+
+# Select an operation that this actual model can provide.
+if capabilities["lens.logit"]["available"]:
+    layers = capabilities["lens.logit"]["sites"]
+    result = probe.lens.logit(layers=layers[::4] or layers[:1]).run(inputs)
+else:
+    print("This model has no vocabulary readout; choose a supported attention method.")
+```
+
+| What changes when switching models? | What stays the same? |
+| --- | --- |
+| Model/processor class, checkpoint, chat template and native image preprocessing | `Prober(model, processor)` and method factory/run structure |
+| Available layers, head counts, image grids and token layout | Explicit `layers`, token selectors, `ProbeResult` and plotting interface |
+| The tokenizer and answer tokenization | Score construction rules; use complete-answer scoring when labels have several pieces |
+| Fitted lens artifact identity | Independent training/validation and save/load conventions |
+
+The architecture can limit a method even though its call syntax is shared:
+Qwen3.5 has a hybrid attention stack; ViT has class logits rather than a language
+vocabulary; original EAP-IG uses an audited GPT-2 edge graph. A calibrated lens
+also needs weights for the exact checkpoint and layer. Inspect the capability
+matrix below and the model-specific notes before running an expensive sweep.
+
+The method guides include complete examples. To reuse them with your prepared
+model, keep the loading/preparation block from this guide and then apply the
+method's configuration, target/reference construction and plotting steps.
+Do not copy a different model's tokenizer, hard-coded layer IDs or fitted artifacts.
+
 | Family | Example size | Validation in this release |
 | --- | --- | --- |
 | [Qwen3.5](qwen3_5.md) | 4B | Tiny architecture + eight pretrained report cases |

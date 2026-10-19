@@ -19,13 +19,21 @@ from tiny_model import TinyModel
 
 
 class PackageImportTests(unittest.TestCase):
-    def test_public_exports_and_all_nested_modules_share_identity(self):
+    def test_public_exports_and_public_nested_modules_share_identity(self):
         self.assertEqual(vlmprobe.__version__, vlm_probing.__version__)
         self.assertEqual(vlmprobe.__all__, vlm_probing.__all__)
         for name in vlm_probing.__all__:
             with self.subTest(export=name):
                 self.assertIs(getattr(vlmprobe, name), getattr(vlm_probing, name))
-        for info in pkgutil.walk_packages(vlm_probing.__path__, "vlm_probing."):
+        modules = []
+        for top in pkgutil.iter_modules(vlm_probing.__path__, "vlm_probing."):
+            if top.name == "vlm_probing._vendor":
+                continue  # private implementation, not a public alias contract
+            modules.append(top)
+            if top.ispkg:
+                package = importlib.import_module(top.name)
+                modules.extend(pkgutil.walk_packages(package.__path__, top.name + "."))
+        for info in modules:
             alias = "vlmprobe." + info.name.removeprefix("vlm_probing.")
             with self.subTest(module=alias):
                 canonical = importlib.import_module(info.name)
@@ -46,7 +54,9 @@ class PackageImportTests(unittest.TestCase):
 import importlib
 import importlib.abc
 import sys
-blocked = {'numpy', 'matplotlib', 'PIL', 'transformers', 'torchvision', 'accelerate'}
+blocked = {'numpy', 'matplotlib', 'PIL', 'transformers', 'torchvision', 'accelerate',
+           'sae_lens', 'vit_prisma', 'overcomplete', 'transformer_lens', 'einops',
+           'safetensors', 'huggingface_hub', 'yaml', 'requests', 'tqdm'}
 class MissingOptionalPackages(importlib.abc.MetaPathFinder):
     def find_spec(self, fullname, path=None, target=None):
         if fullname.split('.')[0] in blocked:

@@ -11,23 +11,27 @@ from pathlib import Path
 from urllib.parse import urlsplit
 
 
-PERSONAL_REPOSITORY = "gexinh/vlm-probing"
+PERSONAL_REPOSITORY = "gexinh/vlm-prob"
+LEGACY_PERSONAL_REPOSITORY = "gexinh/vlm-probing"
 LAB_REPOSITORY = "ubc-tea/vlm-probe"
+REPOSITORIES = (PERSONAL_REPOSITORY, LEGACY_PERSONAL_REPOSITORY, LAB_REPOSITORY)
 
 
 def render_readme(text: str, repository: str) -> str:
     """Retarget this project's GitHub, raw-file and Pages URLs only.
 
-    The standalone ``vlm-probing-report`` repository and third-party links
-    remain unchanged. No badges, links or explanatory text are added.
+    The previous personal name ``gexinh/vlm-probing`` is an accepted alias,
+    including when validating historical mirror commits. The standalone
+    ``vlm-probing-report`` repository and third-party links remain unchanged.
+    No badges, links or explanatory text are added.
     """
-    if repository not in (PERSONAL_REPOSITORY, LAB_REPOSITORY):
+    if repository not in REPOSITORIES:
         raise ValueError("Unknown repository for README rendering.")
     owner, name = repository.split("/")
 
     def replace(match):
         url = urlsplit(match.group())
-        for source in (PERSONAL_REPOSITORY, LAB_REPOSITORY):
+        for source in REPOSITORIES:
             source_owner, source_name = source.split("/")
             if url.netloc == "github.com":
                 prefix, replacement = "/" + source, "/" + repository

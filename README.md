@@ -10,8 +10,8 @@
   <a href="https://ubc-tea.github.io/vlm-probe/"><img src="https://img.shields.io/badge/Project%20Page-Visit%20Website-3266e5?style=for-the-badge" alt="Visit the vlmprobe project page"></a>
 </p>
 
-vlmprobe brings lens readouts, attention explanations, and causal
-interventions into one model-bound interface. It supports vision-language
+vlmprobe brings lens readouts, attention explanations, causal interventions,
+and sparse autoencoders into one model-bound interface. It supports vision-language
 models, language models, and a ViT image-classification control. Bind a loaded
 model once, select layers and token groups, and inspect how its internal
 computation relates to a chosen answer.
@@ -22,6 +22,8 @@ computation relates to a chosen answer.
   attributions on the same input.
 - **Causal:** replace activations, isolate paths, block attention routes, or steer
   residual states and measure the resulting change.
+- **SAE:** train or load sparse dictionaries, inspect feature activity, and
+  measure feature interventions with reconstruction controls.
 
 Explicit adapters handle hook locations, expanded visual-token coordinates,
 and model readouts. Results retain tensors and experiment metadata; shared
@@ -30,17 +32,23 @@ connection graphs. Capability checks distinguish an unsupported operation from
 a measured zero effect.
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/ubc-tea/vlm-probe/main/docs/assets/library-protocol.svg" width="100%" alt="Model inputs, adapter configuration, lens/attention/causal tools, and structured results">
+  <img src="https://raw.githubusercontent.com/ubc-tea/vlm-probe/main/docs/assets/library-overview-sae.svg" width="100%" alt="Model inputs, adapter configuration, lens/attention/causal/SAE tools, and structured results">
 </p>
 
-[Documentation](https://github.com/ubc-tea/vlm-probe/blob/main/docs/README.md) · [Demos](https://github.com/ubc-tea/vlm-probe/blob/main/demos/README.md) ·
-[Visualization](https://github.com/ubc-tea/vlm-probe/blob/main/docs/VISUALIZATION.md) ·
-[Technical report](https://github.com/ubc-tea/vlm-probe/blob/main/docs/assets/vlmprobe-technical-report.pdf) ·
-[Papers and datasets](https://github.com/ubc-tea/vlm-probe/blob/main/docs/REFERENCES.md)
+[Documentation](docs/README.md) · [Demos](demos/README.md) ·
+[Visualization](docs/VISUALIZATION.md) ·
+[Technical report](docs/assets/vlmprobe-technical-report.pdf) ·
+[Papers and datasets](docs/REFERENCES.md)
 
 ## Installation
 
-Python 3.10+ is required. Install from [PyPI](https://pypi.org/project/vlmprobe/):
+Python 3.10+ is required. Install the current library from GitHub:
+
+```bash
+python -m pip install "vlmprobe[sae,transformers,visualization] @ git+https://github.com/gexinh/vlm-prob.git@main"
+```
+
+The published package is also available on [PyPI](https://pypi.org/project/vlmprobe/):
 
 ```bash
 python -m pip install "vlmprobe[transformers,visualization]"
@@ -67,20 +75,14 @@ Transformers 5.3.x and includes Accelerate, Torchvision, and Pillow;
 `visualization` provides the plotting dependencies. Add `notebooks` when using
 Jupyter. Model weights and complete datasets are downloaded separately.
 
-For the latest development code, install directly from GitHub:
-
-```bash
-python -m pip install "vlmprobe[transformers,visualization] @ git+https://github.com/ubc-tea/vlm-probe.git"
-```
-
 To develop the library in a checkout, use
 `python -m pip install -e ".[transformers,visualization,notebooks]"`.
-The [package guide](https://github.com/ubc-tea/vlm-probe/blob/main/docs/PACKAGING.md) covers wheels and release publication.
+The [package guide](docs/PACKAGING.md) covers wheels and release publication.
 
 ## Quick Start
 
 This example loads **Qwen3-VL-2B-Instruct** on one CUDA GPU. Replace
-`example.jpg` with your image, or use an image from [the bundled demos](https://github.com/ubc-tea/vlm-probe/blob/main/demos/README.md).
+`example.jpg` with your image, or use an image from [the bundled demos](demos/README.md).
 
 ```python
 import torch
@@ -125,7 +127,7 @@ attention = probe.attention.profile(
 Use a model you have already loaded, and pass its native processor dictionary
 directly to `.run(...)` when convenient. Layer indices are zero-based; tokens
 refer to the expanded sequence, including image positions. The
-[model guides](https://github.com/ubc-tea/vlm-probe/blob/main/docs/models/README.md) explain each architecture's input contract.
+[model guides](docs/models/README.md) explain each architecture's input contract.
 
 ```python
 from vlmprobe import visualization as viz
@@ -144,36 +146,37 @@ explicitly, or use complete-answer metrics for interventions.
 | `Prober(model, processor=None)` | Bind a caller-owned model and resolve its adapter. |
 | `probe.describe()` | Inspect available methods, sites, and missing capabilities. |
 | `probe.prepare(prompt=..., image=..., device=...)` | Convert formatted text and images into native inputs. |
-| `probe.lens / probe.attention / probe.causal` | Configure a method in one of three families. |
+| `probe.lens / probe.attention / probe.causal / probe.sae` | Configure a model-bound analysis method. |
 | `method.run(inputs, ...)` | Execute a probe and return `ProbeResult`. |
 | `method.fit_batches(...)` / `method.load(...)` | Calibrate or restore Tuned/Attention Lens; Jacobian Lens has a separate estimator. |
 | `result.save(directory)` | Save CPU tensors and JSON metadata. |
 
-[The API guide](https://github.com/ubc-tea/vlm-probe/blob/main/docs/API.md) covers selectors, complete-answer metrics,
-paired-input alignment, and result shapes. [Visualization](https://github.com/ubc-tea/vlm-probe/blob/main/docs/VISUALIZATION.md)
-describes reusable plotting functions. The [demos](https://github.com/ubc-tea/vlm-probe/blob/main/demos/README.md) include
-saved real measurements and input images for offline replay; rerunning a model
-is an explicit option. A [small CPU example](https://github.com/ubc-tea/vlm-probe/blob/main/examples/prober_quickstart.py)
+[The API guide](docs/API.md) covers selectors, complete-answer metrics,
+paired-input alignment, and result shapes. [Visualization](docs/VISUALIZATION.md)
+describes reusable plotting functions. The [demos](demos/README.md) walk through
+input preparation, live model calls, calibration when needed, and plotting.
+Every [method guide](docs/methods/README.md) includes parameter defaults and a complete input-to-output example.
+A [small CPU example](examples/prober_quickstart.py)
 exercises the API without downloading pretrained weights.
 
 ## Model Support
 
 Eight VLM families have explicit adapters. Text-only GPT-2/Llama and a ViT
 classifier provide complementary controls. Availability is method-specific;
-see the [capability matrix](https://github.com/ubc-tea/vlm-probe/blob/main/docs/models/README.md).
+see the [capability matrix](docs/models/README.md).
 
 | Family | Example checkpoint | Guide |
 | --- | --- | --- |
-| Qwen3-VL | Qwen3-VL-2B-Instruct | [Usage](https://github.com/ubc-tea/vlm-probe/blob/main/docs/models/qwen3_vl.md) |
-| Qwen2.5-VL | Qwen2.5-VL-3B-Instruct | [Usage](https://github.com/ubc-tea/vlm-probe/blob/main/docs/models/qwen2_5_vl.md) |
-| Qwen2-VL | Qwen2-VL-2B-Instruct | [Usage](https://github.com/ubc-tea/vlm-probe/blob/main/docs/models/qwen2_vl.md) |
-| Qwen3.5 | Qwen3.5-4B; hybrid attention restrictions | [Usage](https://github.com/ubc-tea/vlm-probe/blob/main/docs/models/qwen3_5.md) |
-| SmolVLM | SmolVLM-500M-Instruct | [Usage](https://github.com/ubc-tea/vlm-probe/blob/main/docs/models/smolvlm.md) |
-| InternVL | InternVL3-1B-hf | [Usage](https://github.com/ubc-tea/vlm-probe/blob/main/docs/models/internvl.md) |
-| LLaVA | llava-1.5-7b-hf | [Usage](https://github.com/ubc-tea/vlm-probe/blob/main/docs/models/llava.md) |
-| Pixtral | Pixtral-12B-2409 | [Usage](https://github.com/ubc-tea/vlm-probe/blob/main/docs/models/pixtral.md) |
-| Language models | GPT-2 / Llama | [GPT-2](https://github.com/ubc-tea/vlm-probe/blob/main/docs/models/gpt2.md) · [Llama](https://github.com/ubc-tea/vlm-probe/blob/main/docs/models/llama.md) |
-| Vision classifier | ViT-B/16 | [Usage](https://github.com/ubc-tea/vlm-probe/blob/main/docs/models/vit.md) |
+| Qwen3-VL | Qwen3-VL-2B-Instruct | [Usage](docs/models/qwen3_vl.md) |
+| Qwen2.5-VL | Qwen2.5-VL-3B-Instruct | [Usage](docs/models/qwen2_5_vl.md) |
+| Qwen2-VL | Qwen2-VL-2B-Instruct | [Usage](docs/models/qwen2_vl.md) |
+| Qwen3.5 | Qwen3.5-4B; hybrid attention restrictions | [Usage](docs/models/qwen3_5.md) |
+| SmolVLM | SmolVLM-500M-Instruct | [Usage](docs/models/smolvlm.md) |
+| InternVL | InternVL3-1B-hf | [Usage](docs/models/internvl.md) |
+| LLaVA | llava-1.5-7b-hf | [Usage](docs/models/llava.md) |
+| Pixtral | Pixtral-12B-2409 | [Usage](docs/models/pixtral.md) |
+| Language models | GPT-2 / Llama | [GPT-2](docs/models/gpt2.md) · [Llama](docs/models/llama.md) |
+| Vision classifier | ViT-B/16 | [Usage](docs/models/vit.md) |
 
 ## Methods
 
@@ -183,10 +186,11 @@ from paper methods.
 
 | Family | Method guides |
 | --- | --- |
-| Lens | [Logit](https://github.com/ubc-tea/vlm-probe/blob/main/docs/methods/logit_lens.md) · [Tuned](https://github.com/ubc-tea/vlm-probe/blob/main/docs/methods/tuned_lens.md) · [Attention Lens](https://github.com/ubc-tea/vlm-probe/blob/main/docs/methods/attention_lens.md) · [Jacobian](https://github.com/ubc-tea/vlm-probe/blob/main/docs/methods/jacobian_lens.md) · [EmbedLens](https://github.com/ubc-tea/vlm-probe/blob/main/docs/methods/embed_lens.md) · [Patchscopes](https://github.com/ubc-tea/vlm-probe/blob/main/docs/methods/patchscope.md) |
-| Attention | [Rollout](https://github.com/ubc-tea/vlm-probe/blob/main/docs/methods/attention_rollout.md) · [Grad-CAM, ATTATTR, TAM, Beyond Intuition](https://github.com/ubc-tea/vlm-probe/blob/main/docs/methods/attention_maps.md) · [Generic relevance](https://github.com/ubc-tea/vlm-probe/blob/main/docs/methods/attention_relevance.md) · [ViT DTD/LRP](https://github.com/ubc-tea/vlm-probe/blob/main/docs/methods/chefer_lrp.md) |
-| Causal | [Activation patching](https://github.com/ubc-tea/vlm-probe/blob/main/docs/methods/activation_patching.md) · [IOI-style path patching](https://github.com/ubc-tea/vlm-probe/blob/main/docs/methods/path_patching.md) · [Attribution patching](https://github.com/ubc-tea/vlm-probe/blob/main/docs/methods/attribution_patching.md) · [Attention Knockout](https://github.com/ubc-tea/vlm-probe/blob/main/docs/methods/attention_knockout.md) · [EAP / EAP-IG](https://github.com/ubc-tea/vlm-probe/blob/main/docs/methods/eap_ig.md) · [Residual steering / VSV](https://github.com/ubc-tea/vlm-probe/blob/main/docs/methods/steering.md) |
-| Supporting tools | [Attention profile](https://github.com/ubc-tea/vlm-probe/blob/main/docs/methods/attention_profile.md) · [Head logit attribution](https://github.com/ubc-tea/vlm-probe/blob/main/docs/methods/head_logit_attribution.md) · [Probability reweighting](https://github.com/ubc-tea/vlm-probe/blob/main/docs/methods/attention_reweight.md) · [Temperature](https://github.com/ubc-tea/vlm-probe/blob/main/docs/methods/attention_temperature.md) |
+| Lens | [Logit](docs/methods/logit_lens.md) · [Tuned](docs/methods/tuned_lens.md) · [Attention Lens](docs/methods/attention_lens.md) · [Jacobian](docs/methods/jacobian_lens.md) · [EmbedLens](docs/methods/embed_lens.md) · [Patchscopes](docs/methods/patchscope.md) |
+| Attention | [Rollout](docs/methods/attention_rollout.md) · [Grad-CAM, ATTATTR, TAM, Beyond Intuition](docs/methods/attention_maps.md) · [Generic relevance](docs/methods/attention_relevance.md) · [ViT DTD/LRP](docs/methods/chefer_lrp.md) |
+| Causal | [Activation patching](docs/methods/activation_patching.md) · [IOI-style path patching](docs/methods/path_patching.md) · [Attribution patching](docs/methods/attribution_patching.md) · [Attention Knockout](docs/methods/attention_knockout.md) · [EAP / EAP-IG](docs/methods/eap_ig.md) · [Residual steering / VSV](docs/methods/steering.md) |
+| SAE | [ReLU](docs/methods/sae/relu.md) · [TopK](docs/methods/sae/topk.md) · [Gated](docs/methods/sae/gated.md) · [JumpReLU](docs/methods/sae/jumprelu.md) · [AbsTopK](docs/methods/sae/abstopk.md) · [BatchTopK](docs/methods/sae/batchtopk.md) · [Matryoshka BatchTopK](docs/methods/sae/matryoshka_batchtopk.md) · [Archetypal TopK](docs/methods/sae/archetypal_topk.md) · [Archetypal JumpReLU](docs/methods/sae/archetypal_jumprelu.md) · [Matching Pursuit](docs/methods/sae/matching_pursuit.md) · [Signed MP](docs/methods/sae/signed_matching_pursuit.md) · [Nonnegative OMP](docs/methods/sae/orthogonal_matching_pursuit.md) · [Signed OMP](docs/methods/sae/signed_orthogonal_matching_pursuit.md) · [QSAE](docs/methods/sae/qsae.md) |
+| Supporting tools | [Attention profile](docs/methods/attention_profile.md) · [Head logit attribution](docs/methods/head_logit_attribution.md) · [Probability reweighting](docs/methods/attention_reweight.md) · [Temperature](docs/methods/attention_temperature.md) |
 
 ## Package Architecture
 
@@ -199,6 +203,7 @@ src/vlm_probing/
   lenses/        # BaseLens and concrete readout methods
   attention/     # BaseAttention and concrete attention methods
   causal/        # BaseCausal and concrete interventions/estimators
+  sae/           # native dictionaries, one trainer, artifacts and model cards
   training/      # calibration, checkpoint import and resume
   visualization/ # shared heatmaps, overlays, curves and graphs
   core/          # results and execution traces
@@ -207,14 +212,22 @@ docs/            # model, method, API and source guides
 ```
 
 Family base classes keep algorithm implementations small; adapters let them
-share model execution. [Architecture](https://github.com/ubc-tea/vlm-probe/blob/main/docs/ARCHITECTURE.md) and
-[adapter contracts](https://github.com/ubc-tea/vlm-probe/blob/main/docs/ADAPTERS.md) describe these boundaries.
+share model execution. [Architecture](docs/ARCHITECTURE.md) and
+[adapter contracts](docs/ADAPTERS.md) describe these boundaries.
 
 ## References
 
-The [paper and dataset index](https://github.com/ubc-tea/vlm-probe/blob/main/docs/REFERENCES.md) links the original method
+The [paper and dataset index](docs/REFERENCES.md) links the original method
 papers, author implementations, and datasets used for demonstrations and lens
 calibration. The
-[technical report](https://github.com/ubc-tea/vlm-probe/blob/main/docs/assets/vlmprobe-technical-report.pdf)
+[technical report](docs/assets/vlmprobe-technical-report.pdf)
 compares real readouts, explanations, and interventions on shared cases across
 five pretrained VLMs, with language and vision controls.
+
+## Credits
+
+SAE integration draws on [SAELens](https://github.com/decoderesearch/SAELens),
+[ViT-Prisma](https://github.com/Prisma-Multimodal/ViT-Prisma) and
+[Overcomplete](https://github.com/KempnerInstitute/overcomplete).
+Our native algorithms and checkpoint converters retain source attribution and
+MIT license notices; see [SAE provenance](docs/methods/sae/SOURCES.md).

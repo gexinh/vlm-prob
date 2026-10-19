@@ -9,7 +9,8 @@ explicit model contracts.
 Prober(model, processor)
     ├── LensMethods       → configured lens → run(inputs)
     ├── AttentionMethods  → configured probe → run(inputs)
-    └── CausalMethods     → configured intervention → run(inputs)
+    ├── CausalMethods     → configured intervention → run(inputs)
+    └── SAEMethods        → algorithm → fit/load → run/profile/edit
                   │
           adapter + ModelSpec
           capture / layout / intervention / readout
@@ -35,6 +36,9 @@ classDiagram
     Prober *-- LensMethods
     Prober *-- AttentionMethods
     Prober *-- CausalMethods
+    Prober *-- SAEMethods
+    SAEMethods --> SparseAutoencoder
+    BaseSAE <|-- SparseAutoencoder
     Prober o-- TorchModelAdapter
 ```
 
@@ -56,6 +60,7 @@ require another copy of every algorithm.
 | `adapters/vit.py` | Pure-vision classifier outputs, patch layouts and editable attention. |
 | `_vendor/chefer2021/` | Minimal pinned author DTD rules, with license and provenance. |
 | `lenses/`, `attention/`, `causal/` | Family base classes, tensor algorithms, and controlled forward algorithms. |
+| `sae/` | Native dictionary methods, one trainer, artifact schema, first-party model cards and one-time tensor importers. |
 | `training/` | Persistent distribution fitting, checkpoint import, and Jacobian calibration. |
 | `visualization/` | Shared heatmaps, overlays, intervention curves, and edge diagrams. |
 | `core/`, `metrics.py` | Shared results, traces, and output scoring. |

@@ -152,7 +152,8 @@ class ModelSpec:
     path_heads: dict[int, HeadSite] = field(default_factory=dict)
     path_qkv: dict[int, dict[str, HeadSite]] = field(default_factory=dict)
     path_final: str | None = None
-    # Classifier logits have no sequence axis; token masks still describe patches.
+    # Classification logits and representation vectors have no sequence axis;
+    # token masks still describe the captured patch/token sequence.
     output_kind: str = "language"
     # Beyond Intuition's token weights need pre-LN inputs and projected V, not A@V.
     attention_inputs: dict[int, str] = field(default_factory=dict)
@@ -162,8 +163,8 @@ class ModelSpec:
     def validate(self, sites):
         if not self.residuals or any(type(k) is not int or k < 0 for k in self.residuals):
             raise ValueError("spec.residuals requires nonnegative layer indices")
-        if self.output_kind not in {"language", "classification"}:
-            raise ValueError("output_kind must be language or classification")
+        if self.output_kind not in {"language", "classification", "representation"}:
+            raise ValueError("output_kind must be language, classification or representation")
         mappings = (self.residuals, self.attentions, self.attention_scores, self.heads, self.edges,
                     self.attention_inputs, self.attention_values)
         names = {name for mapping in mappings for name in mapping.values()}

@@ -2,12 +2,16 @@
 
 [Home](../../README.md) / [Documentation](../README.md)
 
-Each guide explains the computation, includes a usage example, and documents
-parameters and returned tensors. Availability depends on the model adapter;
+Each guide presents the API and parameter defaults first, followed by a complete
+example: imports, model loading, input/prompt preparation, calibration or target
+construction when needed, method execution, result inspection and visualization.
+Examples can be copied without first running a hidden shared setup cell.
+Availability depends on the model adapter;
 check `probe.describe()` or the [model matrix](../models/README.md).
 
 Residual and head lenses support language-model and VLM representations;
-EmbedLens additionally needs projected visual tokens. Spatial attention maps
+EmbedLens uses the input-embedding space; its visual-analysis mode needs projected
+visual tokens, while `tokens="all"` also permits text-only inputs. Spatial attention maps
 can analyze vision classifiers or decoder visual tokens when the adapter
 exposes the required sites. Original EAP-IG currently uses a text-only GPT-2
 graph. These modality boundaries are documented on each method page.
@@ -54,52 +58,28 @@ algorithms and their implemented scope.
 | [Attention Knockout](attention_knockout.md) | `probe.causal.knockout(...)` | Block selected query-to-key attention paths before softmax. |
 | [EAP / EAP-IG](eap_ig.md) | `probe.causal.eap_ig(graph="transformer", ...)` | Attribute independently replaceable GPT-2 edges along an input-embedding path, then evaluate retained circuits with actual forwards. |
 | [Residual Steering](steering.md) | `probe.causal.steer(...)` | Add a supplied direction to selected residuals and measure the output change. |
-| [Visual Steering Vector (VSV)](steering.md#per-image-visual-steering-vsv) | `probe.causal.vsv(positive, negative, ...)` | Build per-image residual directions from image and text-only inputs; configure a joint steering run. |
+| [Visual Steering Vector (VSV)](steering.md#training-free-per-image-vsv-constructor) | `probe.causal.vsv(positive, negative, ...)` | Build per-image residual directions from image and text-only inputs; configure a joint steering run. |
 
-## Example setup
+## Sparse Autoencoders (SAE)
 
-For a downloaded VLM, start with its [model guide](../models/README.md) to obtain
-`probe` and `inputs`. For a small, fully runnable demonstration of every method,
-run this setup from the repository root after installation. Method-page snippets
-use these variables. TinyModel exposes editable attention and independently
-replaceable edge sites, including the explicit activation-space EAP-IG variant.
-Pretrained GPT-2 uses the separate original transformer-graph implementation.
+Learn sparse feature dictionaries from frozen-model activations, inspect their
+activity, and measure feature interventions with reconstruction controls.
 
-```python
-import torch
-from examples.tiny_model import TinyModel
-from vlmprobe import Prober, TokenMargin
+| Method | Public factory | What it does |
+| --- | --- | --- |
+| [ReLU](sae/relu.md) | `probe.sae.relu(...)` | Nonnegative features with L1 sparsity. |
+| [TopK](sae/topk.md) | `probe.sae.topk(...)` | Per-vector positive TopK selection. |
+| [Gated](sae/gated.md) | `probe.sae.gated(...)` | Separate feature selection from activation magnitude. |
+| [JumpReLU](sae/jumprelu.md) | `probe.sae.jumprelu(...)` | Learn feature thresholds with a surrogate-gradient sparsity objective. |
+| [AbsTopK](sae/abstopk.md) | `probe.sae.abstopk(...)` | Keep the largest absolute activations with their signs. |
+| [BatchTopK](sae/batchtopk.md) | `probe.sae.batchtopk(...)` | Allocate a sparsity budget across a training minibatch. |
+| [Matryoshka BatchTopK](sae/matryoshka_batchtopk.md) | `probe.sae.matryoshka_batchtopk(...)` | Train nested dictionary prefixes with shared sparse codes. |
+| [Archetypal TopK](sae/archetypal_topk.md) | `probe.sae.archetypal_topk(...)` | Constrain TopK dictionary atoms with training-data anchors. |
+| [Archetypal JumpReLU](sae/archetypal_jumprelu.md) | `probe.sae.archetypal_jumprelu(...)` | Combine learned thresholds and an archetypal dictionary. |
+| [Matching Pursuit](sae/matching_pursuit.md) | `probe.sae.matching_pursuit(...)` | Greedily encode residuals with nonnegative coefficients. |
+| [Signed MP](sae/signed_matching_pursuit.md) | `probe.sae.signed_matching_pursuit(...)` | Greedily encode residuals with signed coefficients. |
+| [Nonnegative OMP](sae/orthogonal_matching_pursuit.md) | `probe.sae.orthogonal_matching_pursuit(...)` | Refit nonnegative coefficients jointly on selected support. |
+| [Signed OMP](sae/signed_orthogonal_matching_pursuit.md) | `probe.sae.signed_orthogonal_matching_pursuit(...)` | Refit signed coefficients by least squares. |
+| [QSAE](sae/qsae.md) | `probe.sae.qsae(...)` | Use learned scalar quantization levels; an experimental recipe. |
 
-torch.manual_seed(7)
-torch.set_num_threads(1)
-model = TinyModel().eval()
-probe = Prober(model)
-inputs = {"input_ids": torch.tensor([[1, 2, 3], [3, 4, 5]]),
-          "image_tokens": torch.randn(2, 2, 6)}
-corrupt = {**inputs, "image_tokens": torch.zeros_like(inputs["image_tokens"])}
-calibration = inputs
-evaluation = {**inputs, "image_tokens": torch.randn(2, 2, 6)}
-metric = TokenMargin(positive=4, negative=5)
-```
-
-Here vocabulary IDs 4 and 5 are synthetic labels. For a pretrained model, choose
-verified single-token labels with its tokenizer, or use
-[SequenceLogProb](../API.md#metrics-and-explicit-layouts) for full answers.
-For causal comparisons, prepare aligned clean/corrupt inputs. For fitted lenses,
-use a representative calibration set and separate evaluation data.
-
-## Shared conventions
-
-`layers=None` selects available method sites; indices are zero-based. Tokens may
-be `"all"`, `"visual"`, `"text"`, `"last_prompt"`, a position/list, or a boolean
-`[B,T]` mask. Positions refer to the expanded language sequence. `"last_prompt"`
-means the last valid token unless an explicit prompt mask is supplied.
-
-In output shapes, `L` is the number of selected layers, `B` batch size, `T/Q`
-sequence/query length, `H` heads, `V` vocabulary size, and `N` packed selected
-positions. Lens `positions[N,2]` maps packed rows to batch/token coordinates.
-Layer metadata preserves the chosen order. Results default to detached CPU tensors;
-`result.save(directory)` writes tensors and JSON metadata.
-
-See [the full API](../API.md), [custom adapters](../ADAPTERS.md), and the
-[paper index](../REFERENCES.md) for shared contracts and sources.
+[Model cards](sae/models/README.md) · [Training](sae/training/README.md) · [Shared API](sae/API.md)

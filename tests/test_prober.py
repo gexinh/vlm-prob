@@ -28,7 +28,9 @@ class ProberTests(unittest.TestCase):
 
     def test_auto_and_describe_are_read_only(self):
         summary = self.probe.describe()
-        self.assertEqual(sum(x["available"] for x in summary["methods"].values()), 22)
+        self.assertEqual(sum(x["available"] for x in summary["methods"].values()), 26)
+        self.assertTrue(summary["methods"]["sae.features"]["available"])
+        self.assertTrue(summary["methods"]["sae.edit"]["available"])
         self.assertTrue(self.model.training)
         with self.assertRaises(CapabilityError):
             Prober(torch.nn.Linear(2, 2))
