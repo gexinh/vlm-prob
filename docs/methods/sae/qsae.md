@@ -8,13 +8,13 @@ This method is experimental; the recipe below states exactly what is implemented
 
 ## Principle
 
-Here $u$ is the declared normalized backbone activation, $D$ is the decoder
-dictionary, and $b_d$ is its bias. With the default scalar recipe, normalization
+Here $`u`$ is the declared normalized backbone activation, $`D`$ is the decoder
+dictionary, and $`b_d`$ is its bias. With the default scalar recipe, normalization
 is fitted on training activations and decoded values are returned in raw units.
 
-Let $a=W_e(u-b_d)+b_e$ and learn scalar levels $c_1,\ldots,c_Q$,
+Let $`a=W_e(u-b_d)+b_e`$ and learn scalar levels $`c_1,\ldots,c_Q`$,
 initialized uniformly from zero to one. Soft quantization uses weights
-$\operatorname{softmax}(-(a_i-c_q)^2)$; hard quantization selects the nearest
+$`\mathrm{softmax}(-(a_i-c_q)^2)`$; hard quantization selects the nearest
 level. A straight-through expression sends the rectified encoder gradient
 through the quantized values, with nonnegative final codes. The default loss is
 reconstruction alone. **Quantization does not ensure sparse codes**: a soft

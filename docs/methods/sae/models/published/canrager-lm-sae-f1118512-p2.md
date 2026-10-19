@@ -10,6 +10,285 @@ Select a dictionary below, download its author weights, and preserve its source 
 
 Pages: [1](canrager-lm-sae-f1118512-p1.md) · [2](canrager-lm-sae-f1118512-p2.md) · [3](canrager-lm-sae-f1118512-p3.md) · [4](canrager-lm-sae-f1118512-p4.md)
 
+<a id="sae-ed44bf0c921a749122cee7b0"></a>
+
+## blocks.3.hook_resid_post__trainer_4 on pythia-70m-deduped
+
+**Model ID:** `sae-ed44bf0c921a749122cee7b0`
+
+[Checkpoint files](https://huggingface.co/canrager/lm_sae/tree/1f4fc9d1f8abe6c08e715fa1cef6d5fcb2c68b9a/pythia70m_sweep_gated_ctx128_0730/resid_post_layer_3/trainer_4)
+
+| Property | Value |
+| --- | --- |
+| Artifact | SAE dictionary |
+| Base model | `pythia-70m-deduped` |
+| Method | [gated](../../gated.md) |
+| Source hook / output | `resid_post_layer_3` |
+| Layer | 3 |
+| Activation width | 512 |
+| Dictionary features | 4096 |
+| Checkpoint license | Not specified |
+| Checkpoint revision | `1f4fc9d1f8abe6c08e715fa1cef6d5fcb2c68b9a` |
+| Tensor format | saelens |
+
+**Input / activation conventions:**
+
+`{"context_size": 128, "source_activation_io": "out", "source_submodule": "resid_post_layer_3"}`
+
+[Checkpoint configuration](https://huggingface.co/canrager/lm_sae/resolve/1f4fc9d1f8abe6c08e715fa1cef6d5fcb2c68b9a/pythia70m_sweep_gated_ctx128_0730/resid_post_layer_3/trainer_4/config.json)
+
+**Published release names:** `sae_bench_pythia70m_sweep_gated_ctx128_0730` / `blocks.3.hook_resid_post__trainer_4`
+
+---
+
+<a id="sae-a7a20d4415baa7800605860d"></a>
+
+## blocks.3.hook_resid_post__trainer_5 on pythia-70m-deduped
+
+**Model ID:** `sae-a7a20d4415baa7800605860d`
+
+[Checkpoint files](https://huggingface.co/canrager/lm_sae/tree/1f4fc9d1f8abe6c08e715fa1cef6d5fcb2c68b9a/pythia70m_sweep_gated_ctx128_0730/resid_post_layer_3/trainer_5)
+
+| Property | Value |
+| --- | --- |
+| Artifact | SAE dictionary |
+| Base model | `pythia-70m-deduped` |
+| Method | [gated](../../gated.md) |
+| Source hook / output | `resid_post_layer_3` |
+| Layer | 3 |
+| Activation width | 512 |
+| Dictionary features | 4096 |
+| Checkpoint license | Not specified |
+| Checkpoint revision | `1f4fc9d1f8abe6c08e715fa1cef6d5fcb2c68b9a` |
+| Tensor format | saelens |
+
+**Input / activation conventions:**
+
+`{"context_size": 128, "source_activation_io": "out", "source_submodule": "resid_post_layer_3"}`
+
+[Checkpoint configuration](https://huggingface.co/canrager/lm_sae/resolve/1f4fc9d1f8abe6c08e715fa1cef6d5fcb2c68b9a/pythia70m_sweep_gated_ctx128_0730/resid_post_layer_3/trainer_5/config.json)
+
+**Published release names:** `sae_bench_pythia70m_sweep_gated_ctx128_0730` / `blocks.3.hook_resid_post__trainer_5`
+
+---
+
+<a id="sae-706d0cb86843ddb3d5fe4aff"></a>
+
+## blocks.3.hook_resid_post__trainer_8 on pythia-70m-deduped
+
+**Model ID:** `sae-706d0cb86843ddb3d5fe4aff`
+
+[Checkpoint files](https://huggingface.co/canrager/lm_sae/tree/1f4fc9d1f8abe6c08e715fa1cef6d5fcb2c68b9a/pythia70m_sweep_gated_ctx128_0730/resid_post_layer_3/trainer_8)
+
+| Property | Value |
+| --- | --- |
+| Artifact | SAE dictionary |
+| Base model | `pythia-70m-deduped` |
+| Method | [gated](../../gated.md) |
+| Source hook / output | `resid_post_layer_3` |
+| Layer | 3 |
+| Activation width | 512 |
+| Dictionary features | 4096 |
+| Checkpoint license | Not specified |
+| Checkpoint revision | `1f4fc9d1f8abe6c08e715fa1cef6d5fcb2c68b9a` |
+| Tensor format | saelens |
+
+**Input / activation conventions:**
+
+`{"context_size": 128, "source_activation_io": "out", "source_submodule": "resid_post_layer_3"}`
+
+[Checkpoint configuration](https://huggingface.co/canrager/lm_sae/resolve/1f4fc9d1f8abe6c08e715fa1cef6d5fcb2c68b9a/pythia70m_sweep_gated_ctx128_0730/resid_post_layer_3/trainer_8/config.json)
+
+**Published release names:** `sae_bench_pythia70m_sweep_gated_ctx128_0730` / `blocks.3.hook_resid_post__trainer_8`
+
+---
+
+<a id="sae-ffb2d775357ed9e0065dd338"></a>
+
+## blocks.3.hook_resid_post__trainer_9 on pythia-70m-deduped
+
+**Model ID:** `sae-ffb2d775357ed9e0065dd338`
+
+[Checkpoint files](https://huggingface.co/canrager/lm_sae/tree/1f4fc9d1f8abe6c08e715fa1cef6d5fcb2c68b9a/pythia70m_sweep_gated_ctx128_0730/resid_post_layer_3/trainer_9)
+
+| Property | Value |
+| --- | --- |
+| Artifact | SAE dictionary |
+| Base model | `pythia-70m-deduped` |
+| Method | [gated](../../gated.md) |
+| Source hook / output | `resid_post_layer_3` |
+| Layer | 3 |
+| Activation width | 512 |
+| Dictionary features | 4096 |
+| Checkpoint license | Not specified |
+| Checkpoint revision | `1f4fc9d1f8abe6c08e715fa1cef6d5fcb2c68b9a` |
+| Tensor format | saelens |
+
+**Input / activation conventions:**
+
+`{"context_size": 128, "source_activation_io": "out", "source_submodule": "resid_post_layer_3"}`
+
+[Checkpoint configuration](https://huggingface.co/canrager/lm_sae/resolve/1f4fc9d1f8abe6c08e715fa1cef6d5fcb2c68b9a/pythia70m_sweep_gated_ctx128_0730/resid_post_layer_3/trainer_9/config.json)
+
+**Published release names:** `sae_bench_pythia70m_sweep_gated_ctx128_0730` / `blocks.3.hook_resid_post__trainer_9`
+
+---
+
+<a id="sae-9048dbce95e7f536cc2b5eea"></a>
+
+## blocks.3.hook_resid_post__trainer_3 on pythia-70m-deduped
+
+**Model ID:** `sae-9048dbce95e7f536cc2b5eea`
+
+[Checkpoint files](https://huggingface.co/canrager/lm_sae/tree/1f4fc9d1f8abe6c08e715fa1cef6d5fcb2c68b9a/pythia70m_sweep_gated_ctx128_0730/resid_post_layer_3/trainer_3)
+
+| Property | Value |
+| --- | --- |
+| Artifact | SAE dictionary |
+| Base model | `pythia-70m-deduped` |
+| Method | [gated](../../gated.md) |
+| Source hook / output | `resid_post_layer_3` |
+| Layer | 3 |
+| Activation width | 512 |
+| Dictionary features | 16384 |
+| Checkpoint license | Not specified |
+| Checkpoint revision | `1f4fc9d1f8abe6c08e715fa1cef6d5fcb2c68b9a` |
+| Tensor format | saelens |
+
+**Input / activation conventions:**
+
+`{"context_size": 128, "source_activation_io": "out", "source_submodule": "resid_post_layer_3"}`
+
+[Checkpoint configuration](https://huggingface.co/canrager/lm_sae/resolve/1f4fc9d1f8abe6c08e715fa1cef6d5fcb2c68b9a/pythia70m_sweep_gated_ctx128_0730/resid_post_layer_3/trainer_3/config.json)
+
+**Published release names:** `sae_bench_pythia70m_sweep_gated_ctx128_0730` / `blocks.3.hook_resid_post__trainer_3`
+
+---
+
+<a id="sae-230c4696b3b551fdc8651919"></a>
+
+## blocks.3.hook_resid_post__trainer_6 on pythia-70m-deduped
+
+**Model ID:** `sae-230c4696b3b551fdc8651919`
+
+[Checkpoint files](https://huggingface.co/canrager/lm_sae/tree/1f4fc9d1f8abe6c08e715fa1cef6d5fcb2c68b9a/pythia70m_sweep_gated_ctx128_0730/resid_post_layer_3/trainer_6)
+
+| Property | Value |
+| --- | --- |
+| Artifact | SAE dictionary |
+| Base model | `pythia-70m-deduped` |
+| Method | [gated](../../gated.md) |
+| Source hook / output | `resid_post_layer_3` |
+| Layer | 3 |
+| Activation width | 512 |
+| Dictionary features | 16384 |
+| Checkpoint license | Not specified |
+| Checkpoint revision | `1f4fc9d1f8abe6c08e715fa1cef6d5fcb2c68b9a` |
+| Tensor format | saelens |
+
+**Input / activation conventions:**
+
+`{"context_size": 128, "source_activation_io": "out", "source_submodule": "resid_post_layer_3"}`
+
+[Checkpoint configuration](https://huggingface.co/canrager/lm_sae/resolve/1f4fc9d1f8abe6c08e715fa1cef6d5fcb2c68b9a/pythia70m_sweep_gated_ctx128_0730/resid_post_layer_3/trainer_6/config.json)
+
+**Published release names:** `sae_bench_pythia70m_sweep_gated_ctx128_0730` / `blocks.3.hook_resid_post__trainer_6`
+
+---
+
+<a id="sae-8b44d149f36ae0691fb2e28a"></a>
+
+## blocks.3.hook_resid_post__trainer_7 on pythia-70m-deduped
+
+**Model ID:** `sae-8b44d149f36ae0691fb2e28a`
+
+[Checkpoint files](https://huggingface.co/canrager/lm_sae/tree/1f4fc9d1f8abe6c08e715fa1cef6d5fcb2c68b9a/pythia70m_sweep_gated_ctx128_0730/resid_post_layer_3/trainer_7)
+
+| Property | Value |
+| --- | --- |
+| Artifact | SAE dictionary |
+| Base model | `pythia-70m-deduped` |
+| Method | [gated](../../gated.md) |
+| Source hook / output | `resid_post_layer_3` |
+| Layer | 3 |
+| Activation width | 512 |
+| Dictionary features | 16384 |
+| Checkpoint license | Not specified |
+| Checkpoint revision | `1f4fc9d1f8abe6c08e715fa1cef6d5fcb2c68b9a` |
+| Tensor format | saelens |
+
+**Input / activation conventions:**
+
+`{"context_size": 128, "source_activation_io": "out", "source_submodule": "resid_post_layer_3"}`
+
+[Checkpoint configuration](https://huggingface.co/canrager/lm_sae/resolve/1f4fc9d1f8abe6c08e715fa1cef6d5fcb2c68b9a/pythia70m_sweep_gated_ctx128_0730/resid_post_layer_3/trainer_7/config.json)
+
+**Published release names:** `sae_bench_pythia70m_sweep_gated_ctx128_0730` / `blocks.3.hook_resid_post__trainer_7`
+
+---
+
+<a id="sae-fd32a64b30c85ec8cd68ef12"></a>
+
+## blocks.4.hook_resid_post__trainer_0 on pythia-70m-deduped
+
+**Model ID:** `sae-fd32a64b30c85ec8cd68ef12`
+
+[Checkpoint files](https://huggingface.co/canrager/lm_sae/tree/1f4fc9d1f8abe6c08e715fa1cef6d5fcb2c68b9a/pythia70m_sweep_gated_ctx128_0730/resid_post_layer_4/trainer_0)
+
+| Property | Value |
+| --- | --- |
+| Artifact | SAE dictionary |
+| Base model | `pythia-70m-deduped` |
+| Method | [gated](../../gated.md) |
+| Source hook / output | `resid_post_layer_4` |
+| Layer | 4 |
+| Activation width | 512 |
+| Dictionary features | 4096 |
+| Checkpoint license | Not specified |
+| Checkpoint revision | `1f4fc9d1f8abe6c08e715fa1cef6d5fcb2c68b9a` |
+| Tensor format | saelens |
+
+**Input / activation conventions:**
+
+`{"context_size": 128, "source_activation_io": "out", "source_submodule": "resid_post_layer_4"}`
+
+[Checkpoint configuration](https://huggingface.co/canrager/lm_sae/resolve/1f4fc9d1f8abe6c08e715fa1cef6d5fcb2c68b9a/pythia70m_sweep_gated_ctx128_0730/resid_post_layer_4/trainer_0/config.json)
+
+**Published release names:** `sae_bench_pythia70m_sweep_gated_ctx128_0730` / `blocks.4.hook_resid_post__trainer_0`
+
+---
+
+<a id="sae-a646fa040234dc40f34c7679"></a>
+
+## blocks.4.hook_resid_post__trainer_1 on pythia-70m-deduped
+
+**Model ID:** `sae-a646fa040234dc40f34c7679`
+
+[Checkpoint files](https://huggingface.co/canrager/lm_sae/tree/1f4fc9d1f8abe6c08e715fa1cef6d5fcb2c68b9a/pythia70m_sweep_gated_ctx128_0730/resid_post_layer_4/trainer_1)
+
+| Property | Value |
+| --- | --- |
+| Artifact | SAE dictionary |
+| Base model | `pythia-70m-deduped` |
+| Method | [gated](../../gated.md) |
+| Source hook / output | `resid_post_layer_4` |
+| Layer | 4 |
+| Activation width | 512 |
+| Dictionary features | 4096 |
+| Checkpoint license | Not specified |
+| Checkpoint revision | `1f4fc9d1f8abe6c08e715fa1cef6d5fcb2c68b9a` |
+| Tensor format | saelens |
+
+**Input / activation conventions:**
+
+`{"context_size": 128, "source_activation_io": "out", "source_submodule": "resid_post_layer_4"}`
+
+[Checkpoint configuration](https://huggingface.co/canrager/lm_sae/resolve/1f4fc9d1f8abe6c08e715fa1cef6d5fcb2c68b9a/pythia70m_sweep_gated_ctx128_0730/resid_post_layer_4/trainer_1/config.json)
+
+**Published release names:** `sae_bench_pythia70m_sweep_gated_ctx128_0730` / `blocks.4.hook_resid_post__trainer_1`
+
+---
+
 <a id="sae-bc8a2d61027f9a52ae351224"></a>
 
 ## blocks.3.hook_resid_post__trainer_2 on pythia-70m-deduped
@@ -360,31 +639,6 @@ Pages: [1](canrager-lm-sae-f1118512-p1.md) · [2](canrager-lm-sae-f1118512-p2.md
 
 ---
 
-<a id="sae-9048dbce95e7f536cc2b5eea"></a>
-
-## blocks.3.hook_resid_post__trainer_3 on pythia-70m-deduped
-
-**Model ID:** `sae-9048dbce95e7f536cc2b5eea`
-
-[Checkpoint files](https://huggingface.co/canrager/lm_sae/tree/main/pythia70m_sweep_gated_ctx128_0730/resid_post_layer_3/trainer_3)
-
-| Property | Value |
-| --- | --- |
-| Artifact | SAE dictionary |
-| Base model | `pythia-70m-deduped` |
-| Method | Not reported |
-| Source hook / output | `Not specified` |
-| Layer | Not specified |
-| Activation width | Not specified |
-| Dictionary features | Not specified |
-| Checkpoint license | Not specified |
-| Checkpoint revision | `Not specified` |
-| Tensor format | saelens |
-
-**Published release names:** `sae_bench_pythia70m_sweep_gated_ctx128_0730` / `blocks.3.hook_resid_post__trainer_3`
-
----
-
 <a id="sae-78fa87e4f65f0b4c2de72dfc"></a>
 
 ## blocks.3.hook_resid_post__trainer_3 on pythia-70m-deduped
@@ -457,31 +711,6 @@ Pages: [1](canrager-lm-sae-f1118512-p1.md) · [2](canrager-lm-sae-f1118512-p2.md
 | Tensor format | saelens |
 
 **Published release names:** `sae_bench_pythia70m_sweep_topk_ctx128_0730` / `blocks.3.hook_resid_post__trainer_3`
-
----
-
-<a id="sae-ed44bf0c921a749122cee7b0"></a>
-
-## blocks.3.hook_resid_post__trainer_4 on pythia-70m-deduped
-
-**Model ID:** `sae-ed44bf0c921a749122cee7b0`
-
-[Checkpoint files](https://huggingface.co/canrager/lm_sae/tree/main/pythia70m_sweep_gated_ctx128_0730/resid_post_layer_3/trainer_4)
-
-| Property | Value |
-| --- | --- |
-| Artifact | SAE dictionary |
-| Base model | `pythia-70m-deduped` |
-| Method | Not reported |
-| Source hook / output | `Not specified` |
-| Layer | Not specified |
-| Activation width | Not specified |
-| Dictionary features | Not specified |
-| Checkpoint license | Not specified |
-| Checkpoint revision | `Not specified` |
-| Tensor format | saelens |
-
-**Published release names:** `sae_bench_pythia70m_sweep_gated_ctx128_0730` / `blocks.3.hook_resid_post__trainer_4`
 
 ---
 
@@ -560,31 +789,6 @@ Pages: [1](canrager-lm-sae-f1118512-p1.md) · [2](canrager-lm-sae-f1118512-p2.md
 
 ---
 
-<a id="sae-a7a20d4415baa7800605860d"></a>
-
-## blocks.3.hook_resid_post__trainer_5 on pythia-70m-deduped
-
-**Model ID:** `sae-a7a20d4415baa7800605860d`
-
-[Checkpoint files](https://huggingface.co/canrager/lm_sae/tree/main/pythia70m_sweep_gated_ctx128_0730/resid_post_layer_3/trainer_5)
-
-| Property | Value |
-| --- | --- |
-| Artifact | SAE dictionary |
-| Base model | `pythia-70m-deduped` |
-| Method | Not reported |
-| Source hook / output | `Not specified` |
-| Layer | Not specified |
-| Activation width | Not specified |
-| Dictionary features | Not specified |
-| Checkpoint license | Not specified |
-| Checkpoint revision | `Not specified` |
-| Tensor format | saelens |
-
-**Published release names:** `sae_bench_pythia70m_sweep_gated_ctx128_0730` / `blocks.3.hook_resid_post__trainer_5`
-
----
-
 <a id="sae-8b6d1115d399afc1b850e0f6"></a>
 
 ## blocks.3.hook_resid_post__trainer_5 on pythia-70m-deduped
@@ -657,31 +861,6 @@ Pages: [1](canrager-lm-sae-f1118512-p1.md) · [2](canrager-lm-sae-f1118512-p2.md
 | Tensor format | saelens |
 
 **Published release names:** `sae_bench_pythia70m_sweep_topk_ctx128_0730` / `blocks.3.hook_resid_post__trainer_5`
-
----
-
-<a id="sae-230c4696b3b551fdc8651919"></a>
-
-## blocks.3.hook_resid_post__trainer_6 on pythia-70m-deduped
-
-**Model ID:** `sae-230c4696b3b551fdc8651919`
-
-[Checkpoint files](https://huggingface.co/canrager/lm_sae/tree/main/pythia70m_sweep_gated_ctx128_0730/resid_post_layer_3/trainer_6)
-
-| Property | Value |
-| --- | --- |
-| Artifact | SAE dictionary |
-| Base model | `pythia-70m-deduped` |
-| Method | Not reported |
-| Source hook / output | `Not specified` |
-| Layer | Not specified |
-| Activation width | Not specified |
-| Dictionary features | Not specified |
-| Checkpoint license | Not specified |
-| Checkpoint revision | `Not specified` |
-| Tensor format | saelens |
-
-**Published release names:** `sae_bench_pythia70m_sweep_gated_ctx128_0730` / `blocks.3.hook_resid_post__trainer_6`
 
 ---
 
@@ -760,31 +939,6 @@ Pages: [1](canrager-lm-sae-f1118512-p1.md) · [2](canrager-lm-sae-f1118512-p2.md
 
 ---
 
-<a id="sae-8b44d149f36ae0691fb2e28a"></a>
-
-## blocks.3.hook_resid_post__trainer_7 on pythia-70m-deduped
-
-**Model ID:** `sae-8b44d149f36ae0691fb2e28a`
-
-[Checkpoint files](https://huggingface.co/canrager/lm_sae/tree/main/pythia70m_sweep_gated_ctx128_0730/resid_post_layer_3/trainer_7)
-
-| Property | Value |
-| --- | --- |
-| Artifact | SAE dictionary |
-| Base model | `pythia-70m-deduped` |
-| Method | Not reported |
-| Source hook / output | `Not specified` |
-| Layer | Not specified |
-| Activation width | Not specified |
-| Dictionary features | Not specified |
-| Checkpoint license | Not specified |
-| Checkpoint revision | `Not specified` |
-| Tensor format | saelens |
-
-**Published release names:** `sae_bench_pythia70m_sweep_gated_ctx128_0730` / `blocks.3.hook_resid_post__trainer_7`
-
----
-
 <a id="sae-e6902aa284c9218b0a119c62"></a>
 
 ## blocks.3.hook_resid_post__trainer_7 on pythia-70m-deduped
@@ -857,31 +1011,6 @@ Pages: [1](canrager-lm-sae-f1118512-p1.md) · [2](canrager-lm-sae-f1118512-p2.md
 | Tensor format | saelens |
 
 **Published release names:** `sae_bench_pythia70m_sweep_topk_ctx128_0730` / `blocks.3.hook_resid_post__trainer_7`
-
----
-
-<a id="sae-706d0cb86843ddb3d5fe4aff"></a>
-
-## blocks.3.hook_resid_post__trainer_8 on pythia-70m-deduped
-
-**Model ID:** `sae-706d0cb86843ddb3d5fe4aff`
-
-[Checkpoint files](https://huggingface.co/canrager/lm_sae/tree/main/pythia70m_sweep_gated_ctx128_0730/resid_post_layer_3/trainer_8)
-
-| Property | Value |
-| --- | --- |
-| Artifact | SAE dictionary |
-| Base model | `pythia-70m-deduped` |
-| Method | Not reported |
-| Source hook / output | `Not specified` |
-| Layer | Not specified |
-| Activation width | Not specified |
-| Dictionary features | Not specified |
-| Checkpoint license | Not specified |
-| Checkpoint revision | `Not specified` |
-| Tensor format | saelens |
-
-**Published release names:** `sae_bench_pythia70m_sweep_gated_ctx128_0730` / `blocks.3.hook_resid_post__trainer_8`
 
 ---
 
@@ -960,31 +1089,6 @@ Pages: [1](canrager-lm-sae-f1118512-p1.md) · [2](canrager-lm-sae-f1118512-p2.md
 
 ---
 
-<a id="sae-ffb2d775357ed9e0065dd338"></a>
-
-## blocks.3.hook_resid_post__trainer_9 on pythia-70m-deduped
-
-**Model ID:** `sae-ffb2d775357ed9e0065dd338`
-
-[Checkpoint files](https://huggingface.co/canrager/lm_sae/tree/main/pythia70m_sweep_gated_ctx128_0730/resid_post_layer_3/trainer_9)
-
-| Property | Value |
-| --- | --- |
-| Artifact | SAE dictionary |
-| Base model | `pythia-70m-deduped` |
-| Method | Not reported |
-| Source hook / output | `Not specified` |
-| Layer | Not specified |
-| Activation width | Not specified |
-| Dictionary features | Not specified |
-| Checkpoint license | Not specified |
-| Checkpoint revision | `Not specified` |
-| Tensor format | saelens |
-
-**Published release names:** `sae_bench_pythia70m_sweep_gated_ctx128_0730` / `blocks.3.hook_resid_post__trainer_9`
-
----
-
 <a id="sae-59394d479f511c35bc86087d"></a>
 
 ## blocks.3.hook_resid_post__trainer_9 on pythia-70m-deduped
@@ -1060,31 +1164,6 @@ Pages: [1](canrager-lm-sae-f1118512-p1.md) · [2](canrager-lm-sae-f1118512-p2.md
 
 ---
 
-<a id="sae-fd32a64b30c85ec8cd68ef12"></a>
-
-## blocks.4.hook_resid_post__trainer_0 on pythia-70m-deduped
-
-**Model ID:** `sae-fd32a64b30c85ec8cd68ef12`
-
-[Checkpoint files](https://huggingface.co/canrager/lm_sae/tree/main/pythia70m_sweep_gated_ctx128_0730/resid_post_layer_4/trainer_0)
-
-| Property | Value |
-| --- | --- |
-| Artifact | SAE dictionary |
-| Base model | `pythia-70m-deduped` |
-| Method | Not reported |
-| Source hook / output | `Not specified` |
-| Layer | Not specified |
-| Activation width | Not specified |
-| Dictionary features | Not specified |
-| Checkpoint license | Not specified |
-| Checkpoint revision | `Not specified` |
-| Tensor format | saelens |
-
-**Published release names:** `sae_bench_pythia70m_sweep_gated_ctx128_0730` / `blocks.4.hook_resid_post__trainer_0`
-
----
-
 <a id="sae-7c5ca1a1fe257a8508c2e17a"></a>
 
 ## blocks.4.hook_resid_post__trainer_0 on pythia-70m-deduped
@@ -1157,31 +1236,6 @@ Pages: [1](canrager-lm-sae-f1118512-p1.md) · [2](canrager-lm-sae-f1118512-p2.md
 | Tensor format | saelens |
 
 **Published release names:** `sae_bench_pythia70m_sweep_topk_ctx128_0730` / `blocks.4.hook_resid_post__trainer_0`
-
----
-
-<a id="sae-a646fa040234dc40f34c7679"></a>
-
-## blocks.4.hook_resid_post__trainer_1 on pythia-70m-deduped
-
-**Model ID:** `sae-a646fa040234dc40f34c7679`
-
-[Checkpoint files](https://huggingface.co/canrager/lm_sae/tree/main/pythia70m_sweep_gated_ctx128_0730/resid_post_layer_4/trainer_1)
-
-| Property | Value |
-| --- | --- |
-| Artifact | SAE dictionary |
-| Base model | `pythia-70m-deduped` |
-| Method | Not reported |
-| Source hook / output | `Not specified` |
-| Layer | Not specified |
-| Activation width | Not specified |
-| Dictionary features | Not specified |
-| Checkpoint license | Not specified |
-| Checkpoint revision | `Not specified` |
-| Tensor format | saelens |
-
-**Published release names:** `sae_bench_pythia70m_sweep_gated_ctx128_0730` / `blocks.4.hook_resid_post__trainer_1`
 
 ---
 

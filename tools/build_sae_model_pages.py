@@ -25,6 +25,139 @@ def escape_cell(item):
     return value(item).replace('|', '\\|').replace('\n', ' ')
 
 
+def natural_key(text):
+    """Keep model sizes and layer numbers in numerical reading order."""
+    return tuple(int(part) if part.isdigit() else part.lower()
+                 for part in re.split(r'(\d+)', text))
+
+
+def backbone_family(base_model):
+    """Group the declared backbone, independently of its checkpoint author."""
+    name = base_model.lower().rsplit('/', 1)[-1]
+    if 'clip-vit-' in name:
+        return 'CLIP', 'vision'
+    if name.startswith(('dino-', 'dinov2', 'dino_')):
+        return 'DINO', 'vision'
+    if name.startswith('deepseek-'):
+        return 'DeepSeek', 'language'
+    for prefix, family in (('gpt2', 'GPT-2'), ('gpt-oss', 'GPT-OSS'),
+                           ('gemma', 'Gemma'), ('llama', 'Llama'),
+                           ('meta-llama', 'Llama'), ('qwen', 'Qwen'),
+                           ('pythia', 'Pythia'), ('mistral', 'Mistral')):
+        if name.startswith(prefix):
+            return family, 'language'
+    return 'Other backbones', 'other'
+
+
+def model_anchor(base_model):
+    return 'model-' + re.sub(r'[^a-z0-9]+', '-', base_model.lower()).strip('-')
+
+
+def layer_summary(cards):
+    """Compress contiguous layer runs without filling gaps in the metadata."""
+    layers = sorted({card['layer'] for card in cards if card['layer'] is not None})
+    runs = []
+    for layer in layers:
+        if runs and layer == runs[-1][-1] + 1:
+            runs[-1].append(layer)
+        else:
+            runs.append([layer])
+    labels = [str(run[0]) if len(run) == 1 else
+              ', '.join(map(str, run)) if len(run) == 2 else
+              f'{run[0]}–{run[-1]}' for run in runs]
+    if layers and any(card['layer'] is None for card in cards):
+        labels.append('unspecified')
+    return ', '.join(labels) or '—'
+
+
+def output_summary(cards):
+    outputs = set()
+    for card in cards:
+        hook = card.get('hook')
+        if hook:
+            # The full source hook remains on each model information card.
+            hook = re.sub(r'^blocks\.\d+\.', '', hook)
+            hook = re.sub(r'_layer_\d+$', '', hook)
+            outputs.add(hook.replace('hook_', ''))
+    return ', '.join(f'`{escape_cell(hook)}`' for hook in sorted(outputs)) or '—'
+
+
+def card_path(card):
+    path, anchor = card['links']['card'].split('#', 1)
+    return f'{Path(path).name}#{anchor}'
+
+
+def repository_index(cards):
+    """One-page backbone directory with every published collection reachable."""
+    by_model = defaultdict(list)
+    for card in cards:
+        if card['artifact_kind'] == 'sae':
+            by_model[card['base_model']].append(card)
+    family_order = ('GPT-2', 'GPT-OSS', 'Gemma', 'Llama', 'DeepSeek', 'Mistral',
+                    'Pythia', 'Qwen', 'CLIP', 'DINO', 'Other backbones')
+    models = sorted(by_model, key=lambda name: (
+        family_order.index(backbone_family(name)[0]), natural_key(name)))
+    lines = ['# Published SAE checkpoint repositories', '',
+             '[Model hub](../README.md) · [Search model cards](../web/README.md) · '
+             '[Load a checkpoint](../../loading.md)', '',
+             'Choose a backbone to browse its checkpoint collections, layers and model cards.', '']
+    for kind, title in (('language', 'Language and multimodal backbones'),
+                        ('vision', 'Vision backbones'), ('other', 'Other backbones')):
+        selected = [name for name in models if backbone_family(name)[1] == kind]
+        if not selected:
+            continue
+        lines += [f'## {title}', '',
+                  '| Base model | Checkpoint repositories | SAE checkpoints |',
+                  '| --- | ---: | ---: |']
+        for name in selected:
+            group = by_model[name]
+            count = len({card['download']['repo_id'] for card in group})
+            lines += [f'| [{escape_cell(name)}](#{model_anchor(name)}) | {count} | {len(group):,} |']
+        lines += ['']
+    lines += ['## Checkpoint collections by backbone', '']
+    for family in family_order:
+        selected = [name for name in models if backbone_family(name)[0] == family]
+        if not selected:
+            continue
+        lines += [f'### {family}', '']
+        for name in selected:
+            group = by_model[name]
+            lines += [f'<a id="{model_anchor(name)}"></a>', '', f'#### {escape_cell(name)}', '']
+            if backbone_family(name)[1] == 'vision':
+                by_scope = defaultdict(list)
+                for card in group:
+                    scope = card.get('input_conventions', {}).get('token_scope') or 'SAE dictionaries'
+                    by_scope[scope].append(card)
+                for scope, scope_cards in sorted(by_scope.items()):
+                    lines += [f'**{escape_cell(scope)}**', '',
+                              '| Layer | Output | Method | Features | Model card | Weights |',
+                              '| ---: | --- | --- | ---: | --- | --- |']
+                    for card in sorted(scope_cards, key=lambda item: (
+                            item['layer'] is None, item['layer'] or 0, item.get('hook') or '', item['id'])):
+                        label = {'relu': 'ReLU', 'topk': 'TopK'}.get(card['method'], card['method'])
+                        if label == 'unknown':
+                            label = '—'
+                        features = card['dimensions'].get('features')
+                        features_label = f'{features:,}' if features is not None else '—'
+                        lines += [f'| {value(card["layer"])} | {output_summary([card])} | '
+                                  f'{escape_cell(label)} | {features_label} | [Model card]({card_path(card)}) | '
+                                  f'[Download]({card["links"]["checkpoint"]}) |']
+                    lines += ['']
+            else:
+                by_repo = defaultdict(list)
+                for card in group:
+                    by_repo[card['download']['repo_id']].append(card)
+                lines += ['| Checkpoint collection | Layers | Outputs | Dictionaries | Model cards | Weights |',
+                          '| --- | --- | --- | ---: | --- | --- |']
+                for repo, repo_cards in sorted(by_repo.items(), key=lambda pair: natural_key(pair[0])):
+                    first = sorted(repo_cards, key=lambda item: natural_key(card_path(item)))[0]
+                    lines += [f'| {escape_cell(repo)} | {layer_summary(repo_cards)} | '
+                              f'{output_summary(repo_cards)} | {len(repo_cards):,} | '
+                              f'[Browse]({card_path(first)}) | [Repository](https://huggingface.co/{repo}) |']
+                lines += ['']
+    return '\n'.join(lines).rstrip() + '\n'
+
+
 def card_section(card, method_links=True):
     method = card['method']
     method_label = 'Not reported' if method == 'unknown' else method
@@ -108,18 +241,12 @@ def build(*, repository=None, ref=None, site_url=None):
             source_urls = sorted({c['origin'].get('registry_source_url') for c in group if c['origin'].get('registry_source_url')})
             lines += ['## Metadata sources', ''] + [f'- [Pinned published listing {i+1}]({url})' for i, url in enumerate(source_urls)]
             path.write_text('\n'.join(lines)+'\n')
-    # A compact index keeps the common model hub readable.
-    index = ['# Published SAE checkpoint repositories', '', '[Model hub](../README.md) · [Web browsing instructions](../web/README.md)', '',
-             '| Checkpoint repository | Base model | Dictionaries | Pages |', '| --- | --- | ---: | ---: |']
-    for repo, pages in sorted(by_repo.items()):
-        dictionaries = [c for p in pages for c in groups[p]]
-        models = ', '.join(sorted({c['base_model'] for c in dictionaries}))
-        index += [f'| [{escape_cell(repo)}]({Path(pages[0]).name}) | {escape_cell(models)} | {len(dictionaries)} | {len(pages)} |']
-    (DESTINATION/'published/README.md').write_text('\n'.join(index)+'\n')
+    (DESTINATION/'published/README.md').write_text(repository_index(cards))
     backbones = [c for c in cards if c['artifact_kind'] == 'backbone']
     lines = ['# Vision backbones for SAE training', '', '[Model hub](README.md) · [Training guide](../training/README.md)', '',
-        'These are pretrained **vision backbones**, not pretrained SAE dictionaries. They correspond to the activation-extraction models described in the Overcomplete source. Use their activations to train a dictionary with the shared SAE training workflow.', '',
-        'The untagged ViT alias is represented by an explicitly named published variant. Preserve the chosen checkpoint and transform in your training provenance.', '']
+        'Use these pretrained **vision backbones** to collect activations and train an SAE. '
+        'Each card lists the model checkpoint and output layer; the [training guide](../training/README.md) '
+        'covers activation collection, dictionary fitting and evaluation.', '']
     for card in backbones:
         lines += [card_section(card, method_links=False), f'[Model repository]({card["links"]["repository"]})', '', '---', '']
     (DESTINATION/'backbones.md').write_text('\n'.join(lines).rstrip()+'\n')
@@ -267,14 +394,18 @@ def build_web(cards, counts, *, repository, ref, site_url, output=None):
     document = document.replace('__COUNT__',f'{counts["sae_dictionaries"]:,}').replace('__BACKBONES__',str(counts['backbones']))
     document = document.replace('__GITHUB_JSON__',json.dumps(github_root).replace('<','\\u003c'))
     (web/'index.html').write_text(document+'\n')
-    instructions = '''# Browse SAE model cards on the web
+    instructions = '''# Search SAE model cards
 
-The interactive catalog renders model cards, searches the full checkpoint list,
-and loads detailed metadata only when a card is selected. GitHub's source-file
-viewer does not execute an HTML application; use the Markdown index or an HTTP
-server to browse before the project page is deployed.
+Search by backbone, SAE method, activation hook or dictionary width. Open a card
+to view its source configuration, input conventions and checkpoint downloads.
 
-## Browse from a local checkout
+## On the project page
+
+Open **SAE checkpoints** in the project page navigation. Select **Open model
+card** beside a search result to view its details. The URL fragment identifies
+the selected dictionary, so you can copy the URL to share that card directly.
+
+## From a local checkout
 
 Run this command in the repository root:
 
@@ -283,17 +414,12 @@ python -m http.server 8000
 ```
 
 Open <http://localhost:8000/docs/methods/sae/models/web/>. Keep the server running
-while searching and opening cards. Opening `index.html` as a `file://` URL is
-not supported because browsers block the external JSON requests.
+while searching and opening cards; the catalog loads its data over HTTP.
 
-[Browse the Markdown checkpoint repository index](../published/README.md).
+## On GitHub
 
-## Browse from the project page
-
-After these files are merged into the deployment branch and the normal project
-page workflow succeeds, the catalog is served at `sae-models/` under the project
-page. Each repository's deployment generates links for its own repository.
-A model card can be linked directly with `sae-models/#MODEL_ID`.
+Use the [model directory](../published/README.md) to browse checkpoints grouped
+by backbone and open their Markdown cards.
 '''
     (web/'README.md').write_text(instructions)
 

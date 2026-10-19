@@ -6,13 +6,13 @@ Combine train-anchor dictionary constraints with learned JumpReLU thresholds.
 
 ## Principle
 
-Here $u$ is the declared normalized backbone activation, $D$ is the decoder
-dictionary, and $b_d$ is its bias. With the default scalar recipe, normalization
+Here $`u`$ is the declared normalized backbone activation, $`D`$ is the decoder
+dictionary, and $`b_d`$ is its bias. With the default scalar recipe, normalization
 is fitted on training activations and decoded values are returned in raw units.
 
-Use $D=(\operatorname{softmax}(C)A)^\top+R$ with train-only,
+Use $`D=(\mathrm{softmax}(C)A)^\top+R`$ with train-only,
 normalized/centered anchors and bounded relaxation columns. Encode with
-$z_i=a_i\mathbb 1[a_i>\theta_i]$ and learn the nonnegative thresholds through a
+$`z_i=a_i\mathbf{1}[a_i>\theta_i]`$ and learn the nonnegative thresholds through a
 rectangular surrogate. The default objective combines reconstruction and an L0
 threshold-count penalty. Dictionary constraints and threshold sparsity are
 independent controls: the former restricts directions and the latter controls

@@ -8,13 +8,13 @@ This method is experimental; the recipe below states exactly what is implemented
 
 ## Principle
 
-Here $u$ is the declared normalized backbone activation, $D$ is the decoder
-dictionary, and $b_d$ is its bias. With the default scalar recipe, normalization
+Here $`u`$ is the declared normalized backbone activation, $`D`$ is the decoder
+dictionary, and $`b_d`$ is its bias. With the default scalar recipe, normalization
 is fitted on training activations and decoded values are returned in raw units.
 
 Select an unused atom by residual correlation, append it to the
-support $S$, then approximately solve
-$\min_{z_S\ge0}\|u-b_d-D_Sz_S\|_2^2$ by a fixed number of projected-gradient
+support $`S`$, then approximately solve
+$`\min_{z_S\ge0}\|u-b_d-D_Sz_S\|_2^2`$ by a fixed number of projected-gradient
 iterations. Recompute the residual from the entire refitted support before the
 next choice. The finite `omp_nnls_iterations` budget is an **approximate NNLS
 solver**, not an exact active-set solution. This experimental recipe keeps

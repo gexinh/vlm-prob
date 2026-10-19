@@ -6,13 +6,13 @@ Constrain TopK dictionary directions to mixtures of training activations plus bo
 
 ## Principle
 
-Here $u$ is the declared normalized backbone activation, $D$ is the decoder
-dictionary, and $b_d$ is its bias. With the default scalar recipe, normalization
+Here $`u`$ is the declared normalized backbone activation, $`D`$ is the decoder
+dictionary, and $`b_d`$ is its bias. With the default scalar recipe, normalization
 is fitted on training activations and decoded values are returned in raw units.
 
-Select anchor vectors $A$ from normalized, centered train
+Select anchor vectors $`A`$ from normalized, centered train
 activations only. The dictionary is
-$D=(\operatorname{softmax}(C)A)^\top+R$, with each column of $R$ bounded in
+$`D=(\mathrm{softmax}(C)A)^\top+R`$, with each column of $`R`$ bounded in
 L2 norm by `archetypal_delta`. The encoder is positive per-vector TopK, and the
 default loss is reconstruction. Candidate anchors are selected deterministically
 from train positions; validation/test vectors never supply anchors. The native

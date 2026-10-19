@@ -6,13 +6,13 @@ Separate the decision to activate a feature from its predicted magnitude.
 
 ## Principle
 
-Here $u$ is the declared normalized backbone activation, $D$ is the decoder
-dictionary, and $b_d$ is its bias. With the default scalar recipe, normalization
+Here $`u`$ is the declared normalized backbone activation, $`D`$ is the decoder
+dictionary, and $`b_d`$ is its bias. With the default scalar recipe, normalization
 is fitted on training activations and decoded values are returned in raw units.
 
-The gate logits are $a=W_e(u-b_d)+b_g$. A separate magnitude path
-uses $m=\operatorname{ReLU}(\operatorname{diag}(\exp(r))W_e(u-b_d)+b_m)$,
-and $z_i=\mathbb 1[a_i>0]m_i$. The objective adds reconstruction error, L1 on
+The gate logits are $`a=W_e(u-b_d)+b_g`$. A separate magnitude path
+uses $`m=\max(\exp(r)\odot W_e(u-b_d)+b_m,0)`$,
+and $`z_i=\mathbf{1}[a_i>0]m_i`$. The objective adds reconstruction error, L1 on
 `relu(a)`, and an auxiliary reconstruction through the rectified gate. The
 auxiliary decoder and its centering/output biases are detached; its gradients
 train the gate without moving the dictionary. This separates gate sparsity from
