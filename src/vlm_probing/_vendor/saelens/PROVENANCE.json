@@ -1,0 +1,282 @@
+{
+  "source": "https://github.com/decoderesearch/SAELens",
+  "upstream_commit": "30c4502466785dd7809a307f7b705df187978aa3",
+  "upstream_version": "6.54.6",
+  "license": "MIT",
+  "vendored_revision": 1,
+  "scope": "Eight dictionary/training architectures plus activation-vector trainer and supported checkpoint converters; no language-model runners, TransformerLens stack, datasets, CLI or remote logging.",
+  "files": [
+    {
+      "path": "constants.py",
+      "upstream_path": "sae_lens/constants.py",
+      "upstream_sha256": "7ee6777e923db70c54a2ce8846ec9c32637509b2609d5383f3b0d72152651947",
+      "local_sha256": "7ee6777e923db70c54a2ce8846ec9c32637509b2609d5383f3b0d72152651947",
+      "changes": [
+        "Imports relocated into vlm_probing._vendor.saelens; source algorithm bodies otherwise retained."
+      ]
+    },
+    {
+      "path": "registry.py",
+      "upstream_path": "sae_lens/registry.py",
+      "upstream_sha256": "9e1cbb04f4ae752013a96e25a3d1ff93735aeec7c61e601ff6ffb7c299cb2ffa",
+      "local_sha256": "65b12a52f7dc96cf42a0fa4a23fcf515deb54aa991074d06bd35bdcdb329af70",
+      "changes": [
+        "Imports relocated into vlm_probing._vendor.saelens; source algorithm bodies otherwise retained."
+      ]
+    },
+    {
+      "path": "util.py",
+      "upstream_path": "sae_lens/util.py",
+      "upstream_sha256": "ca5b92b20f4089dba29b22976f63c47d982c388f9de593e6556baf70ed8e11a5",
+      "local_sha256": "684405bbd2e5f8993304d86da2c13b676b66732e57ca99902566aad807f35497",
+      "changes": [
+        "Imports relocated into vlm_probing._vendor.saelens; source algorithm bodies otherwise retained.",
+        "Removed transformer tokenizer annotation/helper; utility math/dtype functions unchanged."
+      ]
+    },
+    {
+      "path": "loading/pretrained_saes_directory.py",
+      "upstream_path": "sae_lens/loading/pretrained_saes_directory.py",
+      "upstream_sha256": "bcfa6634d30080b60d3d9dd6e4bc71a0b6f6343f653aa1d1d29b03600c44c48b",
+      "local_sha256": "315de061ba214c8b8a6dea54e8907058dd975839e6e82d224d0c9ddf44064358",
+      "changes": [
+        "Imports relocated into vlm_probing._vendor.saelens; source algorithm bodies otherwise retained.",
+        "Read the identical pinned upstream registry from gzip-compressed package data."
+      ]
+    },
+    {
+      "path": "loading/pretrained_sae_loaders.py",
+      "upstream_path": "sae_lens/loading/pretrained_sae_loaders.py",
+      "upstream_sha256": "9a445e9f49488598a46b68e8f2cd550c2306245b953b3d1e10bc78c119f02527",
+      "local_sha256": "c35facd3c2778f658dedc297808706b46ec62968e00fe81c96035c56d1c23e97",
+      "changes": [
+        "Imports relocated into vlm_probing._vendor.saelens; source algorithm bodies otherwise retained.",
+        "Omitted temporal/cross-hook transcoder converters outside supported same-space scope; retained native/Gemma/Llama/Goodfire/dictionary-learning/Qwen/sparsify conversion math. Tensor checkpoints use weights_only=True."
+      ]
+    },
+    {
+      "path": "training/sae_trainer.py",
+      "upstream_path": "sae_lens/training/sae_trainer.py",
+      "upstream_sha256": "59f2df75284e341157730475e0b8aa8359b779d46a31ab8cd2e139506fa35748",
+      "local_sha256": "2d8359e4987808ab984e60dc3805fc1d02e4311a2fac0043be3ecedd018dcfe4",
+      "changes": [
+        "Imports relocated into vlm_probing._vendor.saelens; source algorithm bodies otherwise retained.",
+        "Removed WandB imports/remote emission; local logging config rejects log_to_wandb=True. Histogram values remain plain lists. Optimization/loss/schedule/normalization/checkpoint math unchanged; tensor resume uses weights_only=True."
+      ]
+    },
+    {
+      "path": "training/activation_scaler.py",
+      "upstream_path": "sae_lens/training/activation_scaler.py",
+      "upstream_sha256": "5b1125115461aacd4df81ed6d3f2116649a834d1276fde617573174060614434",
+      "local_sha256": "79816533f932562d2e93f0df552698ce7702e35e71a2240498389268d67a347f",
+      "changes": [
+        "Imports relocated into vlm_probing._vendor.saelens; source algorithm bodies otherwise retained."
+      ]
+    },
+    {
+      "path": "training/optim.py",
+      "upstream_path": "sae_lens/training/optim.py",
+      "upstream_sha256": "0ce6947176ac957c4d98ab5587669e3398291161d4e858ea3a5aa25cf4a22a16",
+      "local_sha256": "0ce6947176ac957c4d98ab5587669e3398291161d4e858ea3a5aa25cf4a22a16",
+      "changes": [
+        "Imports relocated into vlm_probing._vendor.saelens; source algorithm bodies otherwise retained."
+      ]
+    },
+    {
+      "path": "training/types.py",
+      "upstream_path": "sae_lens/training/types.py",
+      "upstream_sha256": "3aef8a8836395dbc4ce7fecc6d5ac8b73e62fa2aeb4405bbd01d72fcd6a7e028",
+      "local_sha256": "3aef8a8836395dbc4ce7fecc6d5ac8b73e62fa2aeb4405bbd01d72fcd6a7e028",
+      "changes": [
+        "Imports relocated into vlm_probing._vendor.saelens; source algorithm bodies otherwise retained."
+      ]
+    },
+    {
+      "path": "saes/sae.py",
+      "upstream_path": "sae_lens/saes/sae.py",
+      "upstream_sha256": "316f7eb005838953706b10c5537c255f9db3a098257d5e4d7a6c2119682d0924",
+      "local_sha256": "f33603248bdb6dcd87b5da720fb1d2d0959a2ea71debe0d6f3e505b5e4fa2622",
+      "changes": [
+        "Imports relocated into vlm_probing._vendor.saelens; source algorithm bodies otherwise retained.",
+        "Replaced TransformerLens hook containers with local PyTorch identity hook points; removed LM runner config conversion only.",
+        "Source-model processing warning now describes the controlled core instead of instructing an unavailable TransformerLens model runner."
+      ]
+    },
+    {
+      "path": "saes/standard_sae.py",
+      "upstream_path": "sae_lens/saes/standard_sae.py",
+      "upstream_sha256": "5253acb069bd0ad23e5882415d7a5c48d07c762cb426b37901322d69601fd9d0",
+      "local_sha256": "8cbd91c88d1eded542f13a8a213bf65d4f39d90453aaeaf049670e58321288d7",
+      "changes": [
+        "Imports relocated into vlm_probing._vendor.saelens; source algorithm bodies otherwise retained."
+      ]
+    },
+    {
+      "path": "saes/gated_sae.py",
+      "upstream_path": "sae_lens/saes/gated_sae.py",
+      "upstream_sha256": "96634f8d116f658371e2a6098d32b84aa0f729fb1bf2446fd17f1226f64fe95a",
+      "local_sha256": "50c1b9f3ac5e4cd9924eecd56735cc05afc8e3cb74eb2a6aeb4db854cbb9309e",
+      "changes": [
+        "Imports relocated into vlm_probing._vendor.saelens; source algorithm bodies otherwise retained."
+      ]
+    },
+    {
+      "path": "saes/topk_sae.py",
+      "upstream_path": "sae_lens/saes/topk_sae.py",
+      "upstream_sha256": "13ed3e65fff8ac4ce925b2199f4d25a82ce18b79e92749e5cc10b4fe8f2a7e19",
+      "local_sha256": "95560b371027e1152aa2b5a2180c5b9ff711085fdb172e94b1ec9a44b058989e",
+      "changes": [
+        "Imports relocated into vlm_probing._vendor.saelens; source algorithm bodies otherwise retained.",
+        "HookPoint import replaced by local PyTorch identity hook point; TopK/AuxK math unchanged."
+      ]
+    },
+    {
+      "path": "saes/abstopk_sae.py",
+      "upstream_path": "sae_lens/saes/abstopk_sae.py",
+      "upstream_sha256": "576972058db2aab6c832bed6833fb6d0f9cbbff4d39a7b926a6011c4462eca21",
+      "local_sha256": "5bc1b2e30390925107068ac61ebaef9a6c9a3b24cfca120868fd58b7da6877c3",
+      "changes": [
+        "Imports relocated into vlm_probing._vendor.saelens; source algorithm bodies otherwise retained."
+      ]
+    },
+    {
+      "path": "saes/jumprelu_sae.py",
+      "upstream_path": "sae_lens/saes/jumprelu_sae.py",
+      "upstream_sha256": "967187a7aef7ed03fa672ce44b25e2852be5c3e2d34b85718c939e576c7e8e93",
+      "local_sha256": "01c11e479a0b051f746f72af8d49d859501ecf82737565dc867569173cb3f7c3",
+      "changes": [
+        "Imports relocated into vlm_probing._vendor.saelens; source algorithm bodies otherwise retained."
+      ]
+    },
+    {
+      "path": "saes/matching_pursuit_sae.py",
+      "upstream_path": "sae_lens/saes/matching_pursuit_sae.py",
+      "upstream_sha256": "78ab41a6e30795e2c1bad0991fb81ec986ef7701521f5021928ca3913aebe248",
+      "local_sha256": "964e2b8f40c3a661e5703f02b8746b5ac57bcfe855140fea5964a0da35ac43fa",
+      "changes": [
+        "Imports relocated into vlm_probing._vendor.saelens; source algorithm bodies otherwise retained."
+      ]
+    },
+    {
+      "path": "saes/batchtopk_sae.py",
+      "upstream_path": "sae_lens/saes/batchtopk_sae.py",
+      "upstream_sha256": "618ee4b339bc4f88d63f73d8e8c370cecae98101a3545ec121cd35e20072d1e1",
+      "local_sha256": "0486ee9a165c1bb1de6e9294d1ab6e549f9ac91e73fdf14bce484b5b1bb4de90",
+      "changes": [
+        "Imports relocated into vlm_probing._vendor.saelens; source algorithm bodies otherwise retained."
+      ]
+    },
+    {
+      "path": "saes/matryoshka_batchtopk_sae.py",
+      "upstream_path": "sae_lens/saes/matryoshka_batchtopk_sae.py",
+      "upstream_sha256": "dc17863b0d89b277145b1b134ad33d6a220ce53973e23e65579c8aed5ba2400d",
+      "local_sha256": "d327d5b1b8a21150eff2456a3cd525350e4c2e446dc670960a627917c515684f",
+      "changes": [
+        "Imports relocated into vlm_probing._vendor.saelens; source algorithm bodies otherwise retained."
+      ]
+    },
+    {
+      "path": "pretrained_saes.yaml.gz",
+      "upstream_path": "sae_lens/pretrained_saes.yaml",
+      "upstream_sha256": "bea73bf39c2a345ce03fca3d9d44e133085e9ff2aea74c8ae5b26de0819c96d2",
+      "local_sha256": "d5f2b01e76ea9ab1d362c599d9a8345f7d35425447fb0f7d6f55f9286646c7ec",
+      "changes": [
+        "Lossless gzip storage; all 170 upstream releases and 13,857 entries preserved."
+      ]
+    },
+    {
+      "path": "config.py",
+      "upstream_path": "sae_lens/config.py",
+      "upstream_sha256": "c0b45655d33bcdb0d1d9d277e789b3f2fb25ee309e56c4aa703d36c409a7190b",
+      "local_sha256": "2a24084ced42a48665615b608617ca600ee56db14ad8143e9a910e31bfcd16fd",
+      "changes": [
+        "Retained SAETrainerConfig fields/property unchanged; replaced remote logger with local disabled schema; omitted LM/dataset/CLI runner configs."
+      ]
+    },
+    {
+      "path": "__init__.py",
+      "upstream_path": "sae_lens/__init__.py",
+      "local_sha256": "df9a0dc58e1b4b0425603f0dc4079ca902f6c030a32f51c8d8153f817ebc0ca9",
+      "changes": [
+        "Selected exports and eight architecture registrations; no original distribution import."
+      ],
+      "upstream_sha256": "c1d412c1ce4c4de2edc2026caeb2f1e3f348708395d9584acfb36498e2706524"
+    },
+    {
+      "path": "saes/__init__.py",
+      "upstream_path": "sae_lens/saes/__init__.py",
+      "local_sha256": "b2a857f6b951626d8e7c2cd81815a1681cd621bd72bf85713d17e153abc3d9a1",
+      "changes": [
+        "Selected six inference/eight training exports; temporal/transcoder classes omitted."
+      ],
+      "upstream_sha256": "172d3a35faae6e508c3b04837cffe16cf9d0a644b68a0df7cf5b3b7a7d95d63d"
+    },
+    {
+      "path": "hooks.py",
+      "upstream_path": null,
+      "local_sha256": "35ba1d09a829588dff2dc8fe216acc3aa60aba463dea85215ac7639fea5b4c5e",
+      "changes": [
+        "New local PyTorch identity hook containers and name registration; no TransformerLens model APIs."
+      ]
+    },
+    {
+      "path": "loading/__init__.py",
+      "upstream_path": null,
+      "local_sha256": "2a70d889f76bafba47103979ae9e84ae69d85fe33d618697bac856d01651ec07",
+      "changes": [
+        "Local namespace marker for selected checkpoint utilities."
+      ]
+    },
+    {
+      "path": "training/__init__.py",
+      "upstream_path": null,
+      "local_sha256": "2a70d889f76bafba47103979ae9e84ae69d85fe33d618697bac856d01651ec07",
+      "changes": [
+        "Local namespace marker for selected activation-vector training utilities."
+      ]
+    },
+    {
+      "path": "README.md",
+      "upstream_path": null,
+      "local_sha256": "83c6860fc38f5653a61f52413dd2e8fafa9253030aad470642a303a92c4e2ad6",
+      "changes": [
+        "Local source, scope, attribution and integration-change documentation."
+      ]
+    },
+    {
+      "path": "LICENSE",
+      "upstream_path": "LICENSE",
+      "local_sha256": "0d6e9efa10e8b22bb809f5b4fa2988e7bb15d48e5ff5412c969be235070e00ab",
+      "changes": [
+        "Unmodified upstream MIT license and copyright notice."
+      ],
+      "upstream_sha256": "0d6e9efa10e8b22bb809f5b4fa2988e7bb15d48e5ff5412c969be235070e00ab"
+    }
+  ],
+  "generic_dependencies": [
+    "torch",
+    "numpy",
+    "einops",
+    "safetensors",
+    "huggingface_hub",
+    "PyYAML",
+    "packaging",
+    "requests",
+    "tqdm",
+    "typing_extensions"
+  ],
+  "excluded_dependencies": [
+    "sae-lens",
+    "transformer-lens",
+    "transformers",
+    "datasets",
+    "wandb",
+    "simple-parsing"
+  ],
+  "math_verification": {
+    "upstream_version": "6.54.6",
+    "inference_architectures": 6,
+    "training_architectures": 8,
+    "comparison": "exact outputs and parameter/input gradients for inference; exact features, reconstructions, losses and parameter gradients for training"
+  }
+}

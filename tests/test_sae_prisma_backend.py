@@ -1,7 +1,5 @@
 """Native-hook compatibility, reversible normalization and real Prisma bridges."""
-from dataclasses import asdict
 import json
-from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
@@ -113,7 +111,7 @@ def test_backend_metadata_and_offline_starter_catalog_are_json_serializable():
 
 
 def native_classes():
-    pytest.importorskip("vit_prisma.sae.sae")
+    pytest.importorskip("einops")
     return prisma._native_classes()
 
 
@@ -183,9 +181,8 @@ def test_legacy_pickle_is_not_silently_unpickled(tmp_path):
 
 
 def tiny_hooked_vit():
-    pytest.importorskip("vit_prisma.models.base_vit")
-    from vit_prisma.models.base_vit import HookedViT
-    from vit_prisma.configs.HookedViTConfig import HookedViTConfig
+    pytest.importorskip("einops")
+    HookedViT, HookedViTConfig = prisma.HookedViT, prisma.HookedViTConfig
     cfg = HookedViTConfig(n_layers=2, d_model=8, d_head=4, d_mlp=16, n_heads=2,
         n_channels=3, patch_size=8, image_size=16, device="cpu",
         model_name="tiny-prisma", return_type="pre_logits")
@@ -245,6 +242,112 @@ def test_native_mlp_hook_has_distinct_representation_binding():
 
 def test_native_runner_schedule_is_explicitly_guarded(tmp_path):
     cfg = tiny_config()
-    with pytest.raises(ValueError, match="1,300,000"):
+    with pytest.raises(ValueError, match="not vendored"):
         prisma.train(config=cfg, dataset=[], eval_dataset=[], output_dir=tmp_path,
                      binding=binding(), native_runner=True)
+
+
+def test_vendored_source_manifest_and_license_are_complete():
+    import hashlib
+    from importlib.resources import files
+    root = files("vlm_probing._vendor.prisma")
+    manifest = json.loads(root.joinpath("SOURCE.json").read_text())
+    assert manifest["commit"] == prisma.AUDITED_REVISION
+    assert "MIT License" in root.joinpath("LICENSE").read_text()
+    for filename, expected in manifest["local_files"].items():
+        assert hashlib.sha256(root.joinpath(filename).read_bytes()).hexdigest() == expected
+    for item in manifest["files"]:
+        assert len(item["upstream_sha256"]) == 64
+        assert item["local_changes"]
+
+
+def test_vendored_training_does_not_import_official_packages(tmp_path):
+    import os
+    import subprocess
+    import sys
+    pytest.importorskip("einops")
+    script = r'''
+import importlib.abc, sys, tempfile, torch
+class BlockOfficial(importlib.abc.MetaPathFinder):
+    def find_spec(self, fullname, path=None, target=None):
+        if fullname.split('.')[0] in {'vit_prisma','sae_lens','overcomplete'}:
+            raise AssertionError('official package import attempted: '+fullname)
+sys.meta_path.insert(0,BlockOfficial())
+from vlmprobe.sae.backends import prisma
+cfg=prisma.VisionModelSAERunnerConfig(_device='cpu',d_in=8,expansion_factor=2,
+ activation_fn_str='relu',normalize_activations='layer_norm',model_name='tiny',
+ hook_point_layer=0,layer_subtype='hook_resid_post')
+hook='blocks.0.hook_resid_post'
+binding={'model_id':'tiny@frozen','tokenizer_id':'none:vision','preprocessing_id':'identity:v1',
+ 'calibration_id':'separate-splits:v1','site':hook,'layer':0,
+ 'hook':{'module':hook,'kind':'output','selector':None,'tensor_slice':None}}
+with tempfile.TemporaryDirectory() as out:
+ report=prisma.train(config=cfg,dataset=torch.randn(32,8),eval_dataset=torch.randn(12,8),
+                    output_dir=out,binding=binding,epochs=1,batch_size=8)
+ sae=prisma.load(weights_path=report['checkpoint'],binding=binding)
+ z,ctx=sae.encode_with_context(torch.randn(2,8)); assert sae.decode_with_context(z,ctx).shape==(2,8)
+assert not {'vit_prisma','sae_lens','overcomplete'} & set(sys.modules)
+'''
+    result = subprocess.run([sys.executable, "-c", script], capture_output=True, text=True, env=os.environ.copy())
+    assert result.returncode == 0, result.stderr
+
+
+def test_optional_differential_against_exact_upstream_source():
+    """Only this differential test may use an external comparison checkout."""
+    pytest.importorskip("vit_prisma.sae.sae")
+    from vit_prisma.sae.config import VisionModelSAERunnerConfig as UpstreamConfig
+    from vit_prisma.sae.sae import StandardSparseAutoencoder, GatedSparseAutoencoder
+    from dataclasses import asdict
+    raw = torch.randn(3, 8)
+    for architecture, activation in [("standard", "relu"), ("standard", "topk"), ("gated", "relu")]:
+        for norm in [None, "layer_norm", "constant_norm_rescale"]:
+            cfg = UpstreamConfig(_device="cpu", d_in=8, expansion_factor=2,
+                architecture=architecture, activation_fn_str=activation,
+                activation_fn_kwargs={"k": 3} if activation == "topk" else {}, normalize_activations=norm)
+            source = (GatedSparseAutoencoder if architecture == "gated" else StandardSparseAutoencoder)(cfg)
+            selected = prisma._new_sae(prisma._make_config(asdict(cfg)))
+            selected.load_state_dict(source.state_dict())
+            expected, actual = source(raw), selected(raw)
+            for before, after in zip(expected, actual):
+                assert before is None and after is None or isinstance(before, torch.Tensor) and torch.equal(before, after)
+            expected[2].backward()
+            actual[2].backward()
+            for (source_name, before), (selected_name, after) in zip(source.named_parameters(), selected.named_parameters()):
+                assert source_name == selected_name
+                if before.grad is None or after.grad is None:
+                    assert before.grad is None and after.grad is None
+                else:
+                    torch.testing.assert_close(before.grad, after.grad, rtol=2e-6, atol=2e-6)
+
+
+@pytest.mark.parametrize("config_updates", [{}, {"normalization_type": "LNPre", "layer_norm_pre": True},
+                                         {"use_bert_block": True, "activation_name": "quick_gelu"},
+                                         {"use_attn_result": True, "use_split_qkv_input": True}])
+def test_optional_differential_hooked_vit_forward_and_hooks(config_updates):
+    pytest.importorskip("vit_prisma.models.base_vit")
+    from vit_prisma.models.base_vit import HookedViT as UpstreamViT
+    from vit_prisma.configs.HookedViTConfig import HookedViTConfig as UpstreamConfig
+    from dataclasses import asdict
+    source = UpstreamViT(UpstreamConfig(n_layers=2, d_model=8, d_head=4, d_mlp=16,
+        n_heads=2, n_channels=3, patch_size=8, image_size=16, device="cpu", dtype=torch.float64,
+        model_name="tiny-prisma", **config_updates)).double()
+    selected = prisma.HookedViT(prisma.HookedViTConfig(**asdict(source.cfg))).double()
+    selected.load_state_dict(source.state_dict())
+    source.eval(); selected.eval()
+    values = torch.randn(2, 3, 16, 16, dtype=torch.float64)
+    names = ["blocks.0.hook_resid_post", "blocks.1.hook_mlp_out"]
+    expected, before = source.run_with_cache(values, names_filter=names)
+    actual, after = selected.run_with_cache(values, names_filter=names)
+    # Float64 isolates algebraic parity from fp32 contraction-order rounding.
+    torch.testing.assert_close(expected, actual, rtol=1e-10, atol=1e-10)
+    for name in names:
+        torch.testing.assert_close(before[name], after[name], rtol=1e-10, atol=1e-10)
+    projection = torch.randn_like(expected)
+    (expected * projection).sum().backward()
+    (actual * projection).sum().backward()
+    for (source_name, before), (selected_name, after) in zip(source.named_parameters(), selected.named_parameters()):
+        assert source_name == selected_name
+        if before.grad is None or after.grad is None:
+            assert before.grad is None and after.grad is None
+        else:
+            torch.testing.assert_close(before.grad, after.grad, rtol=1e-9, atol=1e-9)

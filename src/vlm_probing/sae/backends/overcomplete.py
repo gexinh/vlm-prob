@@ -1,7 +1,7 @@
-"""Optional, native Overcomplete SAE training and pointwise inference.
+"""Vendored, pinned Overcomplete SAE training and pointwise inference.
 
-No upstream code or weights are bundled.  In particular, Overcomplete's vision
-backbone loaders are not a registry of pretrained sparse autoencoders.
+The MIT-licensed mathematical core is included under our private namespace;
+the official package, vision backbones and visualization imports are not needed.
 """
 from __future__ import annotations
 
@@ -30,12 +30,15 @@ ARCHITECTURES = {
 }
 SOURCE = "https://github.com/KempnerInstitute/overcomplete"
 SCHEMA = "vlmprobe-overcomplete-sae-v1"
+_VENDOR = "vlm_probing._vendor.overcomplete"
 
 
 def backend_info() -> dict:
-    return {"name": "overcomplete", "package": "overcomplete", "version": ">=0.3,<0.4",
+    return {"name": "overcomplete", "package": "overcomplete", "version": "0.3.0",
             "license": "MIT", "source": SOURCE,
             "audited_revision": "a1781af49c6e4bbfdbfd763b9757bcf6c5dd6403",
+            "implementation": "vendored_pinned_core", "runtime_package_required": False,
+            "runtime_dependencies": ["torch", "einops"],
             "architectures": list(ARCHITECTURES), "modalities": ["vision", "language", "multimodal"],
             "pretrained_scope": "Caller-loaded SAE weights; upstream has no central pretrained SAE registry. Pretrained vision backbones are not SAEs.",
             "training_scope": "Native pointwise SAE, TopK, BatchTopK, JumpReLU, relaxed-archetypal TopK/JumpReLU; native train_sae and explicit upstream objective.",
@@ -48,18 +51,7 @@ def list_pretrained() -> list:
 
 
 def _upstream():
-    try:
-        module = import_module("overcomplete")
-    except ImportError as error:
-        raise ImportError("Install vlmprobe[overcomplete] in an environment with Python <3.13 to use this optional backend") from error
-    except AttributeError as error:
-        if "get_cmap" in str(error):
-            raise ImportError("Overcomplete 0.3 requires matplotlib>=3.7,<3.9; use the overcomplete optional extra or a separate environment") from error
-        raise
-    installed = getattr(module, "__version__", "")
-    if not installed.startswith("0.3."):
-        raise ValueError(f"Overcomplete backend was audited for 0.3.x, got {installed!r}")
-    return module, import_module("overcomplete.sae")
+    return import_module(_VENDOR), import_module(_VENDOR + ".sae")
 
 
 def _json(value, name):
@@ -103,7 +95,7 @@ class OvercompleteAdapter(nn.Module):
                              if type(sae) is getattr(classes, name)), None)
         if architecture is None:
             raise TypeError("wrap a supported native Overcomplete SAE; optimization factorizations and experimental pursuit/quantized models are not supported")
-        modules = import_module("overcomplete.sae.modules")
+        modules = import_module(_VENDOR + ".sae.modules")
         pointwise = (modules.MLPEncoder, modules.IdentityEncoder, modules.TieableEncoder)
         if not isinstance(sae.encoder, pointwise):
             raise ValueError("only audited pointwise MLP/identity/tied encoders are supported; attention and convolutional encoders require preserved image geometry")
@@ -135,6 +127,7 @@ class OvercompleteAdapter(nn.Module):
             raise ValueError("init_config must describe this exact native architecture and dimensions")
         self.source_metadata = {**_json(source_metadata or {}, "source_metadata"),
             "backend": "overcomplete", "backend_version": upstream.__version__, "architecture": architecture,
+            "implementation": "vendored_pinned_core",
             "source": SOURCE, "license": "MIT", "preprocessing": "explicit (raw-input_mean)/input_scale; decoder returns raw coordinates",
             "batchtopk_semantics": "top_k is a global count across the native training batch; evaluation uses saved running_threshold"}
         # Upstream dictionaries fuse a tensor when entering eval; initialize it
@@ -211,7 +204,7 @@ def wrap(sae, *, binding, **kwargs):
 
 
 def create(architecture, d_in, d_sae, *, binding, device="cpu", input_mean=0., input_scale=1., **kwargs):
-    """Construct the actual upstream architecture, keeping native hyperparameters.
+    """Construct the pinned upstream architecture, keeping native hyperparameters.
 
     ``points`` for archetypal models must come from TRAIN activations only.
     Native parameters such as ``top_k``, ``bandwidth``, ``kernel``, ``delta`` and
@@ -314,7 +307,7 @@ def _batch(batch):
 
 
 def _criterion(name, coefficient):
-    losses = import_module("overcomplete.sae.losses")
+    losses = import_module(_VENDOR + ".sae.losses")
     if name == "mse":
         return lambda x, reconstruction, pre, z, dictionary: (x - reconstruction).square().mean()
     if name == "mse_l1":
@@ -406,7 +399,7 @@ def train(*, model, train_data, validation_data, output_dir, binding, nb_epochs=
         model.to(device)
     device = model.input_scale.device
     optimizer = torch.optim.Adam(model.sae.parameters(), lr=lr)
-    native_train = import_module("overcomplete.sae.train").train_sae
+    native_train = import_module(_VENDOR + ".sae.train").train_sae
 
     class NormalizedBatches:
         count = 0
@@ -510,7 +503,7 @@ def train(*, model, train_data, validation_data, output_dir, binding, nb_epochs=
                   "checkpoint": str(output_dir / "best.pt"), "protocol": protocol,
                   "loss_units": "upstream coordinate-mean MSE; upstream penalty reduction; preprocessing explicitly saved",
                   "batchtopk_semantics": model.source_metadata["batchtopk_semantics"],
-                  "training_implementation": "overcomplete.sae.train.train_sae with one persistent Adam optimizer"}
+                  "training_implementation": "vendored overcomplete.sae.train.train_sae with one persistent Adam optimizer"}
         _write_json(report, output_dir / "metrics.json")
         _write_json({"state": "complete", "epochs": len(history)}, output_dir / "status.json")
         return report

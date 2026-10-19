@@ -387,12 +387,12 @@ sharing the overlay renderer.
 
 Native `SparseAutoencoder.load` accepts this library's artifact format. Do not
 point it directly at arbitrary SAELens, Goodfire or Gemma Scope files. A separate
-optional adapter exposes this interface:
+adapter backed by our bundled core exposes this interface:
 
 ```python
 from vlmprobe.sae import SAELensAdapter
 
-# `loaded_sae` is an already loaded compatible SAELens module.
+# `loaded_sae` is a compatible module loaded by our SAELens backend.
 external = SAELensAdapter(
     loaded_sae, binding=binding, expected_binding=binding,
     source_metadata={"release": "the-exact-external-release"},
@@ -403,8 +403,9 @@ result = probe.sae.features(layer=layer, sae=external,
 
 For explicit downloading, `SAELensAdapter.from_pretrained(release, sae_id,
 binding=binding, expected_binding=binding, device="cpu", dtype="float32")` uses
-the verified SAELens **v6** loader. Install `sae-lens>=6,<7` only if you need that
-backend. The initial bridge accepts `normalize_activations="none"`, an explicit
+the fixed SAELens-derived loader bundled in VLMProbe. Install our `sae` extra for
+its generic numerical/download dependencies; the official `sae-lens` package is
+not used. The initial bridge accepts `normalize_activations="none"`, an explicit
 `apply_b_dec_to_input` setting and no head reshaping. Other normalization schemes
 fail explicitly. Backend hook names are not translated automatically: verify
 their actual native module correspondence and add the exact

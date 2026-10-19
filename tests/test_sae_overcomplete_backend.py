@@ -1,8 +1,11 @@
-"""Native optional-backend parity, normalization, training and safe artifacts."""
-import importlib.util
+"""Vendored core parity, normalization, training and safe artifacts."""
+import hashlib
+import importlib
 import json
+import os
 from pathlib import Path
 import sys
+import subprocess
 
 import pytest
 import torch
@@ -19,13 +22,8 @@ def binding():
 
 
 @pytest.fixture(autouse=True)
-def optional_backend():
-    if importlib.util.find_spec("overcomplete") is None:
-        pytest.skip("optional overcomplete package is not installed")
-    try:
-        backend._upstream()
-    except ImportError as error:
-        pytest.skip(str(error))
+def vendored_backend():
+    backend._upstream()
     torch.set_num_threads(1)
 
 
@@ -107,7 +105,7 @@ def test_real_upstream_training_improves_heldout_and_preserves_optimizer_resume(
     report = backend.train(model=continuous, train_data=train_data, validation_data=validation,
         output_dir=tmp_path / "continuous", binding=binding(), nb_epochs=4,
         lr=.02, patience=8, seed=17, provenance={"corpus": "toy-v1"})
-    assert report["training_implementation"].startswith("overcomplete.sae.train.train_sae")
+    assert report["training_implementation"].startswith("vendored overcomplete.sae.train.train_sae")
     history = json.loads((tmp_path / "continuous/history.json").read_text())
     assert history[-1]["validation"]["objective"] < history[0]["validation"]["objective"]
     interrupted = make("relu")
@@ -212,3 +210,59 @@ def test_real_model_bound_features_and_error_preserving_intervention(tmp_path):
         feature_ids=[0], scale=1.).run(inputs, metric=TokenMargin(4, 5))
     assert torch.equal(edited.tensors["baseline_logits"], edited.tensors["edited_logits"])
     assert torch.equal(edited.tensors["score_change"], torch.zeros(2))
+
+
+def test_vendor_manifest_hashes_and_no_official_runtime_imports():
+    package, _ = backend._upstream()
+    root = Path(package.__file__).parent
+    manifest = json.loads((root / "VENDOR_MANIFEST.json").read_text())
+    assert manifest["source_commit"] == "a1781af49c6e4bbfdbfd763b9757bcf6c5dd6403"
+    assert manifest["license"] == "MIT"
+    for record in manifest["files"]:
+        assert hashlib.sha256((root / record["target"]).read_bytes()).hexdigest() == record["vendored_sha256"]
+    source = f"""
+import importlib.abc, json, sys, torch
+class BlockOfficial(importlib.abc.MetaPathFinder):
+    def find_spec(self, fullname, path=None, target=None):
+        if fullname == 'overcomplete' or fullname.startswith('overcomplete.'):
+            raise AssertionError('official overcomplete package must not be imported')
+sys.meta_path.insert(0, BlockOfficial())
+from vlmprobe.sae.backends import overcomplete
+model = overcomplete.create('topk', 4, 8, binding={binding()!r}, top_k=2)
+model(torch.ones(3, 4))
+assert type(model.sae).__module__.startswith('vlm_probing._vendor.overcomplete.')
+print('vendored-only runtime passed')
+"""
+    result = subprocess.run([sys.executable, "-c", source], capture_output=True, text=True, check=True)
+    assert "vendored-only runtime passed" in result.stdout
+
+
+@pytest.mark.skipif(os.environ.get("VLMPROBE_TEST_OFFICIAL_OVERCOMPLETE") != "1",
+                    reason="optional official-package differential check; core runtime does not require it")
+@pytest.mark.parametrize("architecture", list(backend.ARCHITECTURES))
+def test_optional_official_math_and_gradient_parity(architecture):
+    official = importlib.import_module("overcomplete.sae")
+    model = make(architecture)
+    kwargs = {}
+    if "topk" in architecture:
+        kwargs["top_k"] = 2
+    if architecture.startswith("archetypal_"):
+        kwargs["points"] = model.sae.dictionary.C.detach().clone()
+    reference = getattr(official, backend.ARCHITECTURES[architecture])(4, 8, **kwargs)
+    reference.load_state_dict(model.sae.state_dict())
+    values = torch.randn(7, 4)
+    actual_output, expected_output = model.sae(values), reference(values)
+    for actual, expected in zip(actual_output, expected_output):
+        torch.testing.assert_close(actual, expected, atol=0., rtol=0.)
+    actual_loss = (actual_output[2] - values).square().mean() + .01 * actual_output[1].abs().sum()
+    expected_loss = (expected_output[2] - values).square().mean() + .01 * expected_output[1].abs().sum()
+    actual_loss.backward()
+    expected_loss.backward()
+    for (name, parameter), (expected_name, expected_parameter) in zip(model.sae.named_parameters(), reference.named_parameters()):
+        assert name == expected_name
+        assert (parameter.grad is None) == (expected_parameter.grad is None)
+        if parameter.grad is not None:
+            torch.testing.assert_close(parameter.grad, expected_parameter.grad, atol=0., rtol=0.)
+    model.eval()
+    reference.eval()
+    torch.testing.assert_close(model.encode(values), reference.encode(values)[1], atol=0., rtol=0.)

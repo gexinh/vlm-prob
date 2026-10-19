@@ -15,15 +15,22 @@ globals().update({name: getattr(_canonical, name) for name in __all__})
 
 
 def _install_aliases():
-    # Eagerly register the small module tree so nested imports share class and
-    # registry identity. These modules defer optional dependencies until use;
-    # a fresh-process test enforces that contract. No import finder is needed.
-    for info in _pkgutil.walk_packages(_canonical.__path__, "vlm_probing."):
-        module = _importlib.import_module(info.name)
-        suffix = info.name.removeprefix("vlm_probing.")
-        _sys.modules[f"{__name__}.{suffix}"] = module
-        if "." not in suffix:
-            globals()[suffix] = module
+    # Keep public module/class identity across both import names, without
+    # traversing private vendored code and importing its optional dependencies.
+    # Vendored implementations use the canonical internal namespace only.
+    def visit(paths, prefix):
+        for info in _pkgutil.iter_modules(paths, prefix):
+            if info.name == "vlm_probing._vendor":
+                continue
+            module = _importlib.import_module(info.name)
+            suffix = info.name.removeprefix("vlm_probing.")
+            _sys.modules[f"{__name__}.{suffix}"] = module
+            if "." not in suffix:
+                globals()[suffix] = module
+            if info.ispkg:
+                visit(module.__path__, info.name + ".")
+
+    visit(_canonical.__path__, "vlm_probing.")
 
 
 _install_aliases()

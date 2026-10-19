@@ -1,4 +1,4 @@
-"""Optional SAELens v6 dictionaries and its native activation-source trainer.
+"""Locally controlled pinned SAELens core and activation-source trainer.
 
 Model activation collection is separate from dictionary training. SAETrainer
 accepts language, vision or multimodal vectors. TransformerLens hook names are
@@ -7,7 +7,6 @@ never translated automatically to native module names: bindings are explicit.
 from __future__ import annotations
 
 from dataclasses import asdict
-from importlib.metadata import PackageNotFoundError, version
 import json
 import math
 from pathlib import Path
@@ -28,26 +27,20 @@ TRAINING_ARCHITECTURES = (*INFERENCE_ARCHITECTURES, "batchtopk", "matryoshka_bat
 
 
 def _version(*, required=True):
-    try:
-        installed = version("sae-lens")
-    except PackageNotFoundError as error:
-        if not required:
-            return None
-        raise ImportError("install vlmprobe[saelens] to use the SAELens v6 backend") from error
-    if required and installed.split(".")[0] != "6":
-        raise ValueError(f"SAELens backend supports sae-lens v6; found {installed}")
-    return installed
+    """Pinned source version, independent of installed official distributions."""
+    return "6.54.6"
 
 
 def backend_info() -> dict[str, Any]:
-    """Capabilities without importing SAELens or downloading weights."""
-    return {"name": "saelens", "package": "sae-lens", "version": _version(required=False),
+    """Capabilities without loading vendored core or downloading weights."""
+    return {"name": "saelens", "package": "vlmprobe", "version": "6.54.6+vlmprobe.1",
+            "implementation": "vendored", "vendored_revision": 1, "upstream_package": "sae-lens",
             "verified_version": "6.54.6", "supported_major_version": "6", "license": "MIT", "source": SOURCE,
             "source_commit": AUDITED_COMMIT, "architectures": list(INFERENCE_ARCHITECTURES),
             "training_architectures": list(TRAINING_ARCHITECTURES),
             "modalities": ["language", "vision", "multimodal"],
-            "pretrained_scope": "Installed upstream registry; entries are candidates, not automatic native-hook compatibility.",
-            "training_scope": "Native SAETrainer over caller-provided batches from any frozen model; upstream LanguageModelSAETrainingRunner is an LM convenience runner.",
+            "pretrained_scope": "Pinned vendored upstream registry; entries are candidates, not automatic native-hook compatibility.",
+            "training_scope": "Locally controlled pinned SAETrainer over caller-provided batches from any frozen model; no official-package/model-stack dependency.",
             "limitations": ["Independent-vector same-space dictionaries only; transcoders and temporal SAEs require different contracts.",
                             "Inference requires normalize_activations='none', including upstream-folded scaling or whitening; runtime normalization and head reshaping are rejected."]}
 
@@ -57,7 +50,7 @@ def _meta(metadata, key, default=None):
 
 
 class SAELensAdapter(nn.Module):
-    """Use native upstream encode/decode in raw activation coordinates.
+    """Use the controlled pinned encode/decode implementation in raw coordinates.
 
     Binding identifies exact model, tokenizer, preprocessing, calibration and
     native hook. Declare upstream names separately as backend_model_name and
@@ -149,15 +142,15 @@ class SAELensAdapter(nn.Module):
         if expected_binding is not None and validate_sae_binding(expected_binding) != binding:
             raise ValueError("external SAE binding differs from expected native identities")
         installed = _version()
-        from sae_lens import SAE
+        from vlm_probing._vendor.saelens import SAE
         sae = SAE.from_pretrained(release=release, sae_id=sae_id, device=device,
                                   dtype=dtype, force_download=force_download)
         return cls(sae, binding, expected_binding=expected_binding,
-                   source_metadata={"backend_version": installed, "release": release, "sae_id": sae_id})
+                   source_metadata={"backend_version": installed, "implementation": "vendored", "release": release, "sae_id": sae_id})
 
 
 def wrap(sae, *, binding, **kwargs):
-    """Wrap caller-loaded weights without importing optional SAELens."""
+    """Wrap compatible caller-loaded weights with explicit model/data binding."""
     return SAELensAdapter(sae, binding, **kwargs)
 
 
@@ -184,15 +177,15 @@ def load(*, binding, release=None, sae_id=None, path=None, device="cpu", dtype="
     if saved_binding.exists() and validate_sae_binding(json.loads(saved_binding.read_text())) != binding:
         raise ValueError("saved SAELens checkpoint binding differs from requested model/data/hook identities")
     installed = _version()
-    from sae_lens import SAE
+    from vlm_probing._vendor.saelens import SAE
     return wrap(SAE.load_from_disk(path, device=device, dtype=dtype), binding=binding,
-                expected_binding=expected_binding, source_metadata={"backend_version": installed, "path": str(path)})
+                expected_binding=expected_binding, source_metadata={"backend_version": installed, "implementation": "vendored", "path": str(path)})
 
 
 def list_pretrained(*, release=None, model=None, sae_id=None):
-    """Installed upstream registry without weight downloads or hook guessing."""
+    """Pinned vendored upstream registry without weight downloads or hook guessing."""
     installed = _version()
-    from sae_lens.loading.pretrained_saes_directory import get_pretrained_saes_directory
+    from vlm_probing._vendor.saelens.loading.pretrained_saes_directory import get_pretrained_saes_directory
     registry = get_pretrained_saes_directory()
     if release is not None and release not in registry:
         raise ValueError(f"unknown SAELens release {release!r}")
@@ -217,7 +210,7 @@ def list_pretrained(*, release=None, model=None, sae_id=None):
 
 
 def create_training_sae(*, architecture="standard", d_in, d_sae, device="cpu", dtype="float32", **sae_config):
-    """Build an upstream TrainingSAE; unknown hyperparameters raise.
+    """Build a locally maintained pinned TrainingSAE; unknown arguments raise.
 
     Pass native arguments such as l1_coefficient (standard/gated), k (TopK), or
     the architecture-specific BatchTopK/Matryoshka settings.
@@ -225,7 +218,7 @@ def create_training_sae(*, architecture="standard", d_in, d_sae, device="cpu", d
     _version()
     if architecture not in TRAINING_ARCHITECTURES:
         raise ValueError(f"unsupported SAELens training architecture {architecture!r}")
-    from sae_lens import TrainingSAE
+    from vlm_probing._vendor.saelens import TrainingSAE
     cfg_class = TrainingSAE.get_sae_config_class_for_architecture(architecture)
     cfg = cfg_class(d_in=d_in, d_sae=d_sae, device=str(device), dtype=dtype, **sae_config)
     return TrainingSAE.from_dict(cfg.to_dict())
@@ -291,7 +284,7 @@ def _verify_resume_protocol(path, *, binding, sae_config, trainer_config, instal
         and requested["lr_end"] == requested["lr"]
     ):
         raise ValueError("resume budget extension requires constant learning rate with no warmup/decay/restarts; other schedules depend on the original budget")
-    from sae_lens.constants import TRAINER_STATE_FILENAME
+    from vlm_probing._vendor.saelens.constants import TRAINER_STATE_FILENAME
     state = torch.load(path / TRAINER_STATE_FILENAME, map_location="cpu", weights_only=True)
     if state.get("n_training_samples") != completed or state.get("n_training_steps") != saved.get("training_steps"):
         raise ValueError("resume native trainer counters differ from the saved completed protocol")
@@ -323,9 +316,9 @@ def _verify_resume_protocol(path, *, binding, sae_config, trainer_config, instal
 def train(*, config, activation_source=None, model=None, output_dir, binding,
           evaluator=None, validation_source=None, max_validation_batches=100,
           resume_from=None, **kwargs):
-    """Execute upstream SAETrainer over raw training-only activation batches.
+    """Execute the vendored SAETrainer over raw training-only activation batches.
 
-    model is an upstream TrainingSAE, not the frozen source model. Alternatively
+    model is a controlled-core TrainingSAE, not the frozen source model. Alternatively
     config={'sae': {...}, 'trainer': {...}, 'seed': 0} constructs one. The source
     yields [N,d_in] tensors. The caller supplies dataset-level splitting and a
     separate held-out validation iterator. Optimizer/trainer state is saved; exact replay
@@ -337,10 +330,12 @@ def train(*, config, activation_source=None, model=None, output_dir, binding,
     binding = validate_sae_binding(binding)
     if activation_source is None:
         raise ValueError("supply an iterator yielding training-only raw [N,d_in] activation tensors")
+    if evaluator is not None:
+        raise ValueError("the upstream remote-logging evaluator hook is outside the vendored core; provide validation_source for independent local evaluation")
     if type(max_validation_batches) is not int or max_validation_batches < 1:
         raise ValueError("max_validation_batches must be a positive integer")
-    from sae_lens import SAE, SAETrainer, TrainingSAE
-    from sae_lens.config import LoggingConfig, SAETrainerConfig
+    from vlm_probing._vendor.saelens import SAE, SAETrainer, TrainingSAE
+    from vlm_probing._vendor.saelens.config import LoggingConfig, SAETrainerConfig
     if isinstance(config, dict):
         if set(config) - {"sae", "trainer", "seed"}:
             raise ValueError(f"unknown training config fields: {sorted(set(config) - {'sae', 'trainer', 'seed'})}")
@@ -366,11 +361,11 @@ def train(*, config, activation_source=None, model=None, output_dir, binding,
     elif isinstance(config, SAETrainerConfig):
         trainer_config = config
         if model is None:
-            raise ValueError("supply an upstream TrainingSAE with an SAETrainerConfig")
+            raise ValueError("supply a controlled-core TrainingSAE with its SAETrainerConfig")
     else:
-        raise TypeError("config must be a dictionary or upstream SAETrainerConfig")
+        raise TypeError("config must be a dictionary or controlled-core SAETrainerConfig")
     if not isinstance(model, TrainingSAE):
-        raise TypeError("model must be an upstream SAELens TrainingSAE; pass the frozen backbone's activations through activation_source")
+        raise TypeError("model must be a TrainingSAE from VLMProbe's vendored SAELens core; pass frozen-backbone activations through activation_source")
     if trainer_config.total_training_samples < 1 or trainer_config.train_batch_size_samples < 1 or trainer_config.total_training_steps < 1:
         raise ValueError("positive training sample count must cover at least one full batch")
     if trainer_config.lr_end is None:
@@ -411,7 +406,7 @@ def train(*, config, activation_source=None, model=None, output_dir, binding,
             # SAE training must not backpropagate through a caller's backbone.
             yield batch.detach()
 
-    protocol = {"backend": "saelens", "status": "running", "backend_version": installed,
+    protocol = {"backend": "saelens", "status": "running", "backend_version": installed, "implementation": "vendored", "vendored_revision": 1,
                 "source": SOURCE, "license": "MIT", "binding": binding, "architecture": architecture,
                 "sae_config": model.cfg.to_dict(), "trainer_config": asdict(trainer_config),
                 "data_protocol": "Caller-supplied train-only raw activation iterator; caller owns source-level splits and independent evaluation.",

@@ -37,8 +37,10 @@ Report = "https://github.com/ubc-tea/vlm-probe/blob/main/docs/assets/vlmprobe-te
 "Report sources" = "https://github.com/gexinh/vlm-probing-report"
 
 [project.optional-dependencies]
-saelens = ["sae-lens>=6.54,<7"]
-overcomplete = ["overcomplete>=0.3,<0.4", "matplotlib>=3.8,<3.9", "numpy>=1.26,<2"]
+sae = ["einops>=0.8,<0.9", "numpy>=1.26,<3", "safetensors>=0.4,<1", "huggingface_hub>=0.30,<2", "PyYAML>=6,<7", "packaging>=23,<27", "requests>=2.31,<3", "tqdm>=4.66,<5", "typing_extensions>=4.12,<5"]
+saelens = ["einops>=0.8,<0.9", "numpy>=1.26,<3", "safetensors>=0.4,<1", "huggingface_hub>=0.30,<2", "PyYAML>=6,<7", "packaging>=23,<27", "requests>=2.31,<3", "tqdm>=4.66,<5", "typing_extensions>=4.12,<5"]
+prisma = ["einops>=0.8,<0.9", "numpy>=1.26,<3"]
+overcomplete = ["einops>=0.8,<0.9", "numpy>=1.26,<3"]
 visualization = ["matplotlib>=3.8", "Pillow>=10", "numpy>=1.26"]
 transformers = ["transformers>=5.3,<5.4", "torch>=2.4", "torchvision>=0.19", "accelerate>=1.0", "Pillow>=10"]
 notebooks = ["jupyterlab>=4", "nbclient>=0.10", "matplotlib>=3.8", "Pillow>=10", "numpy>=1.26", "tokenizers>=0.22"]
@@ -54,3 +56,6 @@ version = {attr = "vlm_probing.__version__"}
 [tool.setuptools.package-data]
 "vlm_probing._vendor.chefer2021" = ["LICENSE", "README.md"]
 "vlm_probing.sae" = ["resources/*.json.gz"]
+"vlm_probing._vendor.saelens" = ["LICENSE*", "*.md", "*.json", "*.json.gz", "*.yaml.gz", "**/*.json.gz", "**/*.yaml"]
+"vlm_probing._vendor.prisma" = ["LICENSE*", "*.md", "*.json"]
+"vlm_probing._vendor.overcomplete" = ["LICENSE*", "*.md", "*.json"]

@@ -42,14 +42,16 @@ a measured zero effect.
 
 ## SAE development version
 
-This local `dev/sae-v2` branch adds a fourth method family. Install this checkout
-with `python -m pip install -e ".[transformers,visualization]"` to use it; the
+This local `dev/sae-v3` branch adds a fourth method family. Install this checkout
+with `python -m pip install -e ".[sae,transformers,visualization]"` to use it; the
 published PyPI release does not include these development additions.
 The [SAE platform guide](docs/sae/README.md) covers pretrained checkpoint discovery,
-native training with SAELens, ViT-Prisma and Overcomplete, and shared feature
+training with bundled SAELens, ViT-Prisma and Overcomplete cores, and shared feature
 maps, profiles and interventions. The [native SAE guide](docs/sae.md) covers the
 built-in ReLU, TopK and Gated implementations.
-The [v2 version note](docs/versions/sae-v2.md) records scope and validation.
+The [v3 version note](docs/versions/sae-v3.md) records scope and validation.
+The selected core implementations are pinned inside the package; installing or
+updating the official toolkits does not change the implementation used here.
 
 ## Installation
 
@@ -213,7 +215,8 @@ src/vlm_probing/
   lenses/        # BaseLens and concrete readout methods
   attention/     # BaseAttention and concrete attention methods
   causal/        # BaseCausal and concrete interventions/estimators
-  sae/           # native dictionaries, optional toolkits, catalog and training
+  sae/           # dictionaries, stable backend interfaces, catalog and training
+  _vendor/       # pinned research cores with original licenses and provenance
   training/      # calibration, checkpoint import and resume
   visualization/ # shared heatmaps, overlays, curves and graphs
   core/          # results and execution traces
@@ -245,6 +248,7 @@ The SAE integrations build on these libraries:
 - [Overcomplete](https://github.com/KempnerInstitute/overcomplete): vision
   dictionary-learning architectures, losses and training tools.
 
-Their original implementations, references and licenses are retained through
-the optional backends. Checkpoint sources and licenses are recorded separately
+Selected core source files are bundled at audited revisions, with original
+licenses, provenance and documented local changes. The official packages are
+not runtime dependencies. Checkpoint sources and licenses are recorded separately
 in the catalog and [provider guides](docs/sae/README.md).

@@ -2,25 +2,26 @@
 
 [Overcomplete](https://github.com/KempnerInstitute/overcomplete) provides sparse
 autoencoders and other dictionary-learning algorithms for vision activations.
-VLMProbe uses its actual Python implementations; it does not copy their source
-or rename NMF, PCA or ICA as sparse autoencoders. The same pointwise adapter also
+VLMProbe includes a pinned, MIT-licensed subset of its original Python core
+under `vlm_probing._vendor.overcomplete`; no official Overcomplete installation
+is required. NMF, PCA and ICA are not renamed as sparse autoencoders. The pointwise adapter also
 accepts language and multimodal residual vectors with a verified model binding.
 
 ## Installation and compatibility
 
 ```bash
-python -m venv .venv-overcomplete
-source .venv-overcomplete/bin/activate
-pip install -e '.[overcomplete,visualization]'
+pip install -e '.[sae,visualization]'
 ```
 
-Run these commands from the development checkout; these additions have not
-been released on PyPI. The bridge is audited against
-Overcomplete **0.3.x**. Upstream requires Python below 3.13. Overcomplete 0.3 imports
-`matplotlib.cm.get_cmap`, which was removed in Matplotlib 3.9; its optional extra
-therefore selects Matplotlib 3.8.x. Use a separate environment if another
-application requires newer Matplotlib. No optional backend imports at
-`import vlmprobe` time.
+Run this command from the development checkout; these additions have not
+been released on PyPI. The included core is pinned to Overcomplete **0.3.0**,
+commit `a1781af49c6e4bbfdbfd763b9757bcf6c5dd6403`. Its MIT license, source hashes,
+included-file hashes and local changes are recorded in the vendored directory's
+`LICENSE` and `VENDOR_MANIFEST.json`. The SAE math needs PyTorch and einops, with
+NumPy used by the training-data fingerprint helper. It does not import upstream
+pretrained vision backbones, visualization or the official package, so it imposes
+no upstream Matplotlib version constraint. VLMProbe's visualization extra supplies
+its own plotting dependencies. The core is imported only when an operation needs it.
 
 ## Architectures and native parameters
 
@@ -131,7 +132,7 @@ ax.figure.tight_layout()
 ax.figure.savefig(output / "feature_firing_frequency.png", dpi=160)
 ```
 
-The training implementation calls the actual upstream `train_sae` each epoch
+The training implementation calls the included pinned upstream `train_sae` each epoch
 while preserving one Adam optimizer. It selects `best.pt` by independent
 validation objective. `latest.pt` and `training_state.pt` preserve the final
 model, optimizer, RNG and explicitly supplied DataLoader generator states for
@@ -175,8 +176,9 @@ do not compare it as if `top_k` meant an average count per token.
 There is no central pretrained SAE release catalog in Overcomplete 0.3:
 `overcomplete.list_pretrained()` returns `[]`. DINOv2/SigLIP/ViT/ResNet/ConvNeXt
 backbone weights exposed upstream are pretrained **models**, not pretrained
-SAE dictionaries. Train a dictionary or load one from a documented third-party
-release, then wrap its already loaded native module:
+SAE dictionaries. Train a dictionary or restore documented third-party state-dict
+weights into the included architecture using `create(...).sae.load_state_dict(...)`.
+When the provider's native module is already loaded, wrap it as follows:
 
 ```python
 adapter = overcomplete.wrap(
@@ -213,10 +215,12 @@ activation association alone does not establish a diagnosis or causal mechanism.
 
 ## Sources and credit
 
-This optional backend depends on Thomas Fel and collaborators'
+This provider includes original mathematical code from Thomas Fel and collaborators'
 [Overcomplete](https://github.com/KempnerInstitute/overcomplete), licensed under
-MIT. The upstream architecture implementations, native losses and training loop
-remain upstream. Relevant method papers include
+MIT. The original license is preserved alongside the pinned source; the source
+manifest records the two package-relative import fixes, dependency-only metrics
+subset and minimal package initializers. Architecture math, native losses and
+the training loop retain their pinned upstream implementation. Relevant method papers include
 [Scaling and evaluating sparse autoencoders](https://arxiv.org/abs/2406.04093),
 [BatchTopK sparse autoencoders](https://arxiv.org/abs/2412.06410),
 [Jumping Ahead](https://arxiv.org/abs/2407.14435), and

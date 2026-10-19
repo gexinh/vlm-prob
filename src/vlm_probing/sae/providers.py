@@ -1,4 +1,4 @@
-"""Provider discovery, checkpoint catalogs and native training dispatch.
+"""Discovery, checkpoint catalogs and training through bundled SAE cores.
 
 The backend implementations retain their upstream normalization, objectives and
 checkpoint formats. A shared entry point does not make those contracts equal.
@@ -7,18 +7,16 @@ from __future__ import annotations
 
 import gzip
 from importlib import import_module
-from importlib import metadata
 from importlib.resources import files
 import json
 
 
 _PROVIDERS = {
-    "saelens": {"package": "sae-lens", "extra": "saelens",
+    "saelens": {"upstream_package": "sae-lens", "extra": "saelens",
                 "source_url": "https://github.com/decoderesearch/SAELens"},
-    "prisma": {"package": "vit-prisma", "extra": None,
-               "source_url": "https://github.com/Prisma-Multimodal/ViT-Prisma",
-               "install_source": "git+https://github.com/Prisma-Multimodal/ViT-Prisma.git@64daf1425f7e5311844213fd0fb6f4127a30cd16"},
-    "overcomplete": {"package": "overcomplete", "extra": "overcomplete",
+    "prisma": {"upstream_package": "vit-prisma", "extra": "prisma",
+               "source_url": "https://github.com/Prisma-Multimodal/ViT-Prisma"},
+    "overcomplete": {"upstream_package": "overcomplete", "extra": "overcomplete",
                      "source_url": "https://github.com/KempnerInstitute/overcomplete"},
 }
 _ALIASES = {"sae-lens": "saelens", "vit-prisma": "prisma", "vit_prisma": "prisma"}
@@ -37,20 +35,17 @@ def _module(backend):
 
 
 def list_backends():
-    """Describe integrations without importing any optional upstream package.
+    """Describe bundled implementations without importing their numerical cores.
 
-    ``dependency_installed`` reports package metadata only. Runtime usability
-    still depends on compatible versions and the requested model contract.
+    Upstream package installation and version never select the implementation.
+    Generic dependencies are deferred until the requested operation.
     """
     result = []
     for name, descriptor in _PROVIDERS.items():
-        try:
-            installed = metadata.version(descriptor["package"])
-        except metadata.PackageNotFoundError:
-            installed = None
         info = _module(name).backend_info()
         result.append({**descriptor, **info, "backend": name,
-                       "installed_version": installed, "dependency_installed": installed is not None})
+                       "implementation": "bundled", "core_bundled": True,
+                       "external_package_required": False})
     return result
 
 
@@ -59,25 +54,26 @@ def list_pretrained(backend=None, *, model=None, query=None, limit=None, source=
 
     The bundled catalog records author-listed resources, not model/checkpoint
     compatibility guarantees or completed reproductions. ``source='installed'``
-    delegates discovery to an installed provider's current registry. Snapshot
-    discovery does not require any provider dependency or internet connection.
+    is a compatibility alias for ``source='bundled'`` and queries the pinned
+    bundled provider registry. Snapshot discovery needs no numerical dependencies
+    or internet connection.
     """
     name = None if backend is None else _name(backend)
     if limit is not None and (type(limit) is not int or limit < 1):
         raise ValueError("limit must be a positive integer or None")
-    if source == "installed":
+    if source in {"bundled", "installed"}:
         if name is None:
-            raise ValueError("source='installed' requires a backend")
+            raise ValueError("provider discovery requires a backend")
         rows = _module(name).list_pretrained(**filters)
     elif source == "snapshot":
         if filters:
-            raise ValueError("provider-specific filters require source='installed'; use query for snapshot search")
+            raise ValueError("provider-specific filters require source='bundled'; use query for snapshot search")
         resource = files(__package__).joinpath("resources/pretrained_catalog.json.gz")
         with resource.open("rb") as stream:
             catalog = json.loads(gzip.decompress(stream.read()))
         rows = catalog["entries"]
     else:
-        raise ValueError("source must be snapshot or installed")
+        raise ValueError("source must be snapshot or bundled (installed is a compatibility alias)")
     selected = []
     for row in rows:
         if name is not None and row.get("backend") != name:

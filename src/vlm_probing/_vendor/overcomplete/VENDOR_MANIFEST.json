@@ -1,0 +1,153 @@
+{
+  "schema": "vlmprobe-vendored-source-v1",
+  "library": "Overcomplete",
+  "source_url": "https://github.com/KempnerInstitute/overcomplete",
+  "source_commit": "a1781af49c6e4bbfdbfd763b9757bcf6c5dd6403",
+  "upstream_version": "0.3.0",
+  "license": "MIT",
+  "copyright": "Copyright (c) 2023 Thomas Fel",
+  "scope": "Integrated six SAE architectures and their native pointwise encoder, dictionary, objective and trainer dependency closure; no model weights or pretrained vision backbone loaders.",
+  "runtime_dependencies": [
+    "torch",
+    "einops"
+  ],
+  "files": [
+    {
+      "source": "LICENSE",
+      "target": "LICENSE",
+      "source_sha256": "6bb326128670e0b14fd287c1d1fc780809902d298a09ce83a9b34d6a184f653c",
+      "vendored_sha256": "6bb326128670e0b14fd287c1d1fc780809902d298a09ce83a9b34d6a184f653c",
+      "local_changes": []
+    },
+    {
+      "source": "overcomplete/base.py",
+      "target": "base.py",
+      "source_sha256": "b6b7ec6d85f7c353b5817abb7494b6ed7cbad1c4616ab2b231e8182da1c85b67",
+      "vendored_sha256": "b6b7ec6d85f7c353b5817abb7494b6ed7cbad1c4616ab2b231e8182da1c85b67",
+      "local_changes": []
+    },
+    {
+      "source": "overcomplete/sae/base.py",
+      "target": "sae/base.py",
+      "source_sha256": "40724fddd904f18a772cc8f36d01d6e165ee22e4b7fcd705b2ae807bcacddbae",
+      "vendored_sha256": "40724fddd904f18a772cc8f36d01d6e165ee22e4b7fcd705b2ae807bcacddbae",
+      "local_changes": []
+    },
+    {
+      "source": "overcomplete/sae/dictionary.py",
+      "target": "sae/dictionary.py",
+      "source_sha256": "a20bea6cdd0489c32528d8a63eff6ba57c25d5f75c5ac03cc49aad50698c1b3c",
+      "vendored_sha256": "a20bea6cdd0489c32528d8a63eff6ba57c25d5f75c5ac03cc49aad50698c1b3c",
+      "local_changes": []
+    },
+    {
+      "source": "overcomplete/sae/factory.py",
+      "target": "sae/factory.py",
+      "source_sha256": "b8c3648f713d1dcc02bb216f661f749b9f058b2d776960252418916d092579ca",
+      "vendored_sha256": "b8c3648f713d1dcc02bb216f661f749b9f058b2d776960252418916d092579ca",
+      "local_changes": []
+    },
+    {
+      "source": "overcomplete/sae/modules.py",
+      "target": "sae/modules.py",
+      "source_sha256": "256f52d8a2b94cb961374f82508c48605fc325163d22d9523884b41ad7fbddfd",
+      "vendored_sha256": "256f52d8a2b94cb961374f82508c48605fc325163d22d9523884b41ad7fbddfd",
+      "local_changes": []
+    },
+    {
+      "source": "overcomplete/sae/train.py",
+      "target": "sae/train.py",
+      "source_sha256": "8b9eec97ae085c643bcfdd97204243ff648569a11aef47b674a3c5ae41e36b6d",
+      "vendored_sha256": "8b9eec97ae085c643bcfdd97204243ff648569a11aef47b674a3c5ae41e36b6d",
+      "local_changes": []
+    },
+    {
+      "source": "overcomplete/sae/losses.py",
+      "target": "sae/losses.py",
+      "source_sha256": "f7855e79550ee900a2ce02fb77fa6e6cfe3a2170c2e8328d348743f2917e909f",
+      "vendored_sha256": "f7855e79550ee900a2ce02fb77fa6e6cfe3a2170c2e8328d348743f2917e909f",
+      "local_changes": []
+    },
+    {
+      "source": "overcomplete/sae/trackers.py",
+      "target": "sae/trackers.py",
+      "source_sha256": "4146959ecbd7090cca54c14fbe152251d0c6165b0b0eab64fa60414ffc7319f5",
+      "vendored_sha256": "4146959ecbd7090cca54c14fbe152251d0c6165b0b0eab64fa60414ffc7319f5",
+      "local_changes": []
+    },
+    {
+      "source": "overcomplete/sae/kernels.py",
+      "target": "sae/kernels.py",
+      "source_sha256": "7d1ead4a6a983a71b7a25126efc282a49f3fc820a5c76a354de0b4842eac35b1",
+      "vendored_sha256": "7d1ead4a6a983a71b7a25126efc282a49f3fc820a5c76a354de0b4842eac35b1",
+      "local_changes": []
+    },
+    {
+      "source": "overcomplete/sae/jump_sae.py",
+      "target": "sae/jump_sae.py",
+      "source_sha256": "25ed4086d9f7eb947bd03eed5e3dabf65f58132141cb370f839554a6e7d20cf3",
+      "vendored_sha256": "25ed4086d9f7eb947bd03eed5e3dabf65f58132141cb370f839554a6e7d20cf3",
+      "local_changes": []
+    },
+    {
+      "source": "overcomplete/sae/topk_sae.py",
+      "target": "sae/topk_sae.py",
+      "source_sha256": "5a45fdab0bdd33799873e3e2d9eeb3625ffecb3e33828673e121ea29c37b627a",
+      "vendored_sha256": "cf7f21b3661fef72e63cce3fd0b7f459e1ff8022b1590716661110489da283f8",
+      "local_changes": [
+        "Absolute SAE import changed to package-relative import."
+      ]
+    },
+    {
+      "source": "overcomplete/sae/batchtopk_sae.py",
+      "target": "sae/batchtopk_sae.py",
+      "source_sha256": "d6a1b03f77dbbf1be5b8186197e4af1c45d89453a0fe50c2b8298942fd3eaf0a",
+      "vendored_sha256": "e3546e737cb336da0860ee3defaefa4ccf403e70527b9c698a6dd649da344520",
+      "local_changes": [
+        "Absolute SAE import changed to package-relative import."
+      ]
+    },
+    {
+      "source": "overcomplete/sae/rasae.py",
+      "target": "sae/rasae.py",
+      "source_sha256": "f13a69821829c6b1d4dd48eec47efd24b58210126cc8696d1584483b8768baa3",
+      "vendored_sha256": "f13a69821829c6b1d4dd48eec47efd24b58210126cc8696d1584483b8768baa3",
+      "local_changes": []
+    },
+    {
+      "source": "overcomplete/sae/archetypal_dictionary.py",
+      "target": "sae/archetypal_dictionary.py",
+      "source_sha256": "a0a5f9f817cdba968f30b1105465fbac6298ae1493764227160683570413e961",
+      "vendored_sha256": "a0a5f9f817cdba968f30b1105465fbac6298ae1493764227160683570413e961",
+      "local_changes": []
+    },
+    {
+      "source": "overcomplete/metrics.py",
+      "target": "metrics.py",
+      "source_sha256": "c240d3b9cb0250b636dcdede9ceb326b1c809d22f2432780a64fc4aeddddb843",
+      "vendored_sha256": "d79b87a9dd0fd1601570fbbc5963cbf3e170f911860180a7d4a05ffef7793a05",
+      "local_changes": [
+        "Retained only l2, l1, lp, l0_eps, l1_l2_ratio, hoyer, kappa_4, r2_score, dead_codes and Epsilon. Function bodies are verbatim. Removed unused SciPy-dependent metrics/import.",
+        "Normalize trailing whitespace and final blank lines; Python AST unchanged."
+      ]
+    },
+    {
+      "source": null,
+      "target": "__init__.py",
+      "source_sha256": null,
+      "vendored_sha256": "a2db8386fe35d69e20f625fd1aa7f66ba0e33d2edbdb09751cd826be11c88965",
+      "local_changes": [
+        "Local minimal package initializer; excludes pretrained vision models, visualization, optimization/NMF and experimental SAE imports."
+      ]
+    },
+    {
+      "source": null,
+      "target": "sae/__init__.py",
+      "source_sha256": null,
+      "vendored_sha256": "143bd6351f950623f4579c67d5a0742082c80597a922d4d748ebb5a8af17f723",
+      "local_changes": [
+        "Local minimal package initializer; excludes pretrained vision models, visualization, optimization/NMF and experimental SAE imports."
+      ]
+    }
+  ]
+}

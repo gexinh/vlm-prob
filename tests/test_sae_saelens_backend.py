@@ -1,4 +1,4 @@
-"""Optional SAELens v6 interoperability, source identity and native training."""
+"""Vendored SAELens arithmetic, identity and training without official packages."""
 from copy import deepcopy
 from importlib.util import find_spec
 import itertools
@@ -38,12 +38,12 @@ class FakeSAE(nn.Module):
 
 
 class SAELensContractTests(unittest.TestCase):
-    def test_backend_info_does_not_import_optional_backend(self):
-        with patch.object(saelens, "version", return_value="7.0.0"):
-            self.assertEqual(saelens.backend_info()["version"], "7.0.0")
-            with self.assertRaisesRegex(ValueError, "v6"):
-                saelens._version()
-        self.assertIn("vision", saelens.backend_info()["modalities"])
+    def test_backend_info_uses_pinned_vendored_version(self):
+        info = saelens.backend_info()
+        self.assertEqual(info["implementation"], "vendored")
+        self.assertEqual(info["package"], "vlmprobe")
+        self.assertEqual(saelens._version(), "6.54.6")
+        self.assertIn("vision", info["modalities"])
 
     def test_raw_coordinates_and_geometry_are_preserved(self):
         adapter = saelens.wrap(FakeSAE(), binding=binding())
@@ -86,8 +86,29 @@ class SAELensContractTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "binding differs"):
                 saelens.load(path=directory, binding=binding())
 
+    def test_training_and_registry_do_not_import_official_packages(self):
+        import builtins
+        original_import = builtins.__import__
 
-@unittest.skipUnless(find_spec("sae_lens") is not None, "optional sae-lens not installed")
+        def blocked(name, *args, **kwargs):
+            if name.split(".", 1)[0] in {"sae_lens", "transformer_lens", "wandb", "datasets"}:
+                raise AssertionError(f"official/noncore dependency imported: {name}")
+            return original_import(name, *args, **kwargs)
+
+        with patch("builtins.__import__", side_effect=blocked), tempfile.TemporaryDirectory() as directory:
+            config = SAELensNativeTests.config(64)
+            config["trainer"]["feature_sampling_window"] = 2
+            x = torch.randn(16, 8)
+            report = saelens.train(config=config, activation_source=itertools.repeat(x), output_dir=directory, binding=binding())
+            self.assertEqual(report["implementation"], "vendored")
+            self.assertEqual(len(saelens.list_pretrained(release="goodfire-llama-3.1-8b-instruct")), 1)
+
+    def test_remote_logging_is_explicitly_outside_vendored_scope(self):
+        from vlm_probing._vendor.saelens import LoggingConfig
+        with self.assertRaisesRegex(ValueError, "Remote WandB"):
+            LoggingConfig(log_to_wandb=True)
+
+
 class SAELensNativeTests(unittest.TestCase):
     @staticmethod
     def config(samples=64, architecture="standard"):
@@ -101,7 +122,7 @@ class SAELensNativeTests(unittest.TestCase):
                 "feature_sampling_window": 100, "dead_feature_window": 100}, "seed": 42}
 
     def test_exact_upstream_encode_decode_on_supported_classic_architectures(self):
-        from sae_lens import StandardSAE, StandardSAEConfig, GatedSAE, GatedSAEConfig, TopKSAE, TopKSAEConfig, JumpReLUSAE, JumpReLUSAEConfig
+        from vlm_probing._vendor.saelens import StandardSAE, StandardSAEConfig, GatedSAE, GatedSAEConfig, TopKSAE, TopKSAEConfig, JumpReLUSAE, JumpReLUSAEConfig
         pairs = [(StandardSAE, StandardSAEConfig, {}), (GatedSAE, GatedSAEConfig, {}),
                  (TopKSAE, TopKSAEConfig, {"k": 3}), (JumpReLUSAE, JumpReLUSAEConfig, {})]
         x = torch.randn(7, 8)
@@ -251,6 +272,80 @@ class SAELensNativeTests(unittest.TestCase):
             torch.testing.assert_close(result.tensors["features"], adapter.encode(raw))
             edited = probe.sae.edit(layer=0, sae=adapter, binding=bound, feature_ids=[0], scale=1).run(inputs)
             self.assertTrue(torch.equal(edited.tensors["baseline_logits"], edited.tensors["edited_logits"]))
+
+
+@unittest.skipUnless(find_spec("sae_lens") is not None, "optional pinned upstream differential baseline is not installed")
+class SAELensPinnedDifferentialTests(unittest.TestCase):
+    """Upstream is a test oracle only; normal functionality never imports it."""
+
+    def test_six_inference_architectures_match_outputs_and_gradients(self):
+        import importlib
+        upstream = importlib.import_module("sae_lens")
+        from vlm_probing._vendor import saelens as local
+        self.assertEqual(upstream.__version__, "6.54.6", "differential oracle must match the vendored source version")
+        variants = [("Standard", {}), ("Gated", {}), ("TopK", {"k": 3}),
+                    ("JumpReLU", {}), ("AbsTopK", {"k": 3}),
+                    ("MatchingPursuit", {"max_iterations": 4})]
+        raw = torch.randn(7, 8, generator=torch.Generator().manual_seed(91))
+        for prefix, extra in variants:
+            with self.subTest(architecture=prefix):
+                baseline = getattr(upstream, prefix + "SAE")(
+                    getattr(upstream, prefix + "SAEConfig")(d_in=8, d_sae=16, **extra))
+                controlled = getattr(local, prefix + "SAE")(
+                    getattr(local, prefix + "SAEConfig")(d_in=8, d_sae=16, **extra))
+                controlled.load_state_dict(baseline.state_dict())
+                x = raw.clone().requires_grad_()
+                y = raw.clone().requires_grad_()
+                reference_features, features = baseline.encode(x), controlled.encode(y)
+                reference_reconstruction = baseline.decode(reference_features)
+                reconstruction = controlled.decode(features)
+                torch.testing.assert_close(features, reference_features, rtol=0, atol=0)
+                torch.testing.assert_close(reconstruction, reference_reconstruction, rtol=0, atol=0)
+                reference_reconstruction.square().sum().backward()
+                reconstruction.square().sum().backward()
+                torch.testing.assert_close(y.grad, x.grad, rtol=0, atol=0)
+                for name, parameter in baseline.named_parameters():
+                    actual = dict(controlled.named_parameters())[name]
+                    if parameter.grad is None:
+                        self.assertIsNone(actual.grad, name)
+                    else:
+                        torch.testing.assert_close(actual.grad, parameter.grad, rtol=0, atol=0, msg=name)
+
+    def test_eight_training_architectures_match_losses_and_gradients(self):
+        import importlib
+        upstream = importlib.import_module("sae_lens")
+        source_types = importlib.import_module("sae_lens.saes.sae")
+        from vlm_probing._vendor import saelens as local
+        from vlm_probing._vendor.saelens.saes.sae import TrainStepInput
+        variants = [("standard", {}), ("gated", {}), ("topk", {"k": 3}),
+                    ("jumprelu", {}), ("abstopk", {"k": 3}),
+                    ("matching_pursuit", {"max_iterations": 4}),
+                    ("batchtopk", {"k": 3}),
+                    ("matryoshka_batchtopk", {"k": 3, "matryoshka_widths": [8, 16]})]
+        raw = torch.randn(7, 8, generator=torch.Generator().manual_seed(91))
+        for architecture, extra in variants:
+            with self.subTest(architecture=architecture):
+                baseline_cfg = upstream.TrainingSAE.get_sae_config_class_for_architecture(architecture)(d_in=8, d_sae=16, **extra)
+                baseline = upstream.TrainingSAE.from_dict(baseline_cfg.to_dict())
+                controlled = saelens.create_training_sae(architecture=architecture, d_in=8, d_sae=16, **extra)
+                controlled.load_state_dict(baseline.state_dict())
+                coefficients = {key: value.value if hasattr(value, "value") else value
+                                for key, value in baseline.get_coefficients().items()}
+                common = {"coefficients": coefficients, "dead_neuron_mask": torch.zeros(16, dtype=torch.bool),
+                          "n_training_steps": 0, "is_logging_step": False}
+                reference = baseline.training_forward_pass(source_types.TrainStepInput(sae_in=raw, **common))
+                actual = controlled.training_forward_pass(TrainStepInput(sae_in=raw, **common))
+                torch.testing.assert_close(actual.feature_acts, reference.feature_acts, rtol=0, atol=0)
+                torch.testing.assert_close(actual.sae_out, reference.sae_out, rtol=0, atol=0)
+                torch.testing.assert_close(actual.loss, reference.loss, rtol=0, atol=0)
+                reference.loss.backward()
+                actual.loss.backward()
+                for name, parameter in baseline.named_parameters():
+                    controlled_parameter = dict(controlled.named_parameters())[name]
+                    if parameter.grad is None:
+                        self.assertIsNone(controlled_parameter.grad, name)
+                    else:
+                        torch.testing.assert_close(controlled_parameter.grad, parameter.grad, rtol=0, atol=0, msg=name)
 
 
 if __name__ == "__main__":

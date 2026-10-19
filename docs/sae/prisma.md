@@ -2,28 +2,28 @@
 
 [ViT-Prisma](https://github.com/Prisma-Multimodal/ViT-Prisma) provides HookedViT
 models, pretrained CLIP/DINO dictionaries, image activation stores and SAE
-training/evaluation. The bridge uses its actual `StandardSparseAutoencoder`
-and `GatedSparseAutoencoder` implementations. It preserves their objectives,
-TopK operation and normalization instead of converting their weights into the
-library's native SAE kernels.
+training/evaluation. This library maintains a selected, pinned copy of its
+MIT-licensed `StandardSparseAutoencoder`, `GatedSparseAutoencoder`, normalization
+and image-transformer forward core. It preserves their objectives and TopK
+operation instead of converting their weights into different SAE kernels.
+Installing or importing the official `vit_prisma` package is unnecessary.
 
 ## Installation
 
 ```bash
 python -m venv .venv-prisma
 source .venv-prisma/bin/activate
-pip install -e '.[visualization]'
-pip install 'git+https://github.com/Prisma-Multimodal/ViT-Prisma.git@64daf1425f7e5311844213fd0fb6f4127a30cd16'
+pip install -e '.[sae,visualization]'
 ```
 
 Run these commands from the development checkout; these additions have not
-been released on PyPI. Then run the pinned upstream install.
-At the audit date, PyPI's `vit-prisma` package is still **0.1.4**, whereas the
-GitHub repository declares **2.0.0**. The 0.1.x API is not assumed compatible.
-This bridge was audited against ViT-Prisma 2.0 source revision
-`64daf1425f7e5311844213fd0fb6f4127a30cd16`. Do not install its optional legacy
-`vit-prisma[sae]` extra in the same environment as modern SAELens: that extra
-pins `sae-lens==2.1.3`, whereas our SAELens bridge uses version 6.
+been released on PyPI. Only generic tensor/plot dependencies are needed.
+The selected implementation comes from ViT-Prisma 2.0 source revision
+`64daf1425f7e5311844213fd0fb6f4127a30cd16` and remains fixed until deliberately
+updated here. The internal `SOURCE.json` records upstream file hashes, local
+file hashes and modifications, and the accompanying `LICENSE` retains the MIT
+copyright notice. Remote backbone conversion, the full image trainer, dataset
+loaders and text/video models are outside this selected copy.
 
 ## Pretrained discovery and loading
 
@@ -43,6 +43,11 @@ Every pretrained dictionary belongs to an exact native model, hook and
 preprocessing contract. `HookedViT` residuals can differ from raw Hugging Face
 or OpenCLIP residuals because of weight processing such as layer-norm folding
 and centering. A matching hidden width does not establish compatibility.
+The selected vision core does not download or convert pretrained backbones.
+For a released dictionary, supply verified native HookedViT weights/config and
+the matching preprocessing; do not attach it to an unrelated encoder. Safe
+dictionary loading and its vector-level checks do not imply an end-to-end
+backbone conversion has been verified.
 
 ```python
 from vlmprobe.sae.backends import prisma
@@ -92,16 +97,16 @@ import torch
 import matplotlib.pyplot as plt
 from PIL import Image
 
-from vit_prisma.models.base_vit import HookedViT
-from vit_prisma.configs.HookedViTConfig import HookedViTConfig
-from vit_prisma.sae.config import VisionModelSAERunnerConfig
 from vlmprobe import Prober, visualization as viz
 from vlmprobe.sae import build_sae_binding
 from vlmprobe.sae.backends import prisma
+from vlmprobe.sae.backends.prisma import (
+    HookedViT, HookedViTConfig, VisionModelSAERunnerConfig,
+)
 
 torch.manual_seed(42)
 torch.set_num_threads(1)
-output = Path("outputs/prisma_cpu")
+output = Path("outputs/prisma_cpu_v3")
 output.mkdir(parents=True, exist_ok=True)
 
 model = HookedViT(HookedViTConfig(
@@ -222,8 +227,7 @@ native reconstruction objective uses batch-centered normalization.
 
 This activation bridge uses the native dictionary constructor's initialization.
 It does not run the image trainer's `b_dec_init_method` mean/geometric-median
-initialization routine. For that full image-runner recipe, use the explicit
-`native_runner=True` path after reviewing its schedule.
+initialization routine. The broad image runner is outside the selected copy.
 
 | Training option | Default and meaning |
 |---|---|
@@ -241,12 +245,12 @@ Artifacts include `config.json`, `binding.json`, `protocol.json`, `weights.pt`,
 identity and calibration split belong in the saved binding. Calibration and
 training must be separate from your final evaluation data.
 
-The alternative `native_runner=True` delegates to `VisionSAETrainer` with the
-native model and image datasets. The audited upstream configuration hardcodes
-1,300,000 images per epoch when deriving its training schedule, and its runner
-has additional tracking dependencies. It therefore requires
-`acknowledge_imagenet_schedule=True`; use the activation bridge for a correctly
-bounded custom dataset unless you have reviewed that upstream schedule.
+The broad upstream `VisionSAETrainer` is not included. Its audited configuration
+hardcodes 1,300,000 images per epoch when deriving its schedule. This library
+uses its own bounded activation/image training loop with the selected native
+SAE objectives; `native_runner=True` raises an explicit unsupported error.
+Dead-feature and ghost-gradient schedules are not part of this maintained
+training protocol.
 
 ## Normalization and feature interventions
 
@@ -273,8 +277,10 @@ named concept or causal relevance.
 
 ## Sources and licenses
 
-The integration uses upstream APIs without vendoring their implementation.
-ViT-Prisma code is MIT licensed. Checkpoint licenses remain those of their
+The integration includes selected upstream source under
+`src/vlm_probing/_vendor/prisma`; that directory's `SOURCE.json` describes
+the selection and local modifications. ViT-Prisma code is MIT licensed.
+Checkpoint licenses remain those of their
 authors; the verified starter model card specifies Apache-2.0. See the
 [official checkpoint table](https://github.com/Prisma-Multimodal/ViT-Prisma/blob/main/docs/sae_table.md),
 [configuration](https://github.com/Prisma-Multimodal/ViT-Prisma/blob/main/src/vit_prisma/sae/config.py),

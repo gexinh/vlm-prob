@@ -1,14 +1,13 @@
-"""Optional ViT-Prisma dictionaries, native image hooks and activation training.
+"""Pinned ViT-Prisma dictionaries, native image hooks and activation training.
 
-Importing this module does not import ViT-Prisma. The implementation delegates
-dictionary computations and training objectives to the installed upstream
-classes; it does not translate Prisma checkpoints into a different SAE family.
+The selected MIT-licensed upstream implementation is maintained inside this
+library. No installed ViT-Prisma package is imported. Native computations and
+objectives are retained rather than translated into another SAE family.
 """
 from __future__ import annotations
 
 from dataclasses import asdict, fields, is_dataclass
 import hashlib
-from importlib.metadata import PackageNotFoundError, version
 import json
 import math
 from pathlib import Path
@@ -28,21 +27,19 @@ _RECOMMENDED_REVISION = "2b1cb17ffb8b06e7f45a699dfc97d417f9879be4"
 
 
 def _version():
-    try:
-        return version("vit-prisma")
-    except PackageNotFoundError:
-        return None
+    return "vendored-2.0.0@" + AUDITED_REVISION
 
 
 def backend_info() -> dict[str, Any]:
     return {
         "name": "prisma", "package": "vit-prisma", "version": _version(),
+        "implementation": "vendored", "requires_official_package": False,
         "license": "MIT (code); checkpoint licenses remain checkpoint-specific",
         "source_url": SOURCE_URL, "audited_revision": AUDITED_REVISION,
         "architectures": ["standard/relu", "standard/topk", "gated"],
         "modalities": ["vision"],
         "pretrained_scope": "Native HookedViT CLIP and DINO SAEs; transcoders are distinct and rejected",
-        "training_scope": "Native Prisma objectives on explicit disjoint activation splits; optional native VisionSAETrainer",
+        "training_scope": "Selected native Prisma objectives on activation/image splits; maintained validation/resume trainer",
         "normalization": [None, "none", "layer_norm", "constant_norm_rescale"],
     }
 
@@ -68,21 +65,25 @@ def list_pretrained() -> list[dict[str, Any]]:
 
 
 def _native_classes():
-    installed = _version()
-    if installed is not None and installed.split(".", 1)[0] != "2":
-        raise ImportError(
-            f"Prisma bridge is audited against GitHub's 2.0 API, not vit-prisma {installed}; "
-            f"install git+{SOURCE_URL}.git@{AUDITED_REVISION}"
-        )
     try:
-        from vit_prisma.sae.config import VisionModelSAERunnerConfig
-        from vit_prisma.sae.sae import GatedSparseAutoencoder, StandardSparseAutoencoder
+        from ..._vendor.prisma.config import VisionModelSAERunnerConfig
+        from ..._vendor.prisma.sae import GatedSparseAutoencoder, StandardSparseAutoencoder
     except ImportError as error:
         raise ImportError(
-            f"ViT-Prisma backend requires the audited optional source: git+{SOURCE_URL}.git@{AUDITED_REVISION}. "
-            "Install vit-prisma without its legacy [sae] extra; that extra pins sae-lens 2.1.3."
+            "The bundled Prisma core needs generic einops and numpy dependencies; install vlmprobe[sae]. "
+            "The official vit-prisma package is not required."
         ) from error
     return VisionModelSAERunnerConfig, StandardSparseAutoencoder, GatedSparseAutoencoder
+
+
+def __getattr__(name):
+    """Expose selected configurations/model without official-package imports."""
+    if name == "VisionModelSAERunnerConfig":
+        return _native_classes()[0]
+    if name in {"HookedViT", "HookedViTConfig"}:
+        from ..._vendor import prisma as selected
+        return getattr(selected, name)
+    raise AttributeError(name)
 
 
 def _json_value(value):
@@ -437,23 +438,14 @@ def train(*, config, dataset, eval_dataset, output_dir, binding, model=None,
 
     The default uses native SAE.forward losses with persistent Adam, independent
     validation selection and exact data/config-bound resume. It deliberately
-    bypasses VisionSAETrainer's hardcoded 1.3M-image schedule. The optional native
-    runner is available only after explicit acknowledgement of that schedule.
+    bypasses VisionSAETrainer's hardcoded 1.3M-image schedule. The broad upstream
+    image runner is outside the vendored selection.
     """
     binding = validate_sae_binding(binding)
     cfg = _make_config(config, device=device, dtype=dtype)
     _check_config_binding(cfg, binding)
     if native_runner:
-        if not acknowledge_imagenet_schedule:
-            raise ValueError("native Prisma runner assumes 1,300,000 images/epoch; acknowledge_imagenet_schedule=True is required")
-        if model is None or input_kind != "images":
-            raise ValueError("native runner requires a native model and image datasets")
-        from vit_prisma.sae.train_sae import VisionSAETrainer
-        cfg.checkpoint_path = str(output_dir)
-        runner = VisionSAETrainer(cfg, model, dataset, eval_dataset=eval_dataset)
-        runner.run()
-        return {"backend": "prisma", "protocol": "native VisionSAETrainer; ImageNet-sized schedule explicitly acknowledged",
-                "output_dir": str(output_dir), "binding": binding}
+        raise ValueError("the broad upstream VisionSAETrainer is not vendored; use the maintained activation/image training protocol")
     if input_kind not in {"activations", "images"}:
         raise ValueError("input_kind must be activations or images")
     if type(epochs) is not int or epochs < 1 or type(batch_size) is not int or batch_size < 2:
