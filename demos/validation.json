@@ -1,56 +1,104 @@
 [
   {
     "notebook": "activation_patching_demo.ipynb",
+    "mode": "live model execution",
     "success": true,
-    "seconds": 5.21,
-    "output_cells": 4
+    "executed_code_cells": 4,
+    "total_code_cells": 4,
+    "rendered_image_outputs": 1,
+    "error_outputs": 0,
+    "code_sha256": "6fc725933c42966bff968d1fffccee2c06ed18ddb322cec6979b7f1c17e65b00",
+    "optional_training_skipped_by_default": []
   },
   {
     "notebook": "attention_comparison_demo.ipynb",
+    "mode": "live model execution",
     "success": true,
-    "seconds": 9.96,
-    "output_cells": 3
+    "executed_code_cells": 3,
+    "total_code_cells": 3,
+    "rendered_image_outputs": 2,
+    "error_outputs": 0,
+    "code_sha256": "7cc3d65855971b18c1d2014f30bdae8b719982c1566887de2d4cadcf5e55e0db",
+    "optional_training_skipped_by_default": []
   },
   {
     "notebook": "attention_knockout_demo.ipynb",
+    "mode": "live model execution",
     "success": true,
-    "seconds": 4.92,
-    "output_cells": 3
+    "executed_code_cells": 2,
+    "total_code_cells": 2,
+    "rendered_image_outputs": 1,
+    "error_outputs": 0,
+    "code_sha256": "f91b0975e54a87983c5757557083a29ee81d96011b8d15e45d1273bdc424fede",
+    "optional_training_skipped_by_default": []
   },
   {
     "notebook": "eap_ig_demo.ipynb",
+    "mode": "live model execution",
     "success": true,
-    "seconds": 5.09,
-    "output_cells": 5
+    "executed_code_cells": 5,
+    "total_code_cells": 5,
+    "rendered_image_outputs": 1,
+    "error_outputs": 0,
+    "code_sha256": "57fdf5ce76d13bf7cd58cc1b45dd99b09145151b5e1d6d030dfbeca52295411a",
+    "optional_training_skipped_by_default": []
   },
   {
     "notebook": "lens_comparison_demo.ipynb",
+    "mode": "live model execution",
     "success": true,
-    "seconds": 6.76,
-    "output_cells": 4
+    "executed_code_cells": 7,
+    "total_code_cells": 7,
+    "rendered_image_outputs": 3,
+    "error_outputs": 0,
+    "code_sha256": "e2a67722ccb950cf1a52af88f7851942bd9bb7641ebb5c7f6f4e7c4e22a3c8de",
+    "optional_training_skipped_by_default": [
+      "dense Attention Lens",
+      "exact Jacobian Lens"
+    ]
   },
   {
     "notebook": "path_patching_demo.ipynb",
+    "mode": "live model execution",
     "success": true,
-    "seconds": 5.25,
-    "output_cells": 4
+    "executed_code_cells": 5,
+    "total_code_cells": 5,
+    "rendered_image_outputs": 1,
+    "error_outputs": 0,
+    "code_sha256": "cbf4f5b66fc3caca7a5c36082cde7ec21bf9b4b6f2267355f8fd6e9931f61f6a",
+    "optional_training_skipped_by_default": []
   },
   {
     "notebook": "steering_vsv_demo.ipynb",
+    "mode": "live model execution",
     "success": true,
-    "seconds": 9.96,
-    "output_cells": 4
+    "executed_code_cells": 5,
+    "total_code_cells": 5,
+    "rendered_image_outputs": 2,
+    "error_outputs": 0,
+    "code_sha256": "f7d8ca94a493a36ae8fbbff9cd4a400993459fe63395f5ee870e9b60e8f3f960",
+    "optional_training_skipped_by_default": []
   },
   {
     "notebook": "vlm_attention_comparison_demo.ipynb",
+    "mode": "live model execution",
     "success": true,
-    "seconds": 7.11,
-    "output_cells": 3
+    "executed_code_cells": 2,
+    "total_code_cells": 2,
+    "rendered_image_outputs": 1,
+    "error_outputs": 0,
+    "code_sha256": "f62fd6a1741f518480a9b22a06f6db38af133439a943bef68ee73862c9b493d0",
+    "optional_training_skipped_by_default": []
   },
   {
     "notebook": "vlm_lens_demo.ipynb",
+    "mode": "live model execution",
     "success": true,
-    "seconds": 7.1,
-    "output_cells": 4
+    "executed_code_cells": 6,
+    "total_code_cells": 6,
+    "rendered_image_outputs": 5,
+    "error_outputs": 0,
+    "code_sha256": "ff75de6c296c96a76517861517adb6e2023ade78fc8ec892a0b30a0a4ac240fb",
+    "optional_training_skipped_by_default": []
   }
 ]

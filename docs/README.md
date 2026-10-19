@@ -7,7 +7,7 @@ three families. The same result format feeds the plotting functions and saved
 demo workflows.
 
 - [Model guides and capability matrix](models/README.md): loading, native inputs, supported sites, and validation scope.
-- [Method guides](methods/README.md): computation, examples, parameters, outputs, and paper mappings.
+- [Method guides](methods/README.md): API and parameter defaults, complete input-to-output examples, visualizations, and paper mappings.
 - [Common API](API.md): token selectors, complete-answer metrics, alignment, fitting, and persistence.
 - [Repository synchronization](REPOSITORY_SYNC.md): laboratory and personal mirrors, project pages, report updates, and one PyPI publisher.
 - [Installation and package releases](PACKAGING.md): pip installation, compatible imports, wheels, and PyPI publishing.
@@ -16,7 +16,7 @@ demo workflows.
 - [Package architecture](ARCHITECTURE.md): family base classes, adapters, execution, and results.
 - [Custom adapters](ADAPTERS.md): connect another architecture through an explicit contract.
 - [Papers and datasets](REFERENCES.md): original algorithms, author code, and data sources.
-- [Demos](../demos/README.md): offline replay of measured examples, input images, and opt-in model reruns.
+- [Demos](../demos/README.md): live input-to-result notebooks, including calibration where required and built-in visualization.
 - [Technical report](assets/vlmprobe-technical-report.pdf): shared-case comparisons across five pretrained VLMs, plus language and vision controls.
 
 ## Choose a demo
@@ -32,6 +32,7 @@ demo workflows.
 | Do selected edges recover an IOI answer margin? | [EAP / EAP-IG](../demos/eap_ig_demo.ipynb) |
 | How does residual steering change a caption? | [Steering / VSV](../demos/steering_vsv_demo.ipynb) |
 
-Notebook outputs come from real runs on the cited checkpoints and samples.
-Replay uses bundled compact measurements; rerunning requires the model and,
-for fitted lenses, a compatible decoder artifact or independent calibration.
+Notebook code prepares inputs and runs the library before plotting results.
+Each notebook states its default checkpoint, compute requirements, calibration
+scope and any optional expensive section. Historical measurement snapshots are
+kept as reference data; the tutorials do not use them as computed results.

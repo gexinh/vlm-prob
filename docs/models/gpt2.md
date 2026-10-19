@@ -2,41 +2,49 @@
 
 [Home](../../README.md) / [Models](README.md)
 
-The native `GPT2LMHeadModel` adapter supports the text decoder used by Wang et al.
-in the IOI circuit study. The example below uses random weights to demonstrate
-the API without downloads; reproducing the paper's behavioral results requires
-the pretrained GPT-2 small checkpoint and the original IOI datasets.
+The native `GPT2LMHeadModel` adapter supports the text decoder used in the
+IOI circuit study. Install `python -m pip install "vlmprobe[transformers,visualization]"`.
+This example downloads pretrained GPT-2 small (about 124M parameters), tokenizes
+an actual prompt and plots a live vocabulary readout.
+
+## Load and prepare text
 
 ```python
+import os
 import torch
-from transformers import GPT2Config, GPT2LMHeadModel
-from vlmprobe import Prober, TokenMargin
+from transformers import AutoTokenizer, GPT2LMHeadModel
+from vlmprobe import Prober, visualization as viz
 
-torch.manual_seed(4)
-config = GPT2Config(vocab_size=40, n_embd=16, n_head=2, n_layer=2,
-                    n_positions=16, attn_pdrop=0.0, resid_pdrop=0.0,
-                    embd_pdrop=0.0)
-config._attn_implementation = "eager"
-model = GPT2LMHeadModel(config).eval()
-probe = Prober(model)
-base = {"input_ids": torch.tensor([[1, 2, 3, 4]])}
-donor = {"input_ids": torch.tensor([[1, 5, 3, 4]])}
+model_id = os.environ.get("VLM_PROBING_MODEL", "openai-community/gpt2")
+device = os.environ.get("VLM_PROBING_DEVICE", "cpu")
+tokenizer = AutoTokenizer.from_pretrained(model_id)
+model = GPT2LMHeadModel.from_pretrained(
+    model_id, attn_implementation="eager",
+).to(device).eval()
+probe = Prober(model, tokenizer)
+inputs = {key: value.to(device) for key, value in tokenizer(
+    "When Mary and John went to the store, John gave a drink to", return_tensors="pt"
+).items()}
+capabilities = probe.describe()["methods"]
+for name, item in capabilities.items():
+    print(name, item["available"], item["sites"], item["missing"])
 
-lens = probe.lens.logit(layers=[0, 1]).run(base)
-path = probe.causal.path(
-    senders=[(0, 0)],
-    receivers=[(1, 1, "q")],
-    sender_tokens="last_prompt",
-    receiver_tokens="last_prompt",
-).run(base, donor=donor, metric=TokenMargin(4, 5), alignment="position")
-print(path.tensors["effect"])
+layers = capabilities["lens.logit"]["sites"]
+result = probe.lens.logit(layers=layers, tokens="last_prompt").run(inputs)
+answer_ids = tokenizer.encode(" Mary", add_special_tokens=False)
+assert len(answer_ids) == 1
+ax = viz.plot_lens_heatmap(result, target_token_id=answer_ids[0], tokenizer=tokenizer)
+ax.figure.savefig("gpt2-logit-lens.png", bbox_inches="tight")
+result.save("gpt2-logit-lens-result")
 ```
 
-Replace the random configuration with
-`GPT2LMHeadModel.from_pretrained("openai-community/gpt2", attn_implementation="eager")`
-and tokenize aligned base/donor prompts for pretrained experiments. Check that
-the selected token positions refer to the intended IOI roles; positional
-alignment does not infer names, subjects, or indirect objects.
+This single example does not establish the model's IOI circuit. The same model
+binding supports the [method guides](../methods/README.md), including complete
+training examples for calibrated lenses and clean/reference construction for
+[activation](../methods/activation_patching.md), [path](../methods/path_patching.md)
+and [EAP-IG](../methods/eap_ig.md) analyses. Method calls retain their common
+syntax; valid layers and capabilities come from the bound model. See the
+[shared workflow](README.md#use-any-supported-method).
 
 ## Adapter behavior
 
@@ -65,7 +73,7 @@ are not a reproduction of the pretrained IOI circuit.
 See [IOI-style path patching](../methods/path_patching.md) and the
 [official GPT-2 implementation](https://github.com/huggingface/transformers/blob/v5.3.0/src/transformers/models/gpt2/modeling_gpt2.py).
 
-The [executed EAP-IG notebook](../../demos/eap_ig_demo.ipynb) additionally runs
+The [live EAP-IG notebook](../../demos/eap_ig_demo.ipynb) additionally runs
 pretrained GPT-2 small on two author-published IOI pairs. Configure
 `probe.causal.eap_ig(graph="transformer", steps=5)` for original input-embedding
 integration over independent pre-LayerNorm Q/K/V, MLP, and readout messages.

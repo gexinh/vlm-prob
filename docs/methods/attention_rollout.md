@@ -2,41 +2,98 @@
 
 [Home](../../README.md) / [Methods](README.md) / Attention Rollout
 
-Compose normalized self-attention transitions across consecutive layers.
+Compose residual attention transitions across layers to summarize indirect token interactions.
 
-## Implementation
-
-Fuse heads, optionally add identity for the residual path, normalize each row, and multiply transitions in forward layer order. Padding is excluded.
-
-## Example
-
-Use the [small CPU setup](README.md#example-setup) first. For a VLM, use its
-[model guide](../models/README.md) and choose layers reported by `describe()`.
-
-```python
-result = probe.attention.rollout(layers=[0, 1]).run(inputs)
-print(result.tensors["rollout"].shape)
-```
-
-## API
+## API and parameters
 
 ```text
-probe.attention.rollout(*, layers=None, head_reduction="mean", residual=True)
-method.run(inputs)
+method = probe.attention.rollout(*, layers=None, head_reduction="mean", residual=True)
+result = method.run(inputs, *, metric=None)
 ```
 
-| Parameter | Meaning |
-| --- | --- |
-| `layers` | Consecutive available attention layers starting at zero; defaults to the available prefix. |
-| `head_reduction` | `"mean"`, `"max"`, or `"min"`; default `"mean"` follows the standard convention. |
-| `residual` | Add the identity before row normalization. |
+| Parameter | Default | Meaning and constraints |
+| --- | --- | --- |
+| `layers` | `None` | Consecutive attention layers `[0, ..., n]` in ascending order. The default uses the complete available prefix; gaps or a selection starting after 0 are rejected. |
+| `head_reduction` | `"mean"` | Fuse heads with `"mean"`, `"max"`, or `"min"` before propagation. |
+| `residual` | `True` | Add an identity transition at each layer, then row-normalize. `False` uses only attention transitions. |
+| `inputs` | `required` | Prepared native model kwargs or `ProbeInputs` matching the bound model. |
+| `metric` | `None` | Unused; Rollout is target-independent. |
 
-Returns a `ProbeResult`: Final `rollout[B,T,T]` and `layer_rollouts[L,B,T,T]`.
+`inputs` is a native model-kwargs dictionary or `ProbeInputs`; pass every processor field, not just token IDs. Layer indices are zero-based model indices (not plot row numbers). A selection is an integer or a nonempty list of unique supported indices. Token selectors accept `"all"`, `"visual"`, `"text"`, `"last_prompt"`, `"prediction"`, nonnegative expanded-sequence positions, or a boolean `[B,T]` mask. Padding cannot be selected. For VLMs these positions include expanded image slots, not just tokenizer text positions.
 
-## Support and scope
+Results are detached CPU `ProbeResult` tensors by default; `result.save(path)` stores tensors and JSON-safe run metadata. `B/H/T/V/L` denote batch/head/token/vocabulary/selected-layer axes. Check `probe.describe()["methods"][method_name]` for the actual checkpoint. Eager attention and no KV cache are required for these model-bound attention methods.
 
-Requires eager self-attention. Unavailable on Qwen3.5-4B because linear-attention gaps cannot be skipped. It summarizes attention transitions and omits values, MLPs, and visual injection edges.
+## Complete example
 
-[Paper / source reference](../REFERENCES.md#attention-methods) ·
-[Tensor implementation](../../src/vlm_probing/attention/rollout.py) ·
-[Shared result conventions](README.md#shared-conventions)
+The example loads pretrained weights, reads a raw image, computes a fresh result, and calls the built-in visualization API. No probe training is required. Run outside `torch.inference_mode()` for gradient methods.
+
+```python
+from pathlib import Path
+import os
+from io import BytesIO
+from urllib.request import urlopen
+import numpy as np
+import torch
+from PIL import Image
+from transformers import AutoImageProcessor, ViTForImageClassification
+from vlmprobe import Prober, ClassScore
+from vlmprobe import visualization as viz
+import matplotlib.pyplot as plt
+
+# Install: pip install "vlmprobe[transformers,visualization]"
+# Set VLM_PROBING_MODEL to a local directory to avoid downloading this checkpoint.
+model_id = os.environ.get("VLM_PROBING_MODEL", "google/vit-base-patch16-224")
+device = os.environ.get("VLM_PROBING_DEVICE", "cuda:0" if torch.cuda.is_available() else "cpu")
+model = ViTForImageClassification.from_pretrained(model_id, attn_implementation="eager").to(device).eval()
+processor = AutoImageProcessor.from_pretrained(os.environ.get("VLM_PROBING_PROCESSOR", model_id))
+probe = Prober(model, processor)
+
+# A raw COCO image, not a saved attention map or a previous model result.
+image_path = os.environ.get("VLM_PROBING_IMAGE")
+image = (Image.open(image_path) if image_path else Image.open(BytesIO(urlopen(
+    "https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/coco_sample.png"
+).read()))).convert("RGB")
+inputs = {k: v.to(device) for k, v in processor(images=image, return_tensors="pt").items()}
+with torch.no_grad():
+    logits = model(**inputs).logits
+    target_id = int(logits[0].argmax())  # Choose once; keep fixed during attribution.
+metric = ClassScore(target_id, kind="logit")
+print("Fixed target:", target_id, model.config.id2label.get(target_id))
+
+# Plot the actual processed image; its crop/resize aligns with the patch tokens.
+mean = torch.tensor(processor.image_mean)[:, None, None]
+std = torch.tensor(processor.image_std)[:, None, None]
+rgb = (inputs["pixel_values"][0].detach().cpu() * std + mean).clamp(0, 1)
+processed_image = Image.fromarray((rgb.permute(1, 2, 0).numpy() * 255).astype("uint8"))
+patch = model.config.patch_size
+grid_shape = tuple(int(n // patch) for n in inputs["pixel_values"].shape[-2:])
+visual_positions = list(range(1, 1 + grid_shape[0] * grid_shape[1]))  # CLS is 0.
+last = probe.describe()["methods"]["attention.profile"]["sites"][-1]
+output_dir = Path(os.environ.get("VLM_PROBING_OUTPUT", "outputs/attention-tutorial"))
+output_dir.mkdir(parents=True, exist_ok=True)
+result = probe.attention.rollout(layers=list(range(last + 1)), head_reduction="mean", residual=True).run(inputs)
+print("Final map:", result.tensors["rollout"].shape)
+ax = viz.plot_attention_overlay(
+    processed_image, result, tensor="rollout", grid_shape=grid_shape,
+    visual_positions=visual_positions, query_positions=[0],
+    signed=False, image_alpha=0.25, alpha=1.0,
+    title="Attention Rollout",
+)
+ax.figure.savefig(output_dir / "attention-rollout.png", dpi=160, bbox_inches="tight")
+result.save(output_dir / "attention-rollout")
+plt.show()
+```
+
+![Executed tutorial result](../assets/tutorials/attention-rollout.png)
+
+The preview was generated by this tutorial, not loaded as its input. See the [execution manifest](../assets/tutorials/attention-execution.json) for the checkpoint, target and settings.
+
+## Outputs and interpretation
+
+`rollout[B,T,T]` is the final transition map; `layer_rollouts[L,B,T,T]` retains every prefix. For each layer, fuse heads, optionally add identity, row-normalize, then left-multiply the preceding rollout. Padding is excluded. This omits values, MLPs and non-attention visual injection edges; interpret it as descriptive attention flow, not causal influence.
+
+## Support and references
+
+Use the same factory calls on another supported checkpoint after changing only model loading and preprocessing in its [model guide](../models/README.md). Hybrid Qwen3.5 supports individual full-attention layers, but rollout/relevance/TAM/Beyond Intuition cannot skip its intervening linear-attention blocks. An all-zero measured map is valid; an unavailable method is a capability error, not a zero map.
+
+[Quantifying Attention Flow in Transformers](https://aclanthology.org/2020.acl-main.385/) · [Implementation](../../src/vlm_probing/attention/rollout.py)

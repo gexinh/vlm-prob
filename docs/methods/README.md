@@ -2,12 +2,16 @@
 
 [Home](../../README.md) / [Documentation](../README.md)
 
-Each guide explains the computation, includes a usage example, and documents
-parameters and returned tensors. Availability depends on the model adapter;
+Each guide presents the API and parameter defaults first, followed by a complete
+example: imports, model loading, input/prompt preparation, calibration or target
+construction when needed, method execution, result inspection and visualization.
+Examples can be copied without first running a hidden shared setup cell.
+Availability depends on the model adapter;
 check `probe.describe()` or the [model matrix](../models/README.md).
 
 Residual and head lenses support language-model and VLM representations;
-EmbedLens additionally needs projected visual tokens. Spatial attention maps
+EmbedLens uses the input-embedding space; its visual-analysis mode needs projected
+visual tokens, while `tokens="all"` also permits text-only inputs. Spatial attention maps
 can analyze vision classifiers or decoder visual tokens when the adapter
 exposes the required sites. Original EAP-IG currently uses a text-only GPT-2
 graph. These modality boundaries are documented on each method page.
@@ -56,37 +60,20 @@ algorithms and their implemented scope.
 | [Residual Steering](steering.md) | `probe.causal.steer(...)` | Add a supplied direction to selected residuals and measure the output change. |
 | [Visual Steering Vector (VSV)](steering.md#per-image-visual-steering-vsv) | `probe.causal.vsv(positive, negative, ...)` | Build per-image residual directions from image and text-only inputs; configure a joint steering run. |
 
-## Example setup
+## Running the examples
 
-For a downloaded VLM, start with its [model guide](../models/README.md) to obtain
-`probe` and `inputs`. For a small, fully runnable demonstration of every method,
-run this setup from the repository root after installation. Method-page snippets
-use these variables. TinyModel exposes editable attention and independently
-replaceable edge sites, including the explicit activation-space EAP-IG variant.
-Pretrained GPT-2 uses the separate original transformer-graph implementation.
+Install `python -m pip install "vlmprobe[transformers,visualization]"` for the
+pretrained examples. For notebooks, clone the repository and install
+`python -m pip install -e ".[transformers,visualization,notebooks]"`.
+Model downloads and compute requirements are stated on each page. Example
+calibrations teach the workflow; they are not validated research checkpoints.
 
-```python
-import torch
-from examples.tiny_model import TinyModel
-from vlmprobe import Prober, TokenMargin
-
-torch.manual_seed(7)
-torch.set_num_threads(1)
-model = TinyModel().eval()
-probe = Prober(model)
-inputs = {"input_ids": torch.tensor([[1, 2, 3], [3, 4, 5]]),
-          "image_tokens": torch.randn(2, 2, 6)}
-corrupt = {**inputs, "image_tokens": torch.zeros_like(inputs["image_tokens"])}
-calibration = inputs
-evaluation = {**inputs, "image_tokens": torch.randn(2, 2, 6)}
-metric = TokenMargin(positive=4, negative=5)
-```
-
-Here vocabulary IDs 4 and 5 are synthetic labels. For a pretrained model, choose
-verified single-token labels with its tokenizer, or use
-[SequenceLogProb](../API.md#metrics-and-explicit-layouts) for full answers.
-For causal comparisons, prepare aligned clean/corrupt inputs. For fitted lenses,
-use a representative calibration set and separate evaluation data.
+The [notebooks](../../demos/README.md) walk through raw input preparation and
+compute results before plotting them. The [model guides](../models/README.md#use-any-supported-method)
+explain how to switch the loading and input block while retaining the common
+method API. The optional [TinyModel example](../../examples/prober_quickstart.py)
+is an architecture/API smoke test with synthetic IDs, not a pretrained semantic
+demonstration or a prerequisite for these method pages.
 
 ## Shared conventions
 

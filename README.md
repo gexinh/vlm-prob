@@ -151,9 +151,10 @@ explicitly, or use complete-answer metrics for interventions.
 
 [The API guide](https://github.com/gexinh/vlm-probing/blob/main/docs/API.md) covers selectors, complete-answer metrics,
 paired-input alignment, and result shapes. [Visualization](https://github.com/gexinh/vlm-probing/blob/main/docs/VISUALIZATION.md)
-describes reusable plotting functions. The [demos](https://github.com/gexinh/vlm-probing/blob/main/demos/README.md) include
-saved real measurements and input images for offline replay; rerunning a model
-is an explicit option. A [small CPU example](https://github.com/gexinh/vlm-probing/blob/main/examples/prober_quickstart.py)
+describes reusable plotting functions. The [demos](https://github.com/gexinh/vlm-probing/blob/main/demos/README.md) walk through
+input preparation, live model calls, calibration when needed, and plotting.
+Every [method guide](https://github.com/gexinh/vlm-probing/blob/main/docs/methods/README.md) includes parameter defaults and a complete input-to-output example.
+A [small CPU example](https://github.com/gexinh/vlm-probing/blob/main/examples/prober_quickstart.py)
 exercises the API without downloading pretrained weights.
 
 ## Model Support

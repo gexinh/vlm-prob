@@ -1,0 +1,64 @@
+{
+  "scope": "Live end-to-end tutorial previews; not dataset-level benchmark reproduction",
+  "models": {
+    "causal-patching.png": "openai-community/gpt2",
+    "causal-path-patching.png": "openai-community/gpt2",
+    "causal-eap-ig.png": "openai-community/gpt2",
+    "causal-vsv.png": "HuggingFaceTB/SmolVLM-500M-Instruct",
+    "causal-attention-knockout.png": "HuggingFaceTB/SmolVLM-500M-Instruct"
+  },
+  "text_pair": "Author IOI row826; explicit raw strings and candidate token IDs in tutorial source",
+  "image": {
+    "source": "COCO2014 validation",
+    "file": "COCO_val2014_000000310196.jpg",
+    "sha256": "0dcc39d91764e59e0e01c11b92ec31320f094a87ca2dce5e0c56c4f1a361daf4"
+  },
+  "files": {
+    "causal-patching.png": "0a2af91c40e782fa1fd6007c2c7e1790948824d6dee901b0984e1c8856e6f501",
+    "causal-path-patching.png": "c461413bcf20e2fe8ea827790ca7303952e4dbbcc19ae83a3a30173cff1c057a",
+    "causal-eap-ig.png": "781833eea167adf8a91f0713027d0bf6eb36ffca99bcca0861fe2a4c3d19cbb9",
+    "causal-vsv.png": "4144b0a366f0bd8ad106ec17e76a7789a222edf0750f9af74b38a33e47c9c542",
+    "causal-attention-knockout.png": "e688a93fb7bbf30748c16f8c07c55449b1a2471a947ae28792ee1561e2aa60d9"
+  },
+  "execution": {
+    "method_training": false,
+    "path_senders": 36,
+    "path_forward_passes": 74,
+    "path_identity_donor_effect": 0.0,
+    "eap_native_graph_edges": 32491,
+    "eap_gradient_samples": 5,
+    "vsv_strengths": [
+      0.0,
+      0.02,
+      0.05
+    ],
+    "vsv_max_new_tokens": 32,
+    "knockout_layers": [
+      0,
+      16,
+      31
+    ]
+  },
+  "notebooks": {
+    "activation_patching_demo.ipynb": {
+      "executed_code_cells": 4,
+      "rendered_image_outputs": 1,
+      "error_outputs": 0
+    },
+    "path_patching_demo.ipynb": {
+      "executed_code_cells": 5,
+      "rendered_image_outputs": 1,
+      "error_outputs": 0
+    },
+    "eap_ig_demo.ipynb": {
+      "executed_code_cells": 5,
+      "rendered_image_outputs": 1,
+      "error_outputs": 0
+    },
+    "steering_vsv_demo.ipynb": {
+      "executed_code_cells": 5,
+      "rendered_image_outputs": 2,
+      "error_outputs": 0
+    }
+  }
+}

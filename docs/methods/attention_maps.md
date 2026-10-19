@@ -2,100 +2,119 @@
 
 [Home](../../README.md) / [Methods](README.md) / Attention maps
 
-These methods explain a fixed model score with attention probabilities,
-gradients, or projected value vectors. They answer which input patches or
-tokens contribute to that score under a particular approximation. A heatmap
-alone does not establish a causal circuit; use [Attention Knockout](attention_knockout.md)
-or [Path Patching](path_patching.md) to test specific connections.
+Explain a fixed model score using attention probabilities, gradients, and information propagated across layers. No probe training is required. Each method below computes a different approximation; the same target, input and geometry make their differences visible.
 
-## A common call pattern
+## API and every parameter
 
-Bind the model once, prepare its native inputs, choose a target score, and
-call `probe.attention.<method>(...).run(inputs, metric=metric)`. The example
-below uses native Hugging Face ViT classification, matching the modality of
-the TAM and Beyond Intuition image experiments.
+```text
+probe.attention.grad_cam(*, layers=None, queries=None, keys=None, normalize=False)
+probe.attention.attribution(*, layers=None, queries=None, keys=None, steps=20, quadrature="right")
+probe.attention.tam(*, layers=None, queries=None, keys=None, steps=20,
+                    quadrature="right", input_key="pixel_values", start_layer=0,
+                    residual_normalize=True)
+probe.attention.beyond_intuition(*, variant="head", layers=None, queries=None,
+                                keys=None, steps=20, quadrature="right",
+                                input_key="pixel_values", start_layer=0)
+result = method.run(inputs, *, metric=None, baseline=None)
+```
+
+| Parameter | Default | Methods and meaning / constraints |
+| --- | --- | --- |
+| `layers` | `None` | All four: available attention layers. Grad-CAM/ATTATTR accept any unique nonempty supported subset. TAM/Beyond require `[0,...,n]` in forward order; gaps are rejected. |
+| `queries` | `None` | All four: CLS `[0]` for classification, `"last_prompt"` for language/VLMs. Explicit token selector changes query rows to explain. |
+| `keys` | `None` | All four: `"visual"` for classification, `"all"` for language/VLMs. Unselected map entries are zero; original probabilities are not renormalized over this selection. |
+| `normalize` | `False` | Grad-CAM only: per-query min-max normalize the displayed CAM. Raw scores are preserved by default. A constant/zero map remains zero. |
+| `steps` | `20` | ATTATTR/TAM/Beyond: positive integer integration sample count. More samples cost more forwards; check convergence. Endpoint-inclusive sampling requires at least 2. |
+| `quadrature` | `"right"` | ATTATTR/TAM/Beyond: `"right"`, `"left"` Riemann samples, or `"endpoints"` equally weighted samples including 0 and 1 (not trapezoidal integration). |
+| `input_key` | `"pixel_values"` | TAM/Beyond only: name of the floating native input tensor to interpolate. Integer token IDs cannot be interpolated. All other input fields remain fixed. |
+| `start_layer` | `0` | TAM/Beyond only: zero-based inclusive start within the selected consecutive stack; `0 <= start_layer < len(layers)`. Captured preceding layers remain available but are skipped in propagation. |
+| `residual_normalize` | `True` | TAM only: use half-normalized residual transitions. `False` matches the official code's transition scale rather than the paper convention. |
+| `variant` | `"head"` | Beyond only: `"head"` weights heads using attention gradients; `"token"` uses projected value / pre-LN input norms and needs both captures plus a no-bias value projection contract. |
+| `inputs` | required | Prepared native model kwargs or `ProbeInputs`. All processor geometry/mask fields must be kept. |
+| `metric` | `None`; required | Fixed differentiable scalar or `[B]` target, e.g. `ClassScore`, `TokenMargin`, `SequenceLogProb`. Do not change targets during integration. |
+| `baseline` | `None` | TAM/Beyond only: floating tensor matching `inputs[input_key]` shape/device/dtype. `None` means zero in processed-input coordinates, not a black raw image. Explicit baselines on Grad-CAM/ATTATTR are rejected. |
+
+`inputs` is a native model-kwargs dictionary or `ProbeInputs`; pass every processor field, not just token IDs. Layer indices are zero-based model indices (not plot row numbers). A selection is an integer or a nonempty list of unique supported indices. Token selectors accept `"all"`, `"visual"`, `"text"`, `"last_prompt"`, `"prediction"`, nonnegative expanded-sequence positions, or a boolean `[B,T]` mask. Padding cannot be selected. For VLMs these positions include expanded image slots, not just tokenizer text positions.
+
+Results are detached CPU `ProbeResult` tensors by default; `result.save(path)` stores tensors and JSON-safe run metadata. `B/H/T/V/L` denote batch/head/token/vocabulary/selected-layer axes. Check `probe.describe()["methods"][method_name]` for the actual checkpoint. Eager attention and no KV cache are required for these model-bound attention methods.
+
+## Complete example: raw image to five fresh maps
+
+This standalone script loads a pretrained classifier, obtains its fixed top-class target, runs every map method, inspects the results, saves them, and plots using `vlmprobe.visualization`. A GPU is recommended for the integration methods; the code also supports CPU. The short 8-sample example is a walkthrough, not a paper-scale reproduction.
 
 ```python
+from pathlib import Path
+import os
+from io import BytesIO
+from urllib.request import urlopen
+import numpy as np
 import torch
 from PIL import Image
 from transformers import AutoImageProcessor, ViTForImageClassification
-from vlmprobe import ClassScore, Prober
+from vlmprobe import Prober, ClassScore
+from vlmprobe import visualization as viz
+import matplotlib.pyplot as plt
 
-model_id = "google/vit-base-patch16-224"
-processor = AutoImageProcessor.from_pretrained(model_id)
-model = ViTForImageClassification.from_pretrained(
-    model_id, attn_implementation="eager"
-).eval()
-inputs = dict(processor(images=Image.open("example.jpg").convert("RGB"),
-                        return_tensors="pt"))
-probe = Prober(model, processor=processor)
-print(probe.describe()["methods"])
+# Install: pip install "vlmprobe[transformers,visualization]"
+# Set VLM_PROBING_MODEL to a local directory to avoid downloading this checkpoint.
+model_id = os.environ.get("VLM_PROBING_MODEL", "google/vit-base-patch16-224")
+device = os.environ.get("VLM_PROBING_DEVICE", "cuda:0" if torch.cuda.is_available() else "cpu")
+model = ViTForImageClassification.from_pretrained(model_id, attn_implementation="eager").to(device).eval()
+processor = AutoImageProcessor.from_pretrained(os.environ.get("VLM_PROBING_PROCESSOR", model_id))
+probe = Prober(model, processor)
 
-# Fix this class throughout integration; do not reselect argmax at each step.
+# A raw COCO image, not a saved attention map or a previous model result.
+image_path = os.environ.get("VLM_PROBING_IMAGE")
+image = (Image.open(image_path) if image_path else Image.open(BytesIO(urlopen(
+    "https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/coco_sample.png"
+).read()))).convert("RGB")
+inputs = {k: v.to(device) for k, v in processor(images=image, return_tensors="pt").items()}
 with torch.no_grad():
-    class_id = model(**inputs).logits[0].argmax().item()
-metric = ClassScore(class_id, kind="logit")
-last = model.config.num_hidden_layers - 1
+    logits = model(**inputs).logits
+    target_id = int(logits[0].argmax())  # Choose once; keep fixed during attribution.
+metric = ClassScore(target_id, kind="logit")
+print("Fixed target:", target_id, model.config.id2label.get(target_id))
 
-cam = probe.attention.grad_cam(
-    layers=[last], queries=[0], keys="visual"
-).run(inputs, metric=metric)
-
-attattr = probe.attention.attribution(
-    layers=[last], queries=[0], keys="visual", steps=20, quadrature="right"
-).run(inputs, metric=metric)
-
-tam = probe.attention.tam(
-    queries=[0], keys="visual", steps=20, input_key="pixel_values"
-).run(inputs, metric=metric)
-
-ours_h = probe.attention.beyond_intuition(
-    variant="head", queries=[0], keys="visual", steps=20,
-    input_key="pixel_values"
-).run(inputs, metric=metric)
-
-ours_c = probe.attention.beyond_intuition(
-    variant="token", queries=[0], keys="visual", steps=20,
-    input_key="pixel_values"
-).run(inputs, metric=metric)
-
-# ViT token 0 is CLS; visual keys 1: are row-major patches.
-patch_scores = tam.tensors["map"][0, 0, 1:]
-patch_size = model.config.patch_size
-height = inputs["pixel_values"].shape[-2] // patch_size
-width = inputs["pixel_values"].shape[-1] // patch_size
-heatmap = patch_scores.reshape(height, width)
-tam.save("outputs/my_attention_map")
+# Plot the actual processed image; its crop/resize aligns with the patch tokens.
+mean = torch.tensor(processor.image_mean)[:, None, None]
+std = torch.tensor(processor.image_std)[:, None, None]
+rgb = (inputs["pixel_values"][0].detach().cpu() * std + mean).clamp(0, 1)
+processed_image = Image.fromarray((rgb.permute(1, 2, 0).numpy() * 255).astype("uint8"))
+patch = model.config.patch_size
+grid_shape = tuple(int(n // patch) for n in inputs["pixel_values"].shape[-2:])
+visual_positions = list(range(1, 1 + grid_shape[0] * grid_shape[1]))  # CLS is 0.
+last = probe.describe()["methods"]["attention.profile"]["sites"][-1]
+output_dir = Path(os.environ.get("VLM_PROBING_OUTPUT", "outputs/attention-tutorial"))
+output_dir.mkdir(parents=True, exist_ok=True)
+steps = int(os.environ.get("VLM_PROBING_STEPS", "8"))
+# 8 samples keep the walkthrough short; use 20+ and check convergence for analysis.
+results = {
+    "Grad-CAM": probe.attention.grad_cam(layers=[last], queries=[0], keys="visual").run(inputs, metric=metric),
+    "ATTATTR": probe.attention.attribution(layers=[last], queries=[0], keys="visual", steps=steps).run(inputs, metric=metric),
+    "TAM": probe.attention.tam(queries=[0], keys="visual", steps=steps, residual_normalize=True).run(inputs, metric=metric),
+    "Beyond-H": probe.attention.beyond_intuition(variant="head", queries=[0], keys="visual", steps=steps).run(inputs, metric=metric),
+    "Beyond-C": probe.attention.beyond_intuition(variant="token", queries=[0], keys="visual", steps=steps).run(inputs, metric=metric),
+}
+for name, result in results.items():
+    print(name, {key: tuple(value.shape) for key, value in result.tensors.items()})
+    result.save(output_dir / name.lower())
+fig, axes = viz.plot_attention_comparison(
+    processed_image, results, grid_shape=grid_shape,
+    visual_positions=visual_positions, query_positions=[0], columns=3,
+    signed={name: name == "ATTATTR" for name in results},
+    shared_scale=False, image_alpha=0.25, alpha=1.0,
+)
+fig.savefig(output_dir / "attention-maps.png", dpi=160, bbox_inches="tight")
+plt.show()
 ```
 
-The query/key selectors preserve full token axes and set unselected map
-entries to zero. For ViT, the map defaults are CLS query and visual patch
-keys; for a language model or VLM, they are the last prompt position and all
-keys. Explicit selectors make comparisons easier to review. `layers=None`
-uses supported attention layers. Propagation requires a consecutive stack
-starting at layer 0; `start_layer` skips initial layers within that stack.
+![Fresh attention map comparison](../assets/tutorials/attention-maps.png)
 
-Use the [model guides](../models/README.md) for VLM preprocessing. With a
-prepared `probe`, `inputs`, and verified candidate token IDs, the same public
-methods apply to an autoregressive answer:
+The [execution manifest](../assets/tutorials/attention-execution.json) records the actual checkpoint, image, target and integration setting. `image_alpha` fades the original image while the measured heatmap stays opaque. Signed ATTATTR uses its own diverging scale; unrelated method units are not forced onto one shared colorbar.
 
-```python
-from vlmprobe import TokenMargin
+## Switching to a VLM
 
-metric = TokenMargin(positive=correct_token_id, negative=contrast_token_id)
-result = probe.attention.grad_cam(
-    layers=[last_decoder_layer], queries="last_prompt", keys="visual"
-).run(inputs, metric=metric)
-image_scores = result.tensors["cam"][0, 0, prediction_position, visual_positions]
-```
-
-For answers containing multiple tokens, use an explicitly aligned
-`SequenceLogProb` target instead of assuming a word has one token. VLM token
-positions refer to the expanded language sequence, including image tokens.
-Spatially reshape a visual map only when the processor and token layout
-provide a verified patch grid. Multi-crop visual inputs may need several
-grids. These decoder maps explain language-side image tokens; they are
-different from a vision encoder's CLS-to-patch attention.
+Keep the factories and parameters above. Replace classifier loading/preprocessing with its [model guide](../models/README.md), construct a fixed `SequenceLogProb` or `TokenMargin` target, and use expanded visual/query positions for plotting. The [VLM walkthrough](../../demos/vlm_attention_comparison_demo.ipynb) shows that entire process, including answer alignment, a nonzero gray-image input baseline and a verified single-tile grid. Multi-crop layouts must be split into their actual grids; do not guess a square grid from token count.
 
 ## What each method computes
 
@@ -127,21 +146,7 @@ model weights remain caller-owned; attribution obtains activation gradients
 without fitting parameters. Eager attention is required, and the adapter
 must expose consumed probabilities rather than detached diagnostic outputs.
 
-## API and returned tensors
-
-```text
-probe.attention.grad_cam(*, layers=None, queries=None, keys=None, normalize=False)
-probe.attention.attribution(*, layers=None, queries=None, keys=None,
-                            steps=20, quadrature="right")
-probe.attention.tam(*, layers=None, queries=None, keys=None,
-                    steps=20, quadrature="right", input_key="pixel_values",
-                    start_layer=0)
-probe.attention.beyond_intuition(*, variant="head", layers=None,
-                                queries=None, keys=None, steps=20,
-                                quadrature="right", input_key="pixel_values",
-                                start_layer=0)
-method.run(inputs, *, metric, baseline=None)
-```
+## Returned tensors
 
 `baseline` applies to input-path methods only. `normalize` is optional
 per-query min-max display normalization for Grad-CAM; raw values are the
@@ -209,8 +214,8 @@ also retains an earlier 2022 manuscript date.
 
 ## References
 
-Executed comparisons: [original ViT control](../../demos/attention_comparison_demo.ipynb)
-and [LLaVA/GQA transfer](../../demos/vlm_attention_comparison_demo.ipynb).
+Executed comparisons: [native ViT walkthrough](../../demos/attention_comparison_demo.ipynb)
+and [SmolVLM/GQA walkthrough](../../demos/vlm_attention_comparison_demo.ipynb).
 Both retain the actual inputs, fixed targets and method configurations.
 
 - [Grad-CAM paper](https://arxiv.org/abs/1610.02391), ICCV 2017;
