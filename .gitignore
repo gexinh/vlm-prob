@@ -53,6 +53,7 @@ outputs/
 !/docs/releases/library-v0.8.0.md
 !/docs/releases/library-v0.9.0.md
 !/docs/releases/v1.0.0.md
+!/docs/releases/v1.0.1.md
 
 # Notebook reruns and downloaded artifacts are not source assets.
 /demos/outputs/

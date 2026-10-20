@@ -10,7 +10,7 @@ from .api.sae import SAEMethods
 from .metrics import TokenMargin, SequenceLogProb, ClassScore
 from . import visualization
 
-__version__ = "1.0.0"
+__version__ = "1.0.1"
 __all__ = ["BaseMethod", "ProbeResult", "ForwardTrace", "BaseModelAdapter",
            "HookPoint", "ModelReadout", "TorchModelAdapter", "Prober", "ModelSpec",
            "ProbeInputs", "TokenLayout", "HeadSite", "CapabilityError", "register_adapter",
