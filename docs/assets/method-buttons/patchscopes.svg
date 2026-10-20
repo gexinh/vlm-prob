@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="210" height="46" viewBox="0 0 210 46" role="img" aria-label="Patchscopes">
+  <title>Patchscopes</title>
+  <rect x="0.5" y="0.5" width="199" height="35" rx="7" fill="#effaf8" stroke="#b8dfd9"/>
+  <g color="#087d79" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none"><circle cx="18" cy="17" r="5"/><path d="m22 21 4 4M18 14v6m-3-3h6"/></g>
+  <text x="36" y="18" dominant-baseline="central" fill="#24364b" font-family="Arial, Helvetica, sans-serif" font-size="13.5" font-weight="500">Patchscopes</text>
+</svg>
