@@ -184,13 +184,67 @@ Each guide explains the implemented computation, parameters, outputs, and
 relationship to its original paper. Reusable primitives are labeled separately
 from paper methods.
 
-| Family | Method guides |
-| --- | --- |
-| Lens | [Logit](docs/methods/logit_lens.md) · [Tuned](docs/methods/tuned_lens.md) · [Attention Lens](docs/methods/attention_lens.md) · [Jacobian](docs/methods/jacobian_lens.md) · [EmbedLens](docs/methods/embed_lens.md) · [Patchscopes](docs/methods/patchscope.md) |
-| Attention | [Rollout](docs/methods/attention_rollout.md) · [Grad-CAM, ATTATTR, TAM, Beyond Intuition](docs/methods/attention_maps.md) · [Generic relevance](docs/methods/attention_relevance.md) · [ViT DTD/LRP](docs/methods/chefer_lrp.md) |
-| Causal | [Activation patching](docs/methods/activation_patching.md) · [IOI-style path patching](docs/methods/path_patching.md) · [Attribution patching](docs/methods/attribution_patching.md) · [Attention Knockout](docs/methods/attention_knockout.md) · [EAP / EAP-IG](docs/methods/eap_ig.md) · [Residual steering / VSV](docs/methods/steering.md) |
-| SAE | [ReLU](docs/methods/sae/relu.md) · [TopK](docs/methods/sae/topk.md) · [Gated](docs/methods/sae/gated.md) · [JumpReLU](docs/methods/sae/jumprelu.md) · [AbsTopK](docs/methods/sae/abstopk.md) · [BatchTopK](docs/methods/sae/batchtopk.md) · [Matryoshka BatchTopK](docs/methods/sae/matryoshka_batchtopk.md) · [Archetypal TopK](docs/methods/sae/archetypal_topk.md) · [Archetypal JumpReLU](docs/methods/sae/archetypal_jumprelu.md) · [Matching Pursuit](docs/methods/sae/matching_pursuit.md) · [Signed MP](docs/methods/sae/signed_matching_pursuit.md) · [Nonnegative OMP](docs/methods/sae/orthogonal_matching_pursuit.md) · [Signed OMP](docs/methods/sae/signed_orthogonal_matching_pursuit.md) · [QSAE](docs/methods/sae/qsae.md) |
-| Supporting tools | [Attention profile](docs/methods/attention_profile.md) · [Head logit attribution](docs/methods/head_logit_attribution.md) · [Probability reweighting](docs/methods/attention_reweight.md) · [Temperature](docs/methods/attention_temperature.md) |
+### Lens
+
+<p>
+  <a href="docs/methods/logit_lens.md"><img src="docs/assets/method-buttons/logit-lens.svg" alt="Logit Lens" width="200" height="44"></a>
+  <a href="docs/methods/tuned_lens.md"><img src="docs/assets/method-buttons/tuned-lens.svg" alt="Tuned Lens" width="200" height="44"></a>
+  <a href="docs/methods/attention_lens.md"><img src="docs/assets/method-buttons/attention-lens.svg" alt="Attention Lens" width="200" height="44"></a>
+  <a href="docs/methods/jacobian_lens.md"><img src="docs/assets/method-buttons/jacobian-lens.svg" alt="Jacobian Lens" width="200" height="44"></a>
+  <a href="docs/methods/embed_lens.md"><img src="docs/assets/method-buttons/embed-lens.svg" alt="EmbedLens" width="200" height="44"></a>
+  <a href="docs/methods/patchscope.md"><img src="docs/assets/method-buttons/patchscopes.svg" alt="Patchscopes" width="200" height="44"></a>
+</p>
+
+### Attention
+
+<p>
+  <a href="docs/methods/attention_rollout.md"><img src="docs/assets/method-buttons/rollout.svg" alt="Rollout" width="200" height="44"></a>
+  <a href="docs/methods/attention_maps.md"><img src="docs/assets/method-buttons/grad-cam.svg" alt="Grad-CAM" width="200" height="44"></a>
+  <a href="docs/methods/attention_maps.md"><img src="docs/assets/method-buttons/attattr.svg" alt="ATTATTR" width="200" height="44"></a>
+  <a href="docs/methods/attention_maps.md"><img src="docs/assets/method-buttons/tam.svg" alt="TAM" width="200" height="44"></a>
+  <a href="docs/methods/attention_maps.md"><img src="docs/assets/method-buttons/beyond-intuition.svg" alt="Beyond Intuition" width="200" height="44"></a>
+  <a href="docs/methods/attention_relevance.md"><img src="docs/assets/method-buttons/generic-relevance.svg" alt="Generic relevance" width="200" height="44"></a>
+  <a href="docs/methods/chefer_lrp.md"><img src="docs/assets/method-buttons/vit-dtd-lrp.svg" alt="ViT DTD / LRP" width="200" height="44"></a>
+</p>
+
+### Causal
+
+<p>
+  <a href="docs/methods/activation_patching.md"><img src="docs/assets/method-buttons/activation-patching.svg" alt="Activation patching" width="200" height="44"></a>
+  <a href="docs/methods/path_patching.md"><img src="docs/assets/method-buttons/path-patching.svg" alt="IOI-style path patching" width="200" height="44"></a>
+  <a href="docs/methods/attribution_patching.md"><img src="docs/assets/method-buttons/attribution-patching.svg" alt="Attribution patching" width="200" height="44"></a>
+  <a href="docs/methods/attention_knockout.md"><img src="docs/assets/method-buttons/attention-knockout.svg" alt="Attention Knockout" width="200" height="44"></a>
+  <a href="docs/methods/eap_ig.md"><img src="docs/assets/method-buttons/eap-ig.svg" alt="EAP / EAP-IG" width="200" height="44"></a>
+  <a href="docs/methods/steering.md"><img src="docs/assets/method-buttons/steering-vsv.svg" alt="Residual steering / VSV" width="200" height="44"></a>
+</p>
+
+### SAE
+
+<p>
+  <a href="docs/methods/sae/relu.md"><img src="docs/assets/method-buttons/relu.svg" alt="ReLU" width="200" height="44"></a>
+  <a href="docs/methods/sae/topk.md"><img src="docs/assets/method-buttons/topk.svg" alt="TopK" width="200" height="44"></a>
+  <a href="docs/methods/sae/gated.md"><img src="docs/assets/method-buttons/gated.svg" alt="Gated" width="200" height="44"></a>
+  <a href="docs/methods/sae/jumprelu.md"><img src="docs/assets/method-buttons/jumprelu.svg" alt="JumpReLU" width="200" height="44"></a>
+  <a href="docs/methods/sae/abstopk.md"><img src="docs/assets/method-buttons/abstopk.svg" alt="AbsTopK" width="200" height="44"></a>
+  <a href="docs/methods/sae/batchtopk.md"><img src="docs/assets/method-buttons/batchtopk.svg" alt="BatchTopK" width="200" height="44"></a>
+  <a href="docs/methods/sae/matryoshka_batchtopk.md"><img src="docs/assets/method-buttons/matryoshka-batchtopk.svg" alt="Matryoshka BatchTopK" width="200" height="44"></a>
+  <a href="docs/methods/sae/archetypal_topk.md"><img src="docs/assets/method-buttons/archetypal-topk.svg" alt="Archetypal TopK" width="200" height="44"></a>
+  <a href="docs/methods/sae/archetypal_jumprelu.md"><img src="docs/assets/method-buttons/archetypal-jumprelu.svg" alt="Archetypal JumpReLU" width="200" height="44"></a>
+  <a href="docs/methods/sae/matching_pursuit.md"><img src="docs/assets/method-buttons/matching-pursuit.svg" alt="Matching Pursuit" width="200" height="44"></a>
+  <a href="docs/methods/sae/signed_matching_pursuit.md"><img src="docs/assets/method-buttons/signed-mp.svg" alt="Signed MP" width="200" height="44"></a>
+  <a href="docs/methods/sae/orthogonal_matching_pursuit.md"><img src="docs/assets/method-buttons/nonnegative-omp.svg" alt="Nonnegative OMP" width="200" height="44"></a>
+  <a href="docs/methods/sae/signed_orthogonal_matching_pursuit.md"><img src="docs/assets/method-buttons/signed-omp.svg" alt="Signed OMP" width="200" height="44"></a>
+  <a href="docs/methods/sae/qsae.md"><img src="docs/assets/method-buttons/qsae.svg" alt="QSAE" width="200" height="44"></a>
+</p>
+
+### Supporting tools
+
+<p>
+  <a href="docs/methods/attention_profile.md"><img src="docs/assets/method-buttons/attention-profile.svg" alt="Attention profile" width="200" height="44"></a>
+  <a href="docs/methods/head_logit_attribution.md"><img src="docs/assets/method-buttons/head-logit-attribution.svg" alt="Head logit attribution" width="200" height="44"></a>
+  <a href="docs/methods/attention_reweight.md"><img src="docs/assets/method-buttons/probability-reweighting.svg" alt="Probability reweighting" width="200" height="44"></a>
+  <a href="docs/methods/attention_temperature.md"><img src="docs/assets/method-buttons/temperature.svg" alt="Temperature" width="200" height="44"></a>
+</p>
 
 ## Package Architecture
 
