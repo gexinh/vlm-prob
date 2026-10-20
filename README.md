@@ -42,16 +42,16 @@ a measured zero effect.
 
 ## Installation
 
-Python 3.10+ is required. Install release **1.0.0** from GitHub:
+Python 3.10+ is required. Install release **1.0.1** from GitHub:
 
 ```bash
-python -m pip install "vlmprobe[sae,transformers,visualization] @ git+https://github.com/gexinh/vlm-prob.git@v1.0.0"
+python -m pip install "vlmprobe[sae,transformers,visualization] @ git+https://github.com/gexinh/vlm-prob.git@v1.0.1"
 ```
 
 The published package is also available on [PyPI](https://pypi.org/project/vlmprobe/):
 
 ```bash
-python -m pip install "vlmprobe[transformers,visualization]"
+python -m pip install --upgrade "vlmprobe[sae,transformers,visualization]"
 ```
 
 For tensor methods and custom PyTorch adapters, install the base package:
