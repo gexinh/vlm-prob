@@ -1,16 +1,16 @@
 {
   "source_repository": "https://github.com/gexinh/vlm-probing-report",
-  "source_commit": "6567d72b02fadc0d8a9385153bd5b94f8e19e259",
+  "source_commit": "12f8fb54ae06b15082ba8d7661ea6c6eee4db715",
   "source_file": "main.tex",
   "pdf": "vlmprobe-technical-report.pdf",
-  "pdf_sha256": "ee3a43ee5df58d626456e96e98ffb9850efe1b92dd0dcdd16ededb45d6bb3567",
-  "pages": 46,
+  "pdf_sha256": "a37e99eace87ad373534a4cd3197312a854be3fd14f927493834977b5ba184aa",
+  "pages": 47,
   "references_pages": [
-    22,
-    23
+    23,
+    24
   ],
   "references_columns": 1,
-  "note": "Technical report with revised abstract and introduction; references use a single column.",
+  "note": "Technical report with expanded introduction and representative method citations; references use a single column.",
   "authors": [
     "Gexin Huang",
     "Haisheng Fu",
