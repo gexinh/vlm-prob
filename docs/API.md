@@ -63,6 +63,14 @@ at multiple layers are separate experiments by default. Steering and knockout
 accept `joint=True` to edit all selected live sites together. Rollout and
 relevance compose consecutive attention layers.
 
+For attention maps, query/key selectors are applied after dense attention and
+the required gradients are computed. Returned maps keep full native token
+axes, with unselected entries masked to zero; the selectors are not a sparse
+execution or memory-saving mode. Attention tensors scale quadratically with
+sequence length. Integration samples run sequentially, so reducing `steps`
+mainly changes runtime rather than the dense per-sample memory requirement.
+See [attention memory and precision](methods/attention_maps.md#memory-and-numerical-precision).
+
 ### Joint interventions and generation
 
 ```python
@@ -130,6 +138,20 @@ only when selected. Score separate complete inputs for different candidate answe
 
 Custom metrics may be `callable(logits) -> scalar_or_batch_tensor` or objects
 with `score(logits, layout)`. Preserve the graph for gradient methods.
+
+Attention profiles, Rollout and head logit attribution are target-independent.
+Their common `.run(inputs, metric=None)` signature accepts only an omitted or
+`None` metric; a non-`None` value raises `ValueError` before any model forward.
+These results record `metadata["metric"] = None`. Relevance, Grad-CAM, ATTATTR,
+TAM, Beyond Intuition and attention interventions require an explicit target
+metric and record the target they evaluate.
+
+Grad-CAM pools gradients only over selected keys permitted by the model's
+actual query-specific attention mask, including causal and local-window
+restrictions. Integration methods accumulate FP16/BF16 gradients in at least
+FP32 and preserve FP64, then average in that accumulator precision. These
+numerical and masking conventions are described in the
+[attention-map guide](methods/attention_maps.md#what-each-method-computes).
 
 ## Aligned interventions
 

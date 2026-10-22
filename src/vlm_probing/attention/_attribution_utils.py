@@ -6,11 +6,15 @@ from torch import Tensor
 from .base import BaseAttention
 
 
-def matching_gradient(reference: Tensor, gradient: Tensor, name: str) -> None:
+def matching_gradient(reference: Tensor, gradient: Tensor, name: str, *, allow_wider: bool = False) -> None:
     BaseAttention._floating(gradient, name, reference.ndim)
+    matching_dtype = gradient.dtype == reference.dtype
+    if allow_wider:
+        matching_dtype = torch.promote_types(reference.dtype, gradient.dtype) == gradient.dtype
     if (gradient.shape != reference.shape or gradient.device != reference.device
-            or gradient.dtype != reference.dtype):
-        raise ValueError(f"{name} must match attention shape, device, and dtype")
+            or not matching_dtype):
+        dtype_requirement = "same or wider dtype" if allow_wider else "dtype"
+        raise ValueError(f"{name} must match attention shape, device, and {dtype_requirement}")
     if not torch.isfinite(gradient).all():
         raise ValueError(f"{name} must be finite")
 
@@ -29,7 +33,7 @@ def integration_metadata(steps: int | None, quadrature: str) -> dict:
 
 def input_feedback(attention: Tensor, gradient: Tensor, mask: Tensor) -> Tensor:
     """TAM/Chen feedback: average the integral, rectify, then average heads."""
-    matching_gradient(attention[-1], gradient, "integrated_gradients")
+    matching_gradient(attention[-1], gradient, "integrated_gradients", allow_wider=True)
     pair_mask = mask[:, :, None] & mask[:, None, :]
     return gradient.clamp_min(0).mean(1).masked_fill(~pair_mask, 0)
 

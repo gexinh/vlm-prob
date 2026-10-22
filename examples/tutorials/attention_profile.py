@@ -2,11 +2,10 @@ from pathlib import Path
 import os
 from io import BytesIO
 from urllib.request import urlopen
-import numpy as np
 import torch
 from PIL import Image
 from transformers import AutoImageProcessor, ViTForImageClassification
-from vlmprobe import Prober, ClassScore
+from vlmprobe import Prober
 from vlmprobe import visualization as viz
 import matplotlib.pyplot as plt
 
@@ -24,11 +23,6 @@ image = (Image.open(image_path) if image_path else Image.open(BytesIO(urlopen(
     "https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/coco_sample.png"
 ).read()))).convert("RGB")
 inputs = {k: v.to(device) for k, v in processor(images=image, return_tensors="pt").items()}
-with torch.no_grad():
-    logits = model(**inputs).logits
-    target_id = int(logits[0].argmax())  # Choose once; keep fixed during attribution.
-metric = ClassScore(target_id, kind="logit")
-print("Fixed target:", target_id, model.config.id2label.get(target_id))
 
 # Plot the actual processed image; its crop/resize aligns with the patch tokens.
 mean = torch.tensor(processor.image_mean)[:, None, None]

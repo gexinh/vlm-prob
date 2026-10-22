@@ -49,7 +49,31 @@ beyond_result = beyond.run(inputs, *, metric=None, baseline=None)
 
 `inputs` is a native model-kwargs dictionary or `ProbeInputs`; pass every processor field, not just token IDs. Layer indices are zero-based model indices (not plot row numbers). A selection is an integer or a nonempty list of unique supported indices. Token selectors accept `"all"`, `"visual"`, `"text"`, `"last_prompt"`, `"prediction"`, nonnegative expanded-sequence positions, or a boolean `[B,T]` mask. Padding cannot be selected. For VLMs these positions include expanded image slots, not just tokenizer text positions.
 
-Results are detached CPU `ProbeResult` tensors by default; `result.save(path)` stores tensors and JSON-safe run metadata. `B/H/T/V/L` denote batch/head/token/vocabulary/selected-layer axes. Check `probe.describe()["methods"][method_name]` for the actual checkpoint. Eager attention and no KV cache are required for these model-bound attention methods.
+Results are detached CPU `ProbeResult` tensors by default; `result.save(path)` stores tensors and JSON-safe run metadata. `B/H/T/V/L` denote batch/head/token/vocabulary/selected-layer axes. Check `probe.describe()["methods"][method_name]` for the actual checkpoint. Eager attention at the probed component and no KV cache are required for these model-bound attention methods.
+
+## Memory and numerical precision
+
+`queries` and `keys` select entries after full attention and the required
+gradients have been computed. For example, `queries="last_prompt", keys="visual"`
+does not make an answer-to-image probe a sparse attention computation. Returned
+maps retain complete native token axes, with unselected entries masked to zero.
+Dense attention allocation grows as `B * H * T * T`; attention, gradients and
+intermediate tensors can therefore dominate memory for long multimodal inputs.
+For Qwen3.5 decoder probes, the [model guide](../models/qwen3_5.md) uses decoder
+eager attention with vision SDPA to avoid unnecessary eager vision allocation.
+
+Integration samples run sequentially. Reducing `steps` mainly reduces runtime;
+it does not eliminate the dense attention and gradient tensors required by
+each sample. Shorten inputs or reduce image resolution to reduce dense
+per-sample allocation. Analyzing fewer layers can reduce retained results,
+but does not make the underlying attention computation sparse.
+
+ATTATTR and input-path methods accumulate and average integration gradients,
+and compute propagated analysis maps, in at least FP32 for FP16/BF16 models,
+while preserving FP64 inputs. Probability tensors injected into the model keep
+their native dtype. This avoids adding many small updates in reduced precision;
+it does not replace convergence checks or make the backbone forward itself
+higher precision.
 
 ## Complete example: raw image to five fresh maps
 
@@ -133,7 +157,7 @@ Keep the factories and parameters above. Replace classifier loading/preprocessin
 
 | Method | Model-bound factory | Principle |
 | --- | --- | --- |
-| Attention Grad-CAM | `probe.attention.grad_cam(...)` | Average score gradients over selected keys within each head/query, weight attention by those head weights, average heads, then rectify. |
+| Attention Grad-CAM | `probe.attention.grad_cam(...)` | For each head/query, average score gradients over selected keys that the model's attention mask actually permits; weight attention by those head weights, average heads, then rectify. |
 | Hao ATTATTR | `probe.attention.attribution(...)` | Integrate score gradients while replacing all heads of one layer by `alpha * original_attention`; multiply the integral by original attention. |
 | TAM | `probe.attention.tam(...)` | Propagate the original final attention backwards through earlier residual attention transitions; multiply by positive integrated final-attention gradients along an input path. |
 | Beyond Intuition / Ours-H | `probe.attention.beyond_intuition(variant="head", ...)` | Build forward residual perception maps using head importance derived from `abs(A.T @ gradient)`; apply input-path final-attention feedback. |
@@ -144,6 +168,19 @@ Its zero baseline prevents that layer from attending anywhere. Probabilities
 are deliberately not renormalized during integration. Each selected layer
 gets an independent run, so an attribution sweep across 12 layers with 20
 steps requires 240 interventions.
+
+Grad-CAM gradient pooling intersects the chosen keys with each query's native
+attention support, including causal and local-window restrictions. An early
+decoder query therefore excludes inaccessible future keys from both its
+gradient sum and its averaging count. The support is taken from the model's
+actual mask, rather than inferred from whether a probability happens to be
+zero. A query with no supported selected keys has zero head weights and a zero
+CAM. Invalid pairs also remain zero during optional display normalization.
+Bidirectional vision attention retains the usual selected-patch-key pooling.
+Supported native adapters provide the support mask automatically. Custom
+adapters must declare restricted support through
+[`ModelSpec.attention_supports`](../ADAPTERS.md#optional-capabilities); without
+it, Grad-CAM assumes unrestricted support within the selected keys.
 
 TAM and Beyond Intuition integrate in **model input space**. Their default
 path scales processed `pixel_values` from zero to the original tensor while
@@ -199,7 +236,14 @@ The standalone tensor classes accept an already averaged
 `integrated_gradients[B,H,Q,K]`. They do not infer or run the integration
 path themselves. Grad-CAM uses ordinary gradients from the original forward;
 the head-wise Beyond Intuition approximation also needs the full original
-attention-gradient stack. The [source index](../REFERENCES.md#attention-methods) maps each rule to its
+attention-gradient stack. Standalone `AttentionGradCAM.run` accepts an optional
+`support_mask`: a boolean `[B or 1,H or 1,Q,K]` tensor on the attention device,
+where `True` denotes an accessible pair. It is intersected with `query_mask` and
+`key_mask` for pooling and display. `support_mask=None` means unrestricted
+support within those selections, preserving the previous selected-key rule;
+support is never inferred from `attention > 0`.
+
+The [source index](../REFERENCES.md#attention-methods) maps each rule to its
 original paper and author code.
 
 ## Modality and scope

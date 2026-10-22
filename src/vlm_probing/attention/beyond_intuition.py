@@ -50,22 +50,31 @@ class BeyondIntuition(BaseAttention):
         start_index(self.start_layer, attention.shape[0])
         integration = integration_metadata(steps, quadrature)
         pair_mask = mask[:, :, None] & mask[:, None, :]
+        feedback = input_feedback(attention, integrated_gradients, mask)
+        dtype = integrated_gradients.dtype
         if self.variant == "head":
             if gradients is None:
                 raise ValueError("head variant requires original-forward attention gradients")
             matching_gradient(attention, gradients, "gradients")
+            gradients = gradients.to(dtype)
         else:
             expected = attention.shape[:2] + attention.shape[-1:]
             for name, value in (("input_norms", input_norms),
                                 ("projected_value_norms", projected_value_norms)):
                 self._floating(value, name, 3)
                 if (value.shape != expected or value.device != attention.device
-                        or value.dtype != attention.dtype):
-                    raise ValueError(f"{name} must match [layer,batch,token], device, and dtype")
+                        or torch.promote_types(attention.dtype, value.dtype) != value.dtype):
+                    raise ValueError(f"{name} must match [layer,batch,token], device, and same or wider dtype")
                 if not torch.isfinite(value).all() or (value < 0).any():
                     raise ValueError(f"{name} must be finite and nonnegative")
+                dtype = torch.promote_types(dtype, value.dtype)
             if (input_norms[self.start_layer:].masked_select(mask[None]) <= 0).any():
                 raise ValueError("valid pre-LN input norms must be positive")
+            input_norms = input_norms.to(dtype)
+            projected_value_norms = projected_value_norms.to(dtype)
+        # Preserve native probability tolerance, then use one analysis dtype.
+        attention = attention.to(dtype)
+        feedback = feedback.to(dtype)
         perception = torch.eye(attention.shape[-1], device=attention.device,
                                dtype=attention.dtype)[None] * mask[:, :, None]
         layer_perception, layer_weights = [], []
@@ -85,7 +94,6 @@ class BeyondIntuition(BaseAttention):
             perception = perception + fused @ perception
             layer_perception.append(perception)
             layer_weights.append(weights)
-        feedback = input_feedback(attention, integrated_gradients, mask)
         relevance = perception.abs() * feedback
         finite_result(relevance)
         tensors = {"relevance": relevance, "perception": perception,

@@ -89,6 +89,7 @@ does not claim attention or head access. The full demonstration contract is in
 | `residuals` | `{layer: site}`, residuals after a block and any visual injection, before the next block/final norm |
 | `attentions` | `{layer: site}`, actual probabilities `[B,H,Q,K]`; observational unless declared editable |
 | `attention_scores` | `{layer: site}`, editable masked logits before softmax |
+| `attention_supports` | Optional `{layer: site}` for layers in `attentions`; each site captures a boolean `[B or 1,H or 1,Q,K]` tensor on the attention device, with `True` for structurally permitted pairs |
 | `editable_attention` | Layer indices whose probability site is consumed by `A @ V` after the hook |
 | `heads` | `{layer: site}`, projected heads `[B,T,H,D_residual]`, or raw inputs for `project_heads` |
 | `project_heads(layer, tensor)` | Convert a head capture to post-output-projection residual contributions |
@@ -109,6 +110,19 @@ Head projection must split the *query-head* axis correctly, including GQA. Exclu
 output-projection biases from individual head contributions. Fixed-scale logit
 attribution uses the full residual's denominator; fold norm gain into the readout
 weight and handle biases separately. LayerNorm needs centering; RMSNorm does not.
+
+Supported native HF and ViT adapters supply `attention_supports` automatically.
+For a custom attention adapter, declare support sites when causal, padding or
+local-window masks restrict which keys each query can access. Batch and head
+dimensions may broadcast from size 1; query and key dimensions must match the
+captured probabilities. Capture the model's actual allowed pairs independently
+of probability magnitude: a permitted probability can be numerically zero, so
+`attention > 0` is not a valid support mask. Grad-CAM intersects this support
+with the user's query/key selections before pooling gradients. If a custom
+adapter omits a layer's support site, Grad-CAM retains unrestricted support
+within the selected keys; it does not infer unknown causal or window masks.
+See the [attention-map guide](methods/attention_maps.md#what-each-method-computes)
+for the tensor-kernel `support_mask` contract.
 
 A returned attention diagnostic is not necessarily editable. Audited native
 Transformers 5.3 eager Llama, Mistral, Qwen2, Qwen2-VL, Qwen2.5-VL, Qwen3-VL,

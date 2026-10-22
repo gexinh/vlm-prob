@@ -11,6 +11,7 @@ from torch import nn
 
 from .spec import CapabilityError, ModelSpec, TokenLayout
 from .torch import HookPoint, TorchModelAdapter
+from .hf_attention import _emit_support
 
 
 def _install(attention):
@@ -19,6 +20,8 @@ def _install(attention):
     from transformers.models.vit.modeling_vit import ALL_ATTENTION_FUNCTIONS
 
     def tapped(module, query, key, value, attention_mask, scaling=None, dropout=0., **kwargs):
+        _emit_support(module, attention_mask, batch=query.shape[0], heads=query.shape[1],
+                      queries=query.shape[2], keys=key.shape[2], device=query.device)
         scale = query.size(-1) ** -.5 if scaling is None else scaling
         scores = query @ key.transpose(2, 3) * scale
         if attention_mask is not None:
@@ -32,6 +35,7 @@ def _install(attention):
     ALL_ATTENTION_FUNCTIONS.register(backend, tapped)
     attention.add_module("_probe_scores", nn.Identity())
     attention.add_module("_probe_probs", nn.Identity())
+    attention.add_module("_probe_support", nn.Identity())
     original = attention.forward
 
     @wraps(original)
@@ -55,6 +59,7 @@ def make_adapter(model):
         raise CapabilityError("native ViT adapter requires attn_implementation='eager'")
     layers = model.vit.encoder.layer
     sites, residuals, attentions, scores, inputs, values = {}, {}, {}, {}, {}, {}
+    supports = {}
     for i, layer in enumerate(layers):
         prefix = f"vit.encoder.layer.{i}"
         _install(layer.attention.attention)
@@ -64,6 +69,8 @@ def make_adapter(model):
         attentions[i], scores[i] = f"attention.{i}", f"scores.{i}"
         sites[attentions[i]] = HookPoint(f"{prefix}.attention.attention._probe_probs")
         sites[scores[i]] = HookPoint(f"{prefix}.attention.attention._probe_scores")
+        supports[i] = f"attention_support.{i}"
+        sites[supports[i]] = HookPoint(f"{prefix}.attention.attention._probe_support")
         inputs[i], values[i] = residuals[i-1] if i else "attention_input.0", f"values.{i}"
         if not i:
             sites[inputs[i]] = HookPoint(prefix, kind="input", selector=0)
@@ -94,6 +101,7 @@ def make_adapter(model):
                      embeddings="embeddings", layout=layout, output_kind="classification",
                      editable_attention=set(attentions), attention_inputs=inputs,
                      attention_values=values, project_values=project_values,
+                     attention_supports=supports,
                      forward_defaults={"return_dict": True}, notes=(
                          "Native ViT CLS class logits are [batch,classes]; use ClassScore.",
                          "Visual tokens are row-major image patches after CLS; no vocabulary readout.",

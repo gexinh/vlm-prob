@@ -17,15 +17,20 @@ result = method.run(inputs, *, metric=None)
 | --- | --- | --- |
 | `layers` | `None` | All layers with projected heads and an adapter-declared fixed-scale linear readout, or a unique supported subset. Begin with one layer and a short prompt: output size is `[L,B,H,T,V]`. |
 | `inputs` | `required` | Prepared native model kwargs or `ProbeInputs` matching the bound model. |
-| `metric` | `None` | Accepted by the common runner but unused; the result contains contributions for the whole vocabulary. |
+| `metric` | `None` | Must be omitted or `None`. A non-`None` metric raises `ValueError` before the model runs; the result contains contributions for the whole vocabulary. |
 
 `inputs` is a native model-kwargs dictionary or `ProbeInputs`; pass every processor field, not just token IDs. Layer indices are zero-based model indices (not plot row numbers). A selection is an integer or a nonempty list of unique supported indices. Token selectors accept `"all"`, `"visual"`, `"text"`, `"last_prompt"`, `"prediction"`, nonnegative expanded-sequence positions, or a boolean `[B,T]` mask. Padding cannot be selected. For VLMs these positions include expanded image slots, not just tokenizer text positions.
 
-Results are detached CPU `ProbeResult` tensors by default; `result.save(path)` stores tensors and JSON-safe run metadata. `B/H/T/V/L` denote batch/head/token/vocabulary/selected-layer axes. Check `probe.describe()["methods"][method_name]` for the actual checkpoint. Eager attention and no KV cache are required for these model-bound attention methods.
+Results are detached CPU `ProbeResult` tensors by default; `result.save(path)` stores tensors and JSON-safe run metadata. `B/H/T/V/L` denote batch/head/token/vocabulary/selected-layer axes. Check `probe.describe()["methods"][method_name]` for the actual checkpoint. Eager attention at the probed component and no KV cache are required for these model-bound attention methods.
+
+Results record `metadata["metric"] = None`. Select a vocabulary token from the
+returned `head_logits` when plotting its direct contributions; that display
+choice does not turn the readout into a target-conditioned gradient method.
 
 ## Complete example
 
-The example loads pretrained weights, reads a raw image, computes a fresh result, and calls the built-in visualization API. No probe training is required. Run outside `torch.inference_mode()` for gradient methods.
+The example loads pretrained VLM weights, prepares a text-only prompt, computes
+head contributions, and plots one token's contributions. No probe training is required.
 
 ```python
 from pathlib import Path

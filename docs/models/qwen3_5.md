@@ -22,7 +22,11 @@ device = os.environ.get("VLM_PROBING_DEVICE", "cuda:0" if torch.cuda.is_availabl
 dtype = torch.bfloat16 if device.startswith("cuda") else torch.float32
 model = AutoModelForImageTextToText.from_pretrained(
     model_id, dtype=dtype, device_map={"": device},
-    attn_implementation="eager",
+    attn_implementation={
+        "": "eager",
+        "text_config": "eager",
+        "vision_config": "sdpa",
+    },
 ).eval()
 processor = AutoProcessor.from_pretrained(model_id)
 probe = Prober(model, processor)
@@ -72,6 +76,21 @@ for complete training, target-score, paired-input and plotting examples, or the
 `describe()` reports supported operations, not the presence of trained lens artifacts.
 Pass the complete native processor dictionary to `.run(...)` if inputs are already prepared.
 The downloaded photo is an illustrative input, not a benchmark evaluation.
+
+The loading configuration uses eager attention for the language decoder and
+SDPA for the vision encoder. Decoder attention probes need access to consumed
+attention probabilities; they do not require dense eager vision attention.
+Using global `attn_implementation="eager"` also changes the vision encoder and
+can substantially increase memory use on high-resolution images, including
+during a baseline model forward. This split configuration applies to the
+decoder probes shown here; an analysis that explicitly captures vision
+attention needs its own compatible vision backend.
+
+Query/key selectors are applied after full attention computation. For example,
+`queries="last_prompt", keys="visual"` selects the reported answer-to-image
+entries; it does not avoid allocating dense decoder attention or its required
+gradients. See the [attention memory guide](../methods/attention_maps.md#memory-and-numerical-precision)
+when choosing image resolution and sequence length.
 
 ## Adapter behavior
 

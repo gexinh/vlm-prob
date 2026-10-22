@@ -159,6 +159,9 @@ class ModelSpec:
     attention_inputs: dict[int, str] = field(default_factory=dict)
     attention_values: dict[int, str] = field(default_factory=dict)
     project_values: Callable[[int, Tensor], Tensor] | None = None
+    # Actual allowed attention pairs, independent of numerically zero probabilities.
+    # Support sites produce boolean [B or 1,H or 1,Q,K]; True denotes an available edge.
+    attention_supports: dict[int, str] = field(default_factory=dict)
 
     def validate(self, sites):
         if not self.residuals or any(type(k) is not int or k < 0 for k in self.residuals):
@@ -166,7 +169,7 @@ class ModelSpec:
         if self.output_kind not in {"language", "classification", "representation"}:
             raise ValueError("output_kind must be language, classification or representation")
         mappings = (self.residuals, self.attentions, self.attention_scores, self.heads, self.edges,
-                    self.attention_inputs, self.attention_values)
+                    self.attention_inputs, self.attention_values, self.attention_supports)
         names = {name for mapping in mappings for name in mapping.values()}
         if self.embeddings is not None:
             names.add(self.embeddings)
@@ -181,6 +184,8 @@ class ModelSpec:
             raise ValueError(f"spec references unknown hook sites: {sorted(missing)}")
         if not self.editable_attention <= self.attentions.keys():
             raise ValueError("editable attention layers must declare probability sites")
+        if not self.attention_supports.keys() <= self.attentions.keys():
+            raise ValueError("attention support layers must declare probability sites")
         for mapping in (self.attentions, self.attention_scores, self.heads,
                         self.attention_inputs, self.attention_values):
             if not mapping.keys() <= self.residuals.keys():

@@ -39,13 +39,14 @@ class TransitionAttentionMaps(BaseAttention):
         start_index(self.start_layer, attention.shape[0])
         integration = integration_metadata(steps, quadrature)
         pair_mask = mask[:, :, None] & mask[:, None, :]
-        mean_attention = attention.mean(2).masked_fill(~pair_mask[None], 0)
+        feedback = input_feedback(attention, integrated_gradients, mask)
+        # Native probability validation above retains the source dtype's tolerance.
+        mean_attention = attention.to(feedback.dtype).mean(2).masked_fill(~pair_mask[None], 0)
         state = mean_attention[-1]
         for layer in range(attention.shape[0] - 2, self.start_layer - 1, -1):
             state = state + state @ mean_attention[layer]
             if self.residual_normalize:
                 state = state * 0.5
-        feedback = input_feedback(attention, integrated_gradients, mask)
         relevance = state * feedback
         finite_result(relevance)
         return ProbeResult(self.name, {"relevance": relevance, "state": state,

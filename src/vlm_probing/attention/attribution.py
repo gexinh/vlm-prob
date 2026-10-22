@@ -25,13 +25,17 @@ class AttentionAttribution(BaseAttention):
     def run(self, attention: Tensor, integrated_gradients: Tensor, *,
             query_mask: Tensor | None = None, key_mask: Tensor | None = None,
             steps: int | None = None, quadrature: str = "provided") -> ProbeResult:
-        """Input is [batch,head,query,key]; masks select returned attribution."""
+        """Input is [batch,head,query,key]; masks select returned attribution.
+
+        An integrated gradient may use a wider dtype than native probabilities.
+        Validate probability normalization before promoting analysis arithmetic.
+        """
         qmask, _ = self._probabilities(attention, query_mask)
         kmask = self._mask(key_mask, (attention.shape[0], attention.shape[-1]),
                            attention, "key_mask")
-        matching_gradient(attention, integrated_gradients, "integrated_gradients")
+        matching_gradient(attention, integrated_gradients, "integrated_gradients", allow_wider=True)
         integration = integration_metadata(steps, quadrature)
-        attribution = attention * integrated_gradients
+        attribution = attention.to(integrated_gradients.dtype) * integrated_gradients
         pair_mask = qmask[:, None, :, None] & kmask[:, None, None, :]
         attribution = attribution.masked_fill(~pair_mask, 0)
         finite_result(attribution)

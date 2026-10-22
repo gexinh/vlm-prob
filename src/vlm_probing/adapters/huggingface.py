@@ -9,7 +9,7 @@ import torch
 
 from .spec import CapabilityError, HeadSite, ModelSpec, TokenLayout
 from .torch import HookPoint, ModelReadout, TorchModelAdapter
-from .hf_attention import install_eager_taps
+from .hf_attention import install_eager_taps, install_support_only
 
 
 # Exact module/class identities; wrapper structure is never guessed from shapes.
@@ -59,6 +59,7 @@ def make_adapter(model):
     sites, residuals, heads, attentions, attention_scores = {}, {}, {}, {}, {}
     path_heads, path_qkv = {}, {}
     attention_inputs, attention_values, editable_attention = {}, {}, set()
+    attention_supports = {}
     for i, layer in enumerate(layers):
         residuals[i] = f"residual.{i}"
         # Include Qwen3-VL's DeepStack addition after the block. This also avoids
@@ -99,6 +100,9 @@ def make_adapter(model):
                 sites[attention_scores[i]] = HookPoint(f"{attn_path}._probe_scores")
                 sites[attentions[i]] = HookPoint(f"{attn_path}._probe_probs")
                 editable_attention.add(i)
+            if hasattr(attn, "_probe_support") or install_support_only(attn):
+                attention_supports[i] = f"attention_support.{i}"
+                sites[attention_supports[i]] = HookPoint(f"{attn_path}._probe_support")
         if not hybrid and not gpt2:
             attention_inputs[i] = residuals[i-1] if i else "attention_input.0"
             if not i:
@@ -178,6 +182,7 @@ def make_adapter(model):
         alignment_keys=("image_grid_thw", "video_grid_thw", "position_ids", "second_per_grid_ts",
                         "pixel_attention_mask", "image_sizes", "token_type_ids", "mm_token_type_ids"),
         forward_defaults={"use_cache": False, "return_dict": True}, notes=tuple(notes),
+        attention_supports=attention_supports,
     )
     model_id = getattr(model.config, "_name_or_path", "") or name
     return TorchModelAdapter(model, sites, model_id=model_id,

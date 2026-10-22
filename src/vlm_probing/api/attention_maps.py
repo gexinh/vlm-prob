@@ -6,6 +6,19 @@ from ..adapters import CapabilityError, ProbeInputs
 from .common import BoundMethod, configuration, evaluate, metric_metadata, pack, unpack
 
 
+def _integration_dtype(*values):
+    """Use at least FP32 for analysis arithmetic without narrowing FP64."""
+    dtype = torch.float32
+    for value in values:
+        if value is not None:
+            dtype = torch.promote_types(dtype, value.dtype)
+    return dtype
+
+
+def _integration_norm(value):
+    return value.to(_integration_dtype(value)).norm(dim=-1)
+
+
 class AttentionMapProbe(BoundMethod):
     def __init__(self, probe, name, layers, **options):
         super().__init__(probe, name, layers)
@@ -38,6 +51,9 @@ class AttentionMapProbe(BoundMethod):
             raise ValueError("baseline is only an input-path endpoint for TAM/Beyond Intuition")
         sites = [p.spec.attentions[i] for i in self.layers]
         capture = list(sites)
+        support_sites = [p.spec.attention_supports.get(i) for i in self.layers]
+        if self.name == "grad_cam":
+            capture += [site for site in support_sites if site is not None]
         if self.name == "beyond_intuition" and o["variant"] == "token":
             capture += [p.spec.attention_inputs[i] for i in self.layers]
             capture += [p.spec.attention_values[i] for i in self.layers]
@@ -51,13 +67,17 @@ class AttentionMapProbe(BoundMethod):
             or self.name == "beyond_intuition" and o["variant"] == "token") else None
         # Free baseline forward graphs before integration. No backward populates .grad.
         attentions = [x.detach() for x in matrices]
+        supports = [trace.activations[site].detach() if site is not None else None
+                    for site in support_sites] if self.name == "grad_cam" else []
         input_norms = value_norms = None
         if self.name == "beyond_intuition" and o["variant"] == "token":
-            input_norms = torch.stack([trace.activations[p.spec.attention_inputs[i]].detach().norm(dim=-1)
-                                       for i in self.layers])
+            input_norms = torch.stack([
+                _integration_norm(trace.activations[p.spec.attention_inputs[i]].detach())
+                for i in self.layers])
             with torch.no_grad():
                 value_norms = torch.stack([
-                    p.spec.project_values(i, trace.activations[p.spec.attention_values[i]].detach()).norm(dim=-1)
+                    _integration_norm(p.spec.project_values(
+                        i, trace.activations[p.spec.attention_values[i]].detach()))
                     for i in self.layers])
         if gradients is not None:
             gradients = [x.detach() for x in gradients]
@@ -66,21 +86,23 @@ class AttentionMapProbe(BoundMethod):
         key = layout.select(o["keys"])
         if self.name == "grad_cam":
             results = [kernels.AttentionGradCAM().run(a, g, query_mask=query.to(a.device),
-                        key_mask=key.to(a.device), normalize=o["normalize"])
-                       for a, g in zip(attentions, gradients)]
+                        key_mask=key.to(a.device), support_mask=None if support is None else support.to(a.device),
+                        normalize=o["normalize"])
+                       for a, g, support in zip(attentions, gradients, supports)]
             result = pack(p, results[0].method, self.layers, results)
         elif self.name == "attribution":
             results = []
             for site, a in zip(sites, attentions):
-                total = torch.zeros_like(a)
+                total = torch.zeros_like(a, dtype=_integration_dtype(a))
                 for alpha in self._alphas():
                     # The original zero-attention path does not renormalize rows.
+                    # Interventions keep the model's native probability dtype.
                     leaf = (alpha * a).detach().requires_grad_(True)
                     sampled = self._trace(inputs, [site], interventions={site: lambda x: leaf})
                     sample_layout = p._layout(inputs, sampled.logits)
                     g, = self._gradients(evaluate(metric, sampled.logits, sample_layout),
                                          [sampled.activations[site]])
-                    total += g.detach() / o["steps"]
+                    total += g.detach().to(total.dtype) / o["steps"]
                     del sampled, g, leaf
                 results.append(kernels.AttentionAttribution().run(a, total,
                                query_mask=query.to(a.device), key_mask=key.to(a.device),
@@ -88,7 +110,9 @@ class AttentionMapProbe(BoundMethod):
             result = pack(p, results[0].method, self.layers, results)
         else:
             total = self._input_integral(inputs, sites[-1], metric, baseline)
+            dtype = _integration_dtype(total, *attentions, *(gradients or []), input_norms, value_norms)
             stack = torch.stack(attentions)
+            total = total.to(dtype)
             valid = layout.valid.to(stack.device)
             if self.name == "tam":
                 result = kernels.TransitionAttentionMaps(start_layer=o["start_layer"],
@@ -97,7 +121,8 @@ class AttentionMapProbe(BoundMethod):
             else:
                 result = kernels.BeyondIntuition(variant=o["variant"], start_layer=o["start_layer"]).run(
                     stack, total, gradients=None if gradients is None else torch.stack(gradients),
-                    input_norms=input_norms, projected_value_norms=value_norms, valid_tokens=valid,
+                    input_norms=None if input_norms is None else input_norms.to(dtype),
+                    projected_value_norms=None if value_norms is None else value_norms.to(dtype), valid_tokens=valid,
                     steps=o["steps"], quadrature=o["quadrature"])
             active = query.to(stack.device)[:, :, None] & key.to(stack.device)[:, None, :]
             result.tensors["map"] = result.tensors["relevance"].masked_fill(~active, 0)
@@ -140,7 +165,7 @@ class AttentionMapProbe(BoundMethod):
             layout = p._layout(ProbeInputs(sample_values, explicit), sampled.logits)
             g, = self._gradients(evaluate(metric, sampled.logits, layout), [sampled.activations[site]])
             if total is None:
-                total = torch.zeros_like(g)
-            total += g.detach() / o["steps"]
+                total = torch.zeros_like(g, dtype=_integration_dtype(g))
+            total += g.detach().to(total.dtype) / o["steps"]
             del sampled, g
         return total

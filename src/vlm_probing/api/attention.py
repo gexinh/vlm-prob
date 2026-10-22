@@ -15,6 +15,9 @@ class AttentionProbe(BoundMethod):
 
     def run(self, inputs, *, metric=None):
         p, name, o = self.probe, self.name, self.options
+        if name in {"profile", "rollout", "head_logits"} and metric is not None:
+            raise ValueError(f"{name} is target-independent and does not accept a metric; "
+                             "omit metric or use metric=None")
         mapping = p.spec.attention_scores if name == "temperature" else p.spec.attentions
         if name == "head_logits":
             mapping = p.spec.heads
