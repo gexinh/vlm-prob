@@ -45,6 +45,11 @@ experiments.
   of exact-red mask pixels does not establish loss of all visual information.
 - Guides distinguish architecture-specific input preparation from the common
   method calls. CPU regression coverage includes the new contracts and tools.
+- The main README keeps its method layout, updates the source install command
+  to `main`, and links the new Qwen text guide. Mirror synchronization uses the
+  current personal repository name while accepting both historical aliases,
+  so README project-page and source-install links follow the destination repo.
+  Package publication remains an explicit manual workflow operation.
 
 ## Expected experimental behavior
 
@@ -68,7 +73,7 @@ experiments.
 
 Completed checks:
 
-- Complete source suite: **327 tests passed**, including 45 new regressions.
+- Complete source suite: **329 tests passed**, including 47 new regressions.
 - Installed-wheel checks: **79 tests passed** in a separate environment; imports
   resolve to the installed package, and all 16 changed/new implementation files
   match the reviewed source hashes.

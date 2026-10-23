@@ -9,10 +9,10 @@ from tools.sync_repositories import changed_paths, is_ancestor, readme_at, rende
 
 
 PERSONAL_README = '''# vlmprobe
-[Project page](https://gexinh.github.io/vlm-prob/)
-[Code](https://github.com/gexinh/vlm-prob)
-![Icon](https://raw.githubusercontent.com/gexinh/vlm-prob/main/icon.svg)
-Install: git+https://github.com/gexinh/vlm-prob.git
+[Project page](https://gexinh.github.io/vlm-probe/)
+[Code](https://github.com/gexinh/vlm-probe)
+![Icon](https://raw.githubusercontent.com/gexinh/vlm-probe/main/icon.svg)
+Install: git+https://github.com/gexinh/vlm-probe.git
 [Report source](https://github.com/gexinh/vlm-probing-report)
 [External](https://github.com/another/library)
 '''
@@ -63,32 +63,37 @@ class RepositorySyncTests(unittest.TestCase):
         self.assertIn("https://github.com/gexinh/vlm-probing-report", expected)
 
     def test_rendering_retargets_only_own_urls_and_preserves_readme_structure(self):
-        expected = (PERSONAL_README.replace("https://gexinh.github.io/vlm-prob/",
+        expected = (PERSONAL_README.replace("https://gexinh.github.io/vlm-probe/",
                                            "https://ubc-tea.github.io/vlm-probe/")
-                    .replace("https://github.com/gexinh/vlm-prob)",
+                    .replace("https://github.com/gexinh/vlm-probe)",
                              "https://github.com/ubc-tea/vlm-probe)")
-                    .replace("https://github.com/gexinh/vlm-prob.git",
+                    .replace("https://github.com/gexinh/vlm-probe.git",
                              "https://github.com/ubc-tea/vlm-probe.git")
-                    .replace("https://raw.githubusercontent.com/gexinh/vlm-prob/",
+                    .replace("https://raw.githubusercontent.com/gexinh/vlm-probe/",
                              "https://raw.githubusercontent.com/ubc-tea/vlm-probe/"))
         self.assertEqual(render_readme(PERSONAL_README, "ubc-tea/vlm-probe"), expected)
         self.assertEqual(render_readme(expected, "ubc-tea/vlm-probe"), expected)
-        self.assertEqual(render_readme(expected, "gexinh/vlm-prob"), PERSONAL_README)
+        self.assertEqual(render_readme(expected, "gexinh/vlm-probe"), PERSONAL_README)
         crlf = PERSONAL_README.replace("\n", "\r\n")
         self.assertEqual(render_readme(crlf, "ubc-tea/vlm-probe"), expected.replace("\n", "\r\n"))
 
     def test_legacy_personal_alias_renders_to_current_repo_and_lab(self):
-        legacy = (PERSONAL_README
-                  .replace("gexinh.github.io/vlm-prob/", "gexinh.github.io/vlm-probing/")
-                  .replace("github.com/gexinh/vlm-prob)", "github.com/gexinh/vlm-probing)")
-                  .replace("github.com/gexinh/vlm-prob.git", "github.com/gexinh/vlm-probing.git")
-                  .replace("raw.githubusercontent.com/gexinh/vlm-prob/",
-                           "raw.githubusercontent.com/gexinh/vlm-probing/"))
-        self.assertEqual(render_readme(legacy, "gexinh/vlm-prob"), PERSONAL_README)
-        self.assertEqual(render_readme(PERSONAL_README, "gexinh/vlm-probing"), legacy)
-        self.assertEqual(render_readme(legacy, "ubc-tea/vlm-probe"),
-                         render_readme(PERSONAL_README, "ubc-tea/vlm-probe"))
-        self.assertIn("https://github.com/gexinh/vlm-probing-report", legacy)
+        for alias in ("vlm-prob", "vlm-probing"):
+            with self.subTest(alias=alias):
+                legacy = (PERSONAL_README
+                          .replace("gexinh.github.io/vlm-probe/", f"gexinh.github.io/{alias}/")
+                          .replace("github.com/gexinh/vlm-probe)", f"github.com/gexinh/{alias})")
+                          .replace("github.com/gexinh/vlm-probe.git", f"github.com/gexinh/{alias}.git")
+                          .replace("raw.githubusercontent.com/gexinh/vlm-probe/",
+                                   f"raw.githubusercontent.com/gexinh/{alias}/"))
+                self.assertEqual(render_readme(legacy, "gexinh/vlm-probe"), PERSONAL_README)
+                self.assertEqual(render_readme(PERSONAL_README, f"gexinh/{alias}"), legacy)
+                self.assertEqual(render_readme(legacy, "ubc-tea/vlm-probe"),
+                                 render_readme(PERSONAL_README, "ubc-tea/vlm-probe"))
+                self.assertIn("https://github.com/gexinh/vlm-probing-report", legacy)
+                crlf = legacy.replace("\n", "\r\n")
+                self.assertEqual(render_readme(crlf, "gexinh/vlm-probe"),
+                                 PERSONAL_README.replace("\n", "\r\n"))
 
     def test_renaming_keeps_paths_queries_fragments_and_other_repo_names(self):
         original = '''[Method](https://github.com/gexinh/vlm-probing/blob/main/docs/API.md?plain=1#sae)
@@ -96,34 +101,63 @@ class RepositorySyncTests(unittest.TestCase):
 [Report](https://github.com/gexinh/vlm-probing-report/blob/main/main.tex)
 [Other](https://github.com/gexinh/vlm-prob-other)
 '''
-        expected = '''[Method](https://github.com/gexinh/vlm-prob/blob/main/docs/API.md?plain=1#sae)
-[Page](https://gexinh.github.io/vlm-prob/sae-models/?method=topk#model)
+        expected = '''[Method](https://github.com/gexinh/vlm-probe/blob/main/docs/API.md?plain=1#sae)
+[Page](https://gexinh.github.io/vlm-probe/sae-models/?method=topk#model)
 [Report](https://github.com/gexinh/vlm-probing-report/blob/main/main.tex)
 [Other](https://github.com/gexinh/vlm-prob-other)
 '''
-        self.assertEqual(render_readme(original, "gexinh/vlm-prob"), expected)
+        self.assertEqual(render_readme(original, "gexinh/vlm-probe"), expected)
+
+    def test_pinned_vcs_installs_retarget_repository_without_changing_refs(self):
+        for source in ("vlm-prob", "vlm-probing", "vlm-probe"):
+            for ref in ("main", "v1.0.1", "feature/example"):
+                with self.subTest(source=source, ref=ref):
+                    original = (f'Install: git+https://github.com/gexinh/{source}.git@{ref}'
+                                '#subdirectory=library\n'
+                                'Other: git+https://github.com/another/library.git@main\n'
+                                'Report: git+https://github.com/gexinh/vlm-probing-report.git@main\n')
+                    for target in ("gexinh/vlm-probe", "ubc-tea/vlm-probe"):
+                        expected = original.replace(f"gexinh/{source}.git@", f"{target}.git@")
+                        self.assertEqual(render_readme(original, target), expected)
 
     def test_sync_after_repo_rename_accepts_historical_lab_readme(self):
+        self.assert_historical_rename_sync("gexinh/vlm-probing")
+
+    def test_sync_after_short_alias_rename_accepts_historical_lab_readme(self):
+        self.assert_historical_rename_sync("gexinh/vlm-prob", pinned_install=True)
+
+    def assert_historical_rename_sync(self, alias, *, pinned_install=False):
         # The lab's existing README was rendered from the previous repository
         # name; its history must still be retained when personal links change.
-        legacy = render_readme(PERSONAL_README, "gexinh/vlm-probing")
+        personal_readme = PERSONAL_README
+        if pinned_install:
+            personal_readme += "Pinned: git+https://github.com/gexinh/vlm-probe.git@v1.0.1\n"
+        legacy = render_readme(personal_readme, alias)
         (self.repo / "README.md").write_text(legacy)
         old_base = self.commit("old personal name")
         self.run_git(self.repo, "push", "personal", "main")
         self.run_git(self.repo, "push", "lab", "main")
-        (self.repo / "README.md").write_text(render_readme(legacy, "ubc-tea/vlm-probe"))
+        old_lab_readme = render_readme(legacy, "ubc-tea/vlm-probe")
+        if pinned_install:
+            # The former renderer did not recognize a .git@ref URL, so the
+            # historical lab README retained the personal pinned install.
+            old_lab_readme = old_lab_readme.replace("ubc-tea/vlm-probe.git@", f"{alias}.git@")
+        (self.repo / "README.md").write_text(old_lab_readme)
         self.run_git(self.repo, "add", "README.md")
         self.run_git(self.repo, "commit", "-m", "historical lab README")
         old_lab = self.run_git(self.repo, "rev-parse", "HEAD")
         self.run_git(self.repo, "push", "lab", "main")
         self.run_git(self.repo, "reset", "--hard", old_base)
-        (self.repo / "README.md").write_text(PERSONAL_README)
+        (self.repo / "README.md").write_text(personal_readme)
         target = self.commit("new personal name")
         synchronize(self.repo, ("personal", "lab"), "main", True)
         new_lab = self.head("lab")
-        self.assert_matching_trees(target, new_lab)
+        self.assert_matching_trees(target, new_lab, personal_readme)
         self.assertTrue(is_ancestor(self.repo, old_lab, new_lab))
         self.assertTrue(is_ancestor(self.repo, target, new_lab))
+        synchronize(self.repo, ("personal", "lab"), "main", True)
+        self.assertEqual(self.head("personal"), target)
+        self.assertEqual(self.head("lab"), new_lab)
 
     def test_check_does_not_push_and_push_only_changes_lab_readme(self):
         previous = self.head("personal")

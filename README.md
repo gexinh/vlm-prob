@@ -42,10 +42,10 @@ a measured zero effect.
 
 ## Installation
 
-Python 3.10+ is required. Install release **1.0.1** from GitHub:
+Python 3.10+ is required. Install the current source version from GitHub:
 
 ```bash
-python -m pip install "vlmprobe[sae,transformers,visualization] @ git+https://github.com/gexinh/vlm-prob.git@v1.0.1"
+python -m pip install "vlmprobe[sae,transformers,visualization] @ git+https://github.com/gexinh/vlm-probe.git@main"
 ```
 
 The published package is also available on [PyPI](https://pypi.org/project/vlmprobe/):
@@ -161,7 +161,7 @@ exercises the API without downloading pretrained weights.
 
 ## Model Support
 
-Eight VLM families have explicit adapters. Text-only GPT-2/Llama and a ViT
+Eight VLM families have explicit adapters. Text-only GPT-2/Llama/Qwen and a ViT
 classifier provide complementary controls. Availability is method-specific;
 see the [capability matrix](docs/models/README.md).
 
@@ -175,7 +175,7 @@ see the [capability matrix](docs/models/README.md).
 | InternVL | InternVL3-1B-hf | [Usage](docs/models/internvl.md) |
 | LLaVA | llava-1.5-7b-hf | [Usage](docs/models/llava.md) |
 | Pixtral | Pixtral-12B-2409 | [Usage](docs/models/pixtral.md) |
-| Language models | GPT-2 / Llama | [GPT-2](docs/models/gpt2.md) · [Llama](docs/models/llama.md) |
+| Language models | GPT-2 / Llama / Qwen2 / Qwen3 | [GPT-2](docs/models/gpt2.md) · [Llama](docs/models/llama.md) · [Qwen](docs/models/qwen_text.md) |
 | Vision classifier | ViT-B/16 | [Usage](docs/models/vit.md) |
 
 ## Methods

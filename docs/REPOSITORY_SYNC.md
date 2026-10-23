@@ -1,7 +1,7 @@
 # Laboratory and personal repositories
 
 The laboratory repository is [ubc-tea/vlm-probe](https://github.com/ubc-tea/vlm-probe).
-The personal mirror is [gexinh/vlm-prob](https://github.com/gexinh/vlm-prob).
+The personal mirror is [gexinh/vlm-probe](https://github.com/gexinh/vlm-probe).
 Their `main` branches share the same library, version, demos, input images and
 current report. Each README displays only its own repository's project page and
 navigation links. These README differences require separate commits; every
@@ -14,7 +14,7 @@ objects; they are not duplicated by pushing commits.
 In a new checkout, configure these aliases once, preserving its existing `origin`:
 
 ```bash
-git remote add personal git@github.com:gexinh/vlm-prob.git
+git remote add personal git@github.com:gexinh/vlm-probe.git
 git remote add lab git@github.com:ubc-tea/vlm-probe.git
 ```
 
@@ -45,7 +45,7 @@ repository. Do not copy an interactive login token into workflow secrets.
 ## One page per repository
 
 - Lab: https://ubc-tea.github.io/vlm-probe/
-- Personal: https://gexinh.github.io/vlm-prob/
+- Personal: https://gexinh.github.io/vlm-probe/
 
 The same Pages workflow renders repository links from `GITHUB_REPOSITORY` at
 build time. Each deployed website links to its own code and documentation.
@@ -60,7 +60,7 @@ For a local build:
 
 ```bash
 python tools/build_project_page.py --repository ubc-tea/vlm-probe --output /tmp/vlmprobe-lab-site
-python tools/build_project_page.py --repository gexinh/vlm-prob --output /tmp/vlmprobe-personal-site
+python tools/build_project_page.py --repository gexinh/vlm-probe --output /tmp/vlmprobe-personal-site
 ```
 
 ## One report and one PyPI package
@@ -74,7 +74,7 @@ experiments under `docs/report/` remain excluded from this library repository.
 
 `pip install vlmprobe` downloads the published distribution from PyPI. It does
 not read either GitHub `main` branch. One PyPI project suffices for both mirrors;
-the release workflow remains bound to **gexinh/vlm-prob**, `package.yml`,
+the release workflow remains bound to **gexinh/vlm-probe**, `package.yml`,
 environment `pypi`. Only that repository can run the publish job. Ordinary pushes
 build and test but do not publish. Before publishing a new release, increment
 the package version and synchronize the reviewed source. A published PyPI file

@@ -68,7 +68,7 @@ jobs:
           path: dist/*
 
   publish:
-    if: (github.repository == 'gexinh/vlm-prob' || github.repository == 'gexinh/vlm-probing') && github.event_name == 'workflow_dispatch' && inputs.publish_target != 'none'
+    if: (github.repository == 'gexinh/vlm-probe' || github.repository == 'gexinh/vlm-prob' || github.repository == 'gexinh/vlm-probing') && github.event_name == 'workflow_dispatch' && inputs.publish_target != 'none'
     needs: build
     runs-on: ubuntu-latest
     environment:

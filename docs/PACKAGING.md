@@ -4,7 +4,7 @@
 
 The library, installable distribution, and recommended Python import are
 **`vlmprobe`**. The laboratory repository is **`ubc-tea/vlm-probe`**, with an
-personal copy at **`gexinh/vlm-prob`** with the same library version. Both
+personal copy at **`gexinh/vlm-probe`** with the same library version. Both
 share one PyPI project.
 
 ## Install and import
@@ -94,8 +94,8 @@ workflow action, using PyPI's token-free trusted publishing.
 `pip install vlmprobe` downloads a versioned distribution uploaded to PyPI; it
 does not fetch either repository's current `main`. GitHub pushes alone do not
 update that installation. Both mirrors build the package, but only
-`gexinh/vlm-prob` can execute the PyPI publish job. The Trusted Publisher must
-match the current repository name; update an older `vlm-probing` entry before
+`gexinh/vlm-probe` can execute the PyPI publish job. The Trusted Publisher must
+match the current repository name; update an older `vlm-prob` or `vlm-probing` entry before
 publishing after the rename. Publish each version once. Repository links in package metadata
 may point to the lab even while the publishing workflow runs in the personal
 mirror. See [repository synchronization](REPOSITORY_SYNC.md).
@@ -107,7 +107,7 @@ with these values:
 | --- | --- |
 | PyPI project name | `vlmprobe` |
 | GitHub owner | `gexinh` |
-| Repository | `vlm-prob` |
+| Repository | `vlm-probe` |
 | Workflow filename | `package.yml` |
 | Environment | `pypi` |
 

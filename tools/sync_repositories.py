@@ -11,20 +11,26 @@ from pathlib import Path
 from urllib.parse import urlsplit
 
 
-PERSONAL_REPOSITORY = "gexinh/vlm-prob"
+PERSONAL_REPOSITORY = "gexinh/vlm-probe"
+PREVIOUS_PERSONAL_REPOSITORY = "gexinh/vlm-prob"
 LEGACY_PERSONAL_REPOSITORY = "gexinh/vlm-probing"
 LAB_REPOSITORY = "ubc-tea/vlm-probe"
-REPOSITORIES = (PERSONAL_REPOSITORY, LEGACY_PERSONAL_REPOSITORY, LAB_REPOSITORY)
+REPOSITORIES = (PERSONAL_REPOSITORY, PREVIOUS_PERSONAL_REPOSITORY,
+                LEGACY_PERSONAL_REPOSITORY, LAB_REPOSITORY)
 
 
 def render_readme(text: str, repository: str) -> str:
     """Retarget this project's GitHub, raw-file and Pages URLs only.
 
-    The previous personal name ``gexinh/vlm-probing`` is an accepted alias,
-    including when validating historical mirror commits. The standalone
-    ``vlm-probing-report`` repository and third-party links remain unchanged.
-    No badges, links or explanatory text are added.
+    The previous personal names ``gexinh/vlm-prob`` and ``gexinh/vlm-probing``
+    are accepted aliases, including when validating historical mirror commits.
+    The standalone ``vlm-probing-report`` repository and third-party links
+    remain unchanged. No badges, links or explanatory text are added.
     """
+    return _render_readme(text, repository, retarget_pinned=True)
+
+
+def _render_readme(text: str, repository: str, *, retarget_pinned: bool) -> str:
     if repository not in REPOSITORIES:
         raise ValueError("Unknown repository for README rendering.")
     owner, name = repository.split("/")
@@ -35,7 +41,9 @@ def render_readme(text: str, repository: str) -> str:
             source_owner, source_name = source.split("/")
             if url.netloc == "github.com":
                 prefix, replacement = "/" + source, "/" + repository
-                matches = url.path in (prefix, prefix + ".git") or url.path.startswith(prefix + "/")
+                matches = (url.path in (prefix, prefix + ".git")
+                           or url.path.startswith(prefix + "/")
+                           or (retarget_pinned and url.path.startswith(prefix + ".git@")))
             elif url.netloc == "raw.githubusercontent.com":
                 prefix, replacement = "/" + source, "/" + repository
                 matches = url.path.startswith(prefix + "/")
@@ -121,7 +129,13 @@ def synchronize(repo: Path, remotes: tuple[str, str], branch: str, push: bool) -
         if changed_paths(repo, base, heads[lab]) - {"README.md"}:
             raise ValueError(f"{lab}/{branch} has library changes absent locally. "
                              "Merge and review those changes first. Nothing was pushed.")
-        if readme_at(repo, heads[lab]) != render_readme(readme_at(repo, base), LAB_REPOSITORY):
+        base_readme = readme_at(repo, base)
+        # Previous sync versions left pinned pip VCS URLs on the personal
+        # repository. Accept that exact historical rendering, not arbitrary
+        # README edits, while always producing fully retargeted URLs now.
+        historical_renderings = {render_readme(base_readme, LAB_REPOSITORY),
+                                 _render_readme(base_readme, LAB_REPOSITORY, retarget_pinned=False)}
+        if readme_at(repo, heads[lab]) not in historical_renderings:
             raise ValueError(f"{lab}/{branch} has unexpected README edits. "
                              "Review them before synchronizing. Nothing was pushed.")
     # Both remote histories are approved before constructing or publishing a commit.
