@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/ubc-tea/vlm-probe/main/docs/assets/vlm-probing-icon.svg" width="112" alt="vlmprobe icon">
+  <img src="https://raw.githubusercontent.com/gexinh/vlm-probe/main/docs/assets/vlm-probing-icon.svg" width="112" alt="vlmprobe icon">
 </p>
 
 <h1 align="center">vlmprobe</h1>
@@ -7,7 +7,7 @@
 <p align="center"><strong>Exploring Model Internals Beyond the Answer</strong></p>
 
 <p align="center">
-  <a href="https://ubc-tea.github.io/vlm-probe/"><img src="https://img.shields.io/badge/Project%20Page-Visit%20Website-3266e5?style=for-the-badge" alt="Visit the vlmprobe project page"></a>
+  <a href="https://gexinh.github.io/vlm-probe/"><img src="https://img.shields.io/badge/Project%20Page-Visit%20Website-3266e5?style=for-the-badge" alt="Visit the vlmprobe project page"></a>
 </p>
 
 vlmprobe brings lens readouts, attention explanations, causal interventions,
@@ -32,7 +32,7 @@ connection graphs. Capability checks distinguish an unsupported operation from
 a measured zero effect.
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/ubc-tea/vlm-probe/main/docs/assets/library-overview-sae.svg" width="100%" alt="Model inputs, adapter configuration, lens/attention/causal/SAE tools, and structured results">
+  <img src="https://raw.githubusercontent.com/gexinh/vlm-probe/main/docs/assets/library-overview-sae.svg" width="100%" alt="Model inputs, adapter configuration, lens/attention/causal/SAE tools, and structured results">
 </p>
 
 [Documentation](docs/README.md) · [Demos](demos/README.md) ·
