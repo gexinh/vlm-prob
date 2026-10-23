@@ -4,6 +4,7 @@ import torch
 from .. import attention as kernels
 from ..adapters import CapabilityError, ProbeInputs
 from .common import BoundMethod, configuration, evaluate, metric_metadata, pack, unpack
+from .attention_applicability import propagation_applicability
 
 
 def _integration_dtype(*values):
@@ -23,6 +24,7 @@ class AttentionMapProbe(BoundMethod):
     def __init__(self, probe, name, layers, **options):
         super().__init__(probe, name, layers)
         self.options = options
+        self.applicability = propagation_applicability(probe.spec, name)
 
     def _trace(self, inputs, capture, *, interventions=None):
         edits = dict(interventions or {})
@@ -132,6 +134,8 @@ class AttentionMapProbe(BoundMethod):
         result.tensors["baseline_score"] = base_score.to(p.result_device)
         result.metadata.update(configuration=configuration(o), metric=metric_metadata(metric),
                                target_fixed=True, observational_attribution=True)
+        if self.applicability is not None:
+            result.metadata["applicability"] = self.applicability
         if self.name in {"tam", "beyond_intuition"}:
             result.metadata.update(integration_path=f"{o['input_key']}: baseline -> processed input; other kwargs fixed",
                                    input_baseline="zero in processed-input coordinates" if baseline is None else "caller supplied",

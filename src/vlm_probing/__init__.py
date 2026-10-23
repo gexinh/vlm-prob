@@ -8,11 +8,12 @@ from .api.attention import AttentionMethods
 from .api.causal import CausalMethods
 from .api.sae import SAEMethods
 from .metrics import TokenMargin, SequenceLogProb, ClassScore
+from .geometry import visual_grid, preprocessing_report
 from . import visualization
 
-__version__ = "1.0.1"
+__version__ = "1.0.2"
 __all__ = ["BaseMethod", "ProbeResult", "ForwardTrace", "BaseModelAdapter",
            "HookPoint", "ModelReadout", "TorchModelAdapter", "Prober", "ModelSpec",
            "ProbeInputs", "TokenLayout", "HeadSite", "CapabilityError", "register_adapter",
            "LensMethods", "AttentionMethods", "CausalMethods", "SAEMethods", "TokenMargin", "SequenceLogProb", "ClassScore",
-           "visualization"]
+           "visualization", "visual_grid", "preprocessing_report"]

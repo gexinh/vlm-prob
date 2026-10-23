@@ -1,6 +1,7 @@
 """Attention observation and real value-path interventions."""
 import torch
 from .attention_maps import AttentionMapProbe
+from .attention_applicability import propagation_applicability
 
 from .. import attention as kernels
 from ..adapters import CapabilityError
@@ -12,6 +13,7 @@ class AttentionProbe(BoundMethod):
     def __init__(self, probe, name, layers, **options):
         super().__init__(probe, name, layers)
         self.options = options
+        self.applicability = propagation_applicability(probe.spec, name)
 
     def run(self, inputs, *, metric=None):
         p, name, o = self.probe, self.name, self.options
@@ -46,7 +48,8 @@ class AttentionProbe(BoundMethod):
                 score = evaluate(metric, trace.logits, layout).sum()
                 grads = torch.autograd.grad(score, matrices)
                 result = kernels.AttentionRelevance().run(stack, torch.stack(grads), valid_tokens=valid)
-            result.metadata.update(configuration=configuration(o), metric=metric_metadata(metric))
+            result.metadata.update(configuration=configuration(o), metric=metric_metadata(metric),
+                                   applicability=self.applicability)
             return self._finish(result)
         results = []
         if name == "profile":

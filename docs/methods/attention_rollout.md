@@ -32,6 +32,25 @@ memory grows quadratically with token count. Results record
 or a [target-conditioned attention map](attention_maps.md) when an answer target
 is part of the analysis.
 
+## Causal decoder applicability
+
+Rollout was developed to summarize attention flow; composing causally masked
+transitions can favor early sequence positions because later positions can
+access them. This may appear on a random-weight decoder as well. It does not
+mean the result is always independent of image content: actual attention
+weights still determine the transitions. The original paper explicitly discusses
+this decoder limitation.
+
+For adapters declaring `ModelSpec.causal_attention=True`, constructing the
+method emits `CausalAttentionWarning`. Results record the declaration, caveat
+and unchanged-formula status in `metadata["applicability"]`. Native HF language
+adapters declare `True`, ViT declares `False`, and custom adapters default to
+unknown (`None`). The library preserves the original rollout calculation;
+head fusion, residual transitions and defaults are unchanged. A bright early
+image patch should therefore not be taken as an object-localization result
+without controls for sequence position. Target conditioning or a different
+propagation rule is not a guarantee that this bias disappears.
+
 ## Complete example
 
 The example loads pretrained weights, reads a raw image, computes a fresh result, and calls the built-in visualization API. No probe training is required. Run outside `torch.inference_mode()` for gradient methods.

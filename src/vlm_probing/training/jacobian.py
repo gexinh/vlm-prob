@@ -6,18 +6,7 @@ from pathlib import Path
 import torch
 
 from .distribution import _atomic_json, _atomic_torch
-
-
-def _masks(valid, skip_first, exclude_last):
-    retained = valid.clone()
-    for row in range(len(retained)):
-        positions = valid[row].nonzero(as_tuple=True)[0]
-        retained[row, positions[:skip_first]] = False
-        if exclude_last and len(positions):
-            retained[row, positions[-1]] = False
-    if not retained.any(-1).all():
-        raise ValueError("each calibration prompt must retain a valid source/target")
-    return retained
+from ..lenses.jacobian import _calibration_masks, _calibration_selection, _selector_description
 
 
 def jacobian_sums_from_graph(final, sources, source_mask, target_mask, *, dim_batch=32):
@@ -62,6 +51,8 @@ def fit_jacobian_lenses(probe, input_batches, *, layers, binding, directory,
     """
     if torch.is_inference_mode_enabled():
         raise ValueError("Jacobian calibration cannot run under inference_mode")
+    if not isinstance(skip_first, int) or skip_first < 0:
+        raise ValueError("skip_first must be a nonnegative integer")
     method = probe.lens.jacobian(layers=layers, tokens=tokens, binding=binding)
     root = Path(directory)
     root.mkdir(parents=True, exist_ok=True)
@@ -91,8 +82,10 @@ def fit_jacobian_lenses(probe, input_batches, *, layers, binding, directory,
             trace = probe._run(inputs, capture=sites, grad=True,
                 interventions={earliest: lambda value: value.detach().requires_grad_(True)})
             layout = probe._layout(inputs, trace.logits)
-            retained = _masks(layout.valid, skip_first, exclude_last)
-            sources = retained & layout.select(tokens)
+            sources, retained = _calibration_masks(layout.valid,
+                source_mask=_calibration_selection(layout, tokens), skip_first=skip_first,
+                exclude_last=exclude_last, context=(f"Jacobian calibration batch={batch_index}; "
+                    f"source_selector={_selector_description(tokens)}"))
             final = trace.activations[final_site]
             values = {layer: trace.activations[probe.spec.residuals[layer]] for layer in method.layers}
             batch_sums = jacobian_sums_from_graph(final, values, sources, retained, dim_batch=dim_batch)

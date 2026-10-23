@@ -101,7 +101,7 @@ def make_adapter(model):
                      embeddings="embeddings", layout=layout, output_kind="classification",
                      editable_attention=set(attentions), attention_inputs=inputs,
                      attention_values=values, project_values=project_values,
-                     attention_supports=supports,
+                     attention_supports=supports, causal_attention=False,
                      forward_defaults={"return_dict": True}, notes=(
                          "Native ViT CLS class logits are [batch,classes]; use ClassScore.",
                          "Visual tokens are row-major image patches after CLS; no vocabulary readout.",

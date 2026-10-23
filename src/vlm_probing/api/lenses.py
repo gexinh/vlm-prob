@@ -1,9 +1,13 @@
 """Model-bound lens capture, calibration, and prompt readout."""
 from pathlib import Path
+import warnings
 
 import torch
 
 from .. import lenses as kernels
+from ..lenses.jacobian import (
+    _JacobianReplacementWarning, _calibration_selection, _selector_description, _warn_replacement,
+)
 from .common import BoundMethod, coordinates, layers_for, model_eval, pack, require, selected
 
 
@@ -19,11 +23,12 @@ class LensProbe(BoundMethod):
         mapping = spec.heads if self.name == "attention" else spec.residuals
         return [mapping[i] for i in self.layers]
 
-    def _capture(self, inputs):
+    def _capture(self, inputs, *, allow_empty_selection=False):
         sites = self._sites()
         trace = self.probe._run(inputs, capture=sites)
         layout = self.probe._layout(inputs, trace.logits)
-        mask = layout.select(self.tokens)
+        mask = (_calibration_selection(layout, self.tokens) if allow_empty_selection
+                else layout.select(self.tokens))
         values = []
         for layer, site in zip(self.layers, sites):
             hidden = trace.activations[site]
@@ -104,7 +109,15 @@ class FittedLensProbe(LensProbe):
                 raise ValueError("head decoder initialization is only supported by Attention Lens")
             if any(layer in self.kernels for layer in self.layers):
                 raise ValueError("initialization requires new Attention Lens kernels; create a new lens to reset")
-        trace, layout, mask, values = self._capture(inputs)
+        replacing_jacobian = self.name == "jacobian" and any(
+            layer in self.kernels and self.kernels[layer].jacobian is not None for layer in self.layers
+        )
+        if replacing_jacobian:
+            # Warn before the initial model capture, once for the public call.
+            _warn_replacement(stacklevel=4)
+        trace, layout, mask, values = self._capture(
+            inputs, allow_empty_selection=self.name == "jacobian",
+        )
         for layer, hidden in zip(self.layers, values):
             kernel = self.kernels.get(layer)
             if kernel is None:
@@ -122,8 +135,16 @@ class FittedLensProbe(LensProbe):
                                            interventions={site: lambda _: value},
                                            grad=True).activations[final_site]
 
-                kernel.fit(hidden, downstream, valid_mask=layout.valid.to(hidden.device),
-                           source_mask=mask.to(hidden.device), **kwargs)
+                try:
+                    with warnings.catch_warnings():
+                        if replacing_jacobian:
+                            warnings.simplefilter("ignore", _JacobianReplacementWarning)
+                        kernel.fit(hidden, downstream, valid_mask=layout.valid.to(hidden.device),
+                                   source_mask=mask.to(hidden.device), **kwargs)
+                except ValueError as error:
+                    raise ValueError(
+                        f"{error} source_selector={_selector_description(self.tokens)}; layer={layer}"
+                    ) from error
             else:
                 self.losses[layer] = kernel.fit(hidden, trace.logits, mask=mask, **kwargs)
             self.kernels[layer] = kernel

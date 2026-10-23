@@ -33,7 +33,26 @@ Returns `transported[L,N,D_final]`, `logits[L,N,V]` and `positions[N,2]`.
 `J[out,in]` sums final-residual cotangents at retained targets, averages source
 positions within a prompt and then averages prompts. Evaluation applies `J @ h`
 without an intercept. Fitting estimates derivatives; it does not optimize a
-classifier. Repeated one-batch `fit` replaces the estimate.
+classifier. Repeated one-batch `fit` replaces the estimate and emits a
+`RuntimeWarning` before calibration; it does not accumulate batches. Use
+[`fit_jacobian_lenses`](#dataset-estimator) below for dataset calibration.
+
+### Calibration position requirements
+
+With `skip_first=16` and `exclude_last=True`, each prompt needs at least **18 valid
+expanded token positions**, including image tokens where present. Padded width
+does not count. This minimum assumes unrestricted selectors: selected sources
+and targets must also survive the exclusions. In particular,
+`tokens="last_prompt"` with the default all-prompt layout selects the final valid
+token, which `exclude_last=True` removes even for a long prompt.
+
+Calibration rejects the whole batch before computing derivatives if any row
+has no retained source or target. The error lists the failing zero-based rows,
+valid-token counts, retained source/target counts, exclusion settings and source
+selector. It never silently drops short rows. Use longer calibration contexts,
+or deliberately choose `skip_first=0, exclude_last=False` for a short-context
+study and record that different calibration convention. An empty or disjoint
+source/target mask must still be corrected independently of prompt length.
 
 ### Dataset estimator
 
@@ -56,6 +75,12 @@ method, report = fit_jacobian_lenses(
 | `resume` | `True` | Resume matching accumulated prompt-weighted Jacobians. |
 | `checkpoint_every` | `16` | Save resumable state every this many input batches. |
 | `snapshot_counts` | `(64,128,256)` | Save prefix estimates when a processed prompt count exactly reaches one of these values. |
+
+The estimator applies the same position checks to every batch and identifies the
+batch index in errors. It sums per-prompt Jacobians and divides by the total
+number of prompts, so a short final batch has the correct weight. Calling
+`method.fit_batches(...)` is reserved for Tuned/Attention Lens and points to
+`vlmprobe.training.fit_jacobian_lenses(...)` when used for Jacobian Lens.
 
 Do not fit under `torch.inference_mode()`. Exact calibration scales with hidden
 width and can be expensive even for one source layer. The example deliberately

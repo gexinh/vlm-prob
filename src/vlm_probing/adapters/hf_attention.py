@@ -20,6 +20,7 @@ _AUDITED_CLASSES = {
         ("llama", "LlamaAttention"),
         ("mistral", "MistralAttention"),
         ("qwen2", "Qwen2Attention"),
+        ("qwen3", "Qwen3Attention"),
         ("qwen2_vl", "Qwen2VLAttention"),
         ("qwen2_5_vl", "Qwen2_5_VLAttention"),
         ("qwen3_vl", "Qwen3VLTextAttention"),

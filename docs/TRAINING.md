@@ -156,10 +156,24 @@ result = method.run(independent_showcase_inputs)
 
 The estimator groups exact basis-vector VJPs, accumulates prompt-weighted
 Jacobians across deterministic batches, and resumes from checkpoints. It does
-not use random projections or train an auxiliary classifier. Short contexts
-need smaller `skip_first`; fitting must retain valid source positions. Do not
-fit under `torch.inference_mode()`. Large hidden widths make exact Jacobians
-costly; calibration on one checkpoint is not portable to another.
+not use random projections or train an auxiliary classifier. The defaults
+(`skip_first=16, exclude_last=True`) require at least **18 valid expanded token
+positions per prompt** with unrestricted masks; padding does not count. Source
+selectors and target masks must intersect the retained positions as well.
+For example, `tokens="last_prompt"` under an all-prompt layout conflicts with
+`exclude_last=True`. Short-context studies can explicitly set `skip_first=0,
+exclude_last=False`; record this change to the calibration convention.
+
+If any prompt has no remaining source or target, calibration rejects the whole
+batch before derivative calculations and reports failing row indices, token
+counts and exclusion settings. The dataset estimator also reports the batch
+index; neither path silently drops rows. Repeated `method.fit(inputs)` replaces
+the previous one-batch Jacobian and emits `RuntimeWarning`. Use
+`fit_jacobian_lenses` above to accumulate across input batches; the generic
+`method.fit_batches` is only for Tuned and Attention Lens.
+
+Do not fit under `torch.inference_mode()`. Large hidden widths make exact
+Jacobians costly; calibration on one checkpoint is not portable to another.
 
 Artifact saving requires explicit checkpoint, tokenizer, readout, calibration,
 and site identities. Loading validates these bindings and dimensions. A missing

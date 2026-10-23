@@ -1,4 +1,4 @@
-name: Attention regressions
+name: Library regressions
 
 on:
   push:
@@ -8,6 +8,10 @@ on:
       - "tests/test_attention*.py"
       - "tests/test_gradcam_support.py"
       - "tests/test_consumed_attention.py"
+      - "tests/test_qwen_text_adapters.py"
+      - "tests/test_jacobian_contract.py"
+      - "tests/test_input_geometry.py"
+      - "tests/test_visualization*.py"
       - "examples/hf_model_matrix.py"
       - "examples/hf_smoke.py"
       - "pyproject.toml"
@@ -18,6 +22,10 @@ on:
       - "tests/test_attention*.py"
       - "tests/test_gradcam_support.py"
       - "tests/test_consumed_attention.py"
+      - "tests/test_qwen_text_adapters.py"
+      - "tests/test_jacobian_contract.py"
+      - "tests/test_input_geometry.py"
+      - "tests/test_visualization*.py"
       - "examples/hf_model_matrix.py"
       - "examples/hf_smoke.py"
       - "pyproject.toml"
@@ -48,8 +56,12 @@ jobs:
         run: |
           python -m pip install torch==2.6.0 torchvision==0.21.0 --index-url https://download.pytorch.org/whl/cpu
           python -m pip install '.[transformers,visualization]'
-      - name: Run mathematical and native attention regressions
+      - name: Run native model and numerical regressions
         run: |
           python -m unittest discover -s tests -p 'test_attention*.py' -v
           python -m unittest discover -s tests -p test_gradcam_support.py -v
           python -m unittest discover -s tests -p test_consumed_attention.py -v
+          python -m unittest discover -s tests -p test_qwen_text_adapters.py -v
+          python -m unittest discover -s tests -p test_jacobian_contract.py -v
+          python -m unittest discover -s tests -p test_input_geometry.py -v
+          python -m unittest discover -s tests -p 'test_visualization*.py' -v

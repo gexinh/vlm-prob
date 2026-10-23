@@ -51,22 +51,38 @@ def labels(values, count, name):
     return result
 
 
-def normalization(values, *, signed=False, log_scale=False, vmin=None, vmax=None):
+def normalization(values, *, signed=False, log_scale=False, vmin=None, vmax=None, clip=None):
     import numpy as np
     from matplotlib.colors import LogNorm, Normalize, TwoSlopeNorm
     finite = values[np.isfinite(values)]
     if not finite.size:
         raise ValueError("plot needs at least one finite measurement")
+    percentile_limits = None
+    if clip is not None:
+        from numbers import Real
+        if not isinstance(clip, (tuple, list, np.ndarray)):
+            raise ValueError("clip must be two percentiles with 0 <= lower < upper <= 100")
+        try:
+            lower, upper = clip
+        except (TypeError, ValueError):
+            raise ValueError("clip must be two percentiles with 0 <= lower < upper <= 100") from None
+        if (any(isinstance(x, (bool, np.bool_)) or not isinstance(x, Real)
+                or not np.isfinite(x) for x in (lower, upper))
+                or not 0 <= lower < upper <= 100):
+            raise ValueError("clip must be two percentiles with 0 <= lower < upper <= 100")
+        percentile_limits = np.percentile(finite, (lower, upper))
     if signed and log_scale:
         raise ValueError("a signed scale cannot be logarithmic")
     if signed:
-        limit = max(float(np.abs(finite).max()), 1e-12)
+        limits = finite if percentile_limits is None else percentile_limits
+        limit = max(float(np.abs(limits).max()), 1e-12)
         lo, hi = -limit if vmin is None else vmin, limit if vmax is None else vmax
         if not lo < 0 < hi:
             raise ValueError("signed color limits must straddle zero")
         return TwoSlopeNorm(vcenter=0, vmin=lo, vmax=hi)
-    lo = float(finite.min()) if vmin is None else vmin
-    hi = float(finite.max()) if vmax is None else vmax
+    lower, upper = ((finite.min(), finite.max()) if percentile_limits is None else percentile_limits)
+    lo = float(lower) if vmin is None else vmin
+    hi = float(upper) if vmax is None else vmax
     if lo > hi:
         raise ValueError("vmin cannot exceed vmax")
     if log_scale:

@@ -4,7 +4,7 @@
 
 Automatic adapters target **Transformers 5.3.x**, tested with **5.3.0**. The eight
 VLM families below use native Transformers classes. Each guide provides a full
-loading and image-input example. [Llama](llama.md) and [GPT-2](gpt2.md) provide text controls;
+loading and image-input example. [Llama](llama.md), [GPT-2](gpt2.md), and [Qwen2/Qwen3 text](qwen_text.md) provide text controls;
 [ViT](vit.md) provides a pure-vision classification control.
 
 ## Use any supported method
@@ -61,6 +61,7 @@ Do not copy a different model's tokenizer, hard-coded layer IDs or fitted artifa
 | [InternVL](internvl.md) | 1B | Tiny architecture + eight pretrained report cases |
 | [LLaVA](llava.md) | 7B | Tiny architecture + pretrained GQA/COCO demos and shared report cases |
 | [Pixtral](pixtral.md) | 12B | Native Mistral/Pixtral architecture tests + eight pretrained cases; seven attention methods |
+| [Qwen2 / Qwen3 text](qwen_text.md) | 0.5B / 0.6B | Native tiny text architecture tests; no new pretrained accuracy claim |
 | [ViT](vit.md) | ViT-B/16 | Tiny classifier + actual pretrained author-checkpoint map/deletion controls |
 
 Tiny tests instantiate real vision towers, projectors, and decoders with random
@@ -124,4 +125,4 @@ using explicit architecture token IDs. No fixed-length visual-token guess is
 used. For custom layouts and architectures, see [adapters](../ADAPTERS.md).
 
 Legacy Transformers 4.57.x remains supported for Llama, Qwen2.5-VL, and GPT-2.
-The expanded model set uses the 5.3.x extra.
+The expanded model set, including Qwen2/Qwen3 text-only classes, uses the 5.3.x extra.

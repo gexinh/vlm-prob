@@ -89,6 +89,7 @@ does not claim attention or head access. The full demonstration contract is in
 | `residuals` | `{layer: site}`, residuals after a block and any visual injection, before the next block/final norm |
 | `attentions` | `{layer: site}`, actual probabilities `[B,H,Q,K]`; observational unless declared editable |
 | `attention_scores` | `{layer: site}`, editable masked logits before softmax |
+| `causal_attention` | Explicit `True` for causally masked attention, `False` for bidirectional attention, or `None` when unspecified. Propagation warnings use this declaration, not output shape. |
 | `attention_supports` | Optional `{layer: site}` for layers in `attentions`; each site captures a boolean `[B or 1,H or 1,Q,K]` tensor on the attention device, with `True` for structurally permitted pairs |
 | `editable_attention` | Layer indices whose probability site is consumed by `A @ V` after the hook |
 | `heads` | `{layer: site}`, projected heads `[B,T,H,D_residual]`, or raw inputs for `project_heads` |
@@ -125,7 +126,7 @@ See the [attention-map guide](methods/attention_maps.md#what-each-method-compute
 for the tensor-kernel `support_mask` contract.
 
 A returned attention diagnostic is not necessarily editable. Audited native
-Transformers 5.3 eager Llama, Mistral, Qwen2, Qwen2-VL, Qwen2.5-VL, Qwen3-VL,
+Transformers 5.3 eager Llama, Mistral, Qwen2, Qwen3, Qwen2-VL, Qwen2.5-VL, Qwen3-VL,
 Qwen3.5 full-attention blocks, and ViT classifiers expose masked logits and the
 probabilities actually consumed by `A @ V` through parameterless taps.
 Their per-instance attention calls use an audited eager interface; the backend
@@ -146,9 +147,27 @@ coverage cannot preserve its freeze rule. Pre-output-projection messages are
 valid output controls when the projection is fixed and linear; the projection
 and shared bias recompute normally. Receiver Q/K/V is cached upstream of this
 freeze site. In GQA, Q uses query-head counts and K/V use physical KV-head counts.
-Q/K hooks precede positional rotation; Qwen3-VL's hooks follow its per-head
+Q/K hooks precede positional rotation; Qwen3 and Qwen3-VL hooks follow per-head
 normalization. For custom adapters, declare the tensor actually consumed by
 attention, and preserve that hook-stage convention in experimental metadata.
+
+## Causal attention propagation
+
+Native language adapters declare `causal_attention=True`; ViT declares `False`.
+Custom adapters default to `None`, which means unknown rather than bidirectional.
+Set this field only after checking the actual attention masks. Rollout, relevance,
+TAM and Beyond Intuition warn when constructed for a declared causal stack and
+retain the declaration and caveat in `result.metadata["applicability"]`.
+
+A causal mask allows later positions to read earlier ones, which can favor early
+sequence positions when transitions are composed. Attention weights and target
+gradients still affect the result; the map is not necessarily independent of
+image content. The original propagation formulas remain unchanged. Use these
+maps as descriptions under the stated mask, with matched-input and sequence-order
+controls where appropriate; no alternate propagation method is guaranteed to
+remove positional bias. Bidirectional attention alone also does not establish
+spatial faithfulness or a causal effect. See the
+[rollout paper's decoder discussion](https://aclanthology.org/2020.acl-main.385/).
 
 ## Registering an architecture
 
@@ -164,7 +183,7 @@ assumed compatible. Alternatively implement `model.probing_adapter()` returning
 a configured adapter. Registration takes precedence over that protocol and the
 built-in HF adapters. `replace=True` explicitly replaces an existing registration.
 
-Built-in HF adapters use explicit contracts for eight VLM families, Llama, GPT-2,
+Built-in HF adapters use explicit contracts for eight VLM families, Llama, GPT-2, Qwen2/Qwen3 text,
 and the native ViT classifier.
 See the [model matrix](models/README.md) for classes, versions, examples, and
 validation. Qwen3.5 linear-attention blocks have residual sites but no standard

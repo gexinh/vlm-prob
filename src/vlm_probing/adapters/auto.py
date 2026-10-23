@@ -29,7 +29,9 @@ def auto_adapter(model):
     from .huggingface import MODEL_CONTRACTS, make_adapter
     if (type(model).__module__, type(model).__name__) in MODEL_CONTRACTS:
         return make_adapter(model)
+    supported = sorted({name for _, name in MODEL_CONTRACTS} | {"ViTForImageClassification"})
     raise CapabilityError(
-        f"No automatic adapter for {type(model).__name__}. Pass adapter=TorchModelAdapter(..., "
+        f"No automatic adapter for {type(model).__name__}. Supported native classes: "
+        f"{', '.join(supported)}. Pass adapter=TorchModelAdapter(..., "
         "spec=ModelSpec(...)), register_adapter(ModelClass, factory), or implement probing_adapter()."
     )

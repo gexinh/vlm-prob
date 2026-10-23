@@ -59,6 +59,18 @@ class AttentionKnockoutDemoTests(unittest.TestCase):
         result = FixedAnswerProbability(1).score(logits, layout)
         self.assertAlmostEqual(result.item(), torch.softmax(logits[0, 1], 0)[1].item())
 
+    def test_missing_exact_red_mask_still_fails_without_claiming_no_visual_information(self):
+        class ImageProcessor:
+            image_mean = [0.5, 0.4, 0.3]
+
+            def __call__(self, **kwargs):
+                return {"pixel_values": torch.zeros(1, 3, 28, 28)}
+
+        processor = SimpleNamespace(image_processor=ImageProcessor())
+        with self.assertRaisesRegex(ValueError, "exact-red mask rule.*interpolation") as caught:
+            target_patch_mask(Image.new("RGB", (100, 50)), [0, 0, 1, 1], processor)
+        self.assertIn("without eliminating all visual information", str(caught.exception))
+
     def test_dataset_loader_checks_original_dimensions_bbox_and_digest(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory)

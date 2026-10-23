@@ -33,7 +33,9 @@ def fit_model_bound_lens(method, train_inputs, validation_inputs, directory, *,
     if torch.is_inference_mode_enabled():
         raise ValueError("calibration cannot run in torch.inference_mode()")
     if method.name not in {"tuned", "attention"}:
-        raise ValueError("fit_batches supports Tuned and Attention Lens; use Jacobian calibration separately")
+        raise ValueError("fit_batches supports Tuned and Attention Lens; for Jacobian Lens use "
+                         "vlmprobe.training.fit_jacobian_lenses(probe, input_batches, "
+                         "layers=..., binding=..., directory=...)")
     if batch_size < 1 or train_inputs is validation_inputs:
         raise ValueError("positive batch_size and separate training/validation inputs are required")
     initialize = initial_unembedding is not None or initial_bias is not None

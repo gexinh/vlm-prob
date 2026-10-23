@@ -163,7 +163,13 @@ class ModelSpec:
     # Support sites produce boolean [B or 1,H or 1,Q,K]; True denotes an available edge.
     attention_supports: dict[int, str] = field(default_factory=dict)
 
+    # Explicit architectural fact; None leaves a custom adapter's mask semantics unknown.
+    # Append fields to preserve existing positional ModelSpec construction.
+    causal_attention: bool | None = None
+
     def validate(self, sites):
+        if self.causal_attention is not None and type(self.causal_attention) is not bool:
+            raise TypeError("spec.causal_attention must be bool or None")
         if not self.residuals or any(type(k) is not int or k < 0 for k in self.residuals):
             raise ValueError("spec.residuals requires nonnegative layer indices")
         if self.output_kind not in {"language", "classification", "representation"}:

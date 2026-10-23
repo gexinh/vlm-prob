@@ -135,7 +135,7 @@ def _overlay(ax, image, values, *, norm, signed, cmap, alpha, image_alpha, bound
 def plot_attention_overlay(image, values, *, tensor=None, grid_shape=None,
                            visual_positions=None, query_positions=None, layer=-1,
                            batch_index=0, signed=False, alpha=1.0, image_alpha=.25, cmap=None,
-                           vmin=None, vmax=None, bounding_boxes=None, ax=None,
+                           vmin=None, vmax=None, clip=None, bounding_boxes=None, ax=None,
                            title=None, colorbar=True, value_label="Attribution"):
     """Overlay a map on the *actual image represented by its visual grid*.
 
@@ -149,6 +149,11 @@ def plot_attention_overlay(image, values, *, tensor=None, grid_shape=None,
     image drawn over the map; lower values reveal more of the heatmap. ``alpha``
     retains its heatmap-opacity meaning and defaults to fully opaque.
     Both opacities must be finite and in [0,1]. Returns a matplotlib Axes.
+    ``clip=(1, 99)`` uses finite-value percentiles for display limits only;
+    explicit ``vmin``/``vmax`` take precedence. Signed maps keep a symmetric
+    zero-centered percentile scale unless explicit limits override it. Values
+    are never clipped or renormalized in the input/result arrays. The default
+    remains the original full-range scale.
     """
     _opacity(alpha, "alpha")
     _opacity(image_alpha, "image_alpha")
@@ -158,11 +163,13 @@ def plot_attention_overlay(image, values, *, tensor=None, grid_shape=None,
                          layer=layer, batch_index=batch_index)
     if not signed and (values[values == values] < 0).any():
         raise ValueError("negative visual scores require signed=True")
-    norm = normalization(values, signed=signed, vmin=0 if vmin is None and not signed else vmin, vmax=vmax)
+    lower = 0 if vmin is None and not signed and clip is None else vmin
+    norm = normalization(values, signed=signed, vmin=lower, vmax=vmax, clip=clip)
     ax = axes(ax, figsize=(6, 5))
     _overlay(ax, image, values, norm=norm, signed=signed, cmap=cmap, alpha=alpha,
              image_alpha=image_alpha,
-             bounding_boxes=bounding_boxes, title=title, colorbar=colorbar, value_label=value_label)
+             bounding_boxes=bounding_boxes, title=title, colorbar=colorbar,
+             value_label=_display_label(value_label, clip, vmin=vmin, vmax=vmax))
     return ax
 
 
@@ -170,7 +177,7 @@ def plot_attention_comparison(image, named_maps, *, grid_shape=None,
                               visual_positions=None, query_positions=None, layer=-1,
                               batch_index=0, columns=4, signed=False, shared_scale=False,
                               cmap=None, alpha=1.0, image_alpha=.25, axes=None, colorbar=True,
-                              value_label="Attribution", titles=None, bounding_boxes=None):
+                              value_label="Attribution", titles=None, bounding_boxes=None, clip=None):
     """Compare named maps with a common image, geometry, and explicit scale.
 
     ``signed`` can be one boolean or a mapping from method name to boolean.
@@ -179,6 +186,9 @@ def plot_attention_comparison(image, named_maps, *, grid_shape=None,
     signedness group; compare magnitudes only when scores share units.
     ``image_alpha`` controls the original image over each map; ``alpha``
     controls heatmap opacity. Both opacities must be finite and in [0,1].
+    Optional ``clip=(lower, upper)`` sets display percentiles without changing
+    measured maps; with ``shared_scale`` they are computed from pooled finite
+    values within each signedness group. Signed scales remain zero-centered.
     Returns ``(figure, axes)`` with a two-dimensional axes array.
     """
     import numpy as np
@@ -216,26 +226,39 @@ def plot_attention_comparison(image, named_maps, *, grid_shape=None,
     groups = {}
     for name, values in maps.items():
         groups.setdefault(signs[name], []).append(values.flatten())
-    norms = {sign: normalization(np.concatenate(values), signed=sign, vmin=None if sign else 0)
+    norms = {sign: normalization(np.concatenate(values), signed=sign,
+                                vmin=0 if not sign and clip is None else None, clip=clip)
              for sign, values in groups.items()} if shared_scale else {}
     artists = {}
     group_axes = {}
     for ax, (name, values) in zip(axes.flat, maps.items()):
         sign = signs[name]
-        norm = norms[sign] if shared_scale else normalization(values, signed=sign, vmin=None if sign else 0)
+        norm = norms[sign] if shared_scale else normalization(
+            values, signed=sign, vmin=0 if not sign and clip is None else None, clip=clip)
         artist = _overlay(ax, image, values, norm=norm, signed=sign,
                           cmap=cmap.get(name) if isinstance(cmap, Mapping) else cmap,
                           alpha=alpha, image_alpha=image_alpha, bounding_boxes=bounding_boxes,
                           title=titles.get(name, name) if titles else name,
-                          colorbar=colorbar and not shared_scale, value_label=value_label)
+                          colorbar=colorbar and not shared_scale,
+                          value_label=_display_label(value_label, clip))
         artists[sign] = artist
         group_axes.setdefault(sign, []).append(ax)
     for ax in list(axes.flat)[len(maps):]:
         ax.axis("off")
     if colorbar and shared_scale:
         for sign, artist in artists.items():
-            figure.colorbar(artist, ax=group_axes[sign], shrink=.75, label=value_label)
+            figure.colorbar(artist, ax=group_axes[sign], shrink=.75,
+                            label=_display_label(value_label, clip))
     return figure, axes
+
+
+def _display_label(value_label, clip, *, vmin=None, vmax=None):
+    if clip is None:
+        return value_label
+    if vmin is not None and vmax is not None:
+        return f"{value_label} (explicit display limits)"
+    override = "; explicit vmin" if vmin is not None else "; explicit vmax" if vmax is not None else ""
+    return f"{value_label} (display percentiles {clip[0]:g}\u2013{clip[1]:g}{override})"
 
 
 def plot_input(image, *, prompt=None, answer=None, bounding_boxes=None, ax=None, title=None):

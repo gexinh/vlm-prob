@@ -40,6 +40,11 @@ coordinates. Native dictionary values need not all be tensors; `prepare` moves
 tensor values only. Probing requires full-sequence inputs and rejects KV caches,
 `use_cache=True`, and nonzero `logits_to_keep`.
 
+For spatial plots, inspect [input geometry and preprocessing](INPUT_GEOMETRY.md).
+The `visual_grid` helper uses audited model-specific grid metadata and checks
+token counts. `preprocessing_report` is an opt-in diagnostic; it never changes
+the processor output or claims that geometric retention proves subject visibility.
+
 ## Select layers and tokens
 
 Factory configuration is reusable: `method = probe.lens.logit(...)`, followed

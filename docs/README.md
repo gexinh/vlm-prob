@@ -12,6 +12,7 @@ demo workflows.
 - [Repository synchronization](REPOSITORY_SYNC.md): laboratory and personal mirrors, project pages, report updates, and one PyPI publisher.
 - [Installation and package releases](PACKAGING.md): pip installation, compatible imports, wheels, and PyPI publishing.
 - [Visualization](VISUALIZATION.md): reusable lens heatmaps, image overlays, causal grids, curves, and graphs.
+- [Input geometry](INPUT_GEOMETRY.md): native visual grids, token counts, preprocessing summaries, and coordinate limits.
 - [Lens calibration](TRAINING.md): training and validation splits, author checkpoints, persistent optimization, and resumable Jacobian estimation.
 - [SAE platform](methods/sae/README.md): native methods, one training engine, model cards, checkpoint imports and visualization.
 - [SAE tutorial](methods/sae/examples/README.md): a complete live image-to-feature workflow, including training and plots.

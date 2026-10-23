@@ -65,7 +65,11 @@ def target_patch_mask(image, bbox_xywh, processor, *, patch_size=14):
     red = (pixels == torch.tensor([255, 0, 0])[:, None, None]).all(0)
     grid = red.unfold(0, patch_size, patch_size).unfold(1, patch_size, patch_size).any(-1).any(-1)
     if not grid.any():
-        raise ValueError("No target patches survived native image preprocessing")
+        raise ValueError(
+            "No target patches survived the exact-red mask rule after native image preprocessing; "
+            "interpolation can remove exact-red pixels without eliminating all visual information. "
+            "Inspect the processed image and bbox geometry."
+        )
     return grid.reshape(-1), {"padding_offset_xy": list(offset), "encoder_size": [width, height],
                               "patch_size": patch_size, "grid_shape": list(grid.shape),
                               "region_rule": "any exactly red processed bbox-mask pixel",

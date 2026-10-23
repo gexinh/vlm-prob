@@ -51,6 +51,27 @@ beyond_result = beyond.run(inputs, *, metric=None, baseline=None)
 
 Results are detached CPU `ProbeResult` tensors by default; `result.save(path)` stores tensors and JSON-safe run metadata. `B/H/T/V/L` denote batch/head/token/vocabulary/selected-layer axes. Check `probe.describe()["methods"][method_name]` for the actual checkpoint. Eager attention at the probed component and no KV cache are required for these model-bound attention methods.
 
+## Architectural applicability
+
+TAM and Beyond Intuition propagate information through an attention stack.
+Applying their formulas to causal decoder attention is a transfer from vision
+classification: causal masks can favor early sequence positions when
+transitions are composed. Maps still depend on the input's attention weights
+and the selected target; this caveat does not imply content-independent maps.
+Neither target conditioning nor a different propagation rule guarantees removal
+of positional bias. Compare matched inputs and account for sequence order
+before interpreting a peak as object evidence.
+
+Constructing TAM/Beyond on an adapter with `causal_attention=True` emits a
+`CausalAttentionWarning`; `result.metadata["applicability"]` records the
+architecture caveat and confirms that the propagation formula is unchanged.
+Native language adapters declare causal attention, native ViT declares
+bidirectional attention, and custom adapters remain unspecified unless they
+explicitly set the field. Bidirectional attention also requires independent
+faithfulness checks. Grad-CAM and ATTATTR do not compose the same transition
+stack and receive no propagation warning; this is not a claim that they are
+free of other attention-explanation limitations.
+
 ## Memory and numerical precision
 
 `queries` and `keys` select entries after full attention and the required

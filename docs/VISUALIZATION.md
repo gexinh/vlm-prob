@@ -63,6 +63,9 @@ resize, padding, or crop. Grid shape and patch indices must come from the
 processor/layout; the library does not guess a square grid from token count or
 align a processed map to the original photograph. Bounding boxes use pixel
 `(x, y, width, height)` coordinates in that same displayed image.
+Use the [input geometry tools](INPUT_GEOMETRY.md) to inspect supported native
+grids and preprocessing metadata. A tile or thumbnail has its own grid; a
+single count does not establish its position in the original photograph.
 
 The overlay accepts a two-dimensional spatial map, a vector with an explicit
 `grid_shape`, or a result tensor with selected query/key coordinates. Raw
@@ -94,6 +97,35 @@ Independent panel scales compare spatial shape. `shared_scale=True` compares
 raw magnitudes only when the underlying units are comparable. Titles identify
 the supplied methods; captions should specify the model, selected answer score,
 query, and image preprocessing.
+
+### Displaying maps with extreme values
+
+Both overlay helpers accept optional `clip=(lower_percentile, upper_percentile)`.
+For example, `clip=(1, 99)` displays the middle 98 percent of finite measurements
+across the color scale, with outliers saturating at its ends. NaNs remain masked;
+the measured arrays and saved `ProbeResult` values are never clipped or changed.
+The colorbar identifies the display percentiles. The default `clip=None` retains
+the existing full-range scale.
+
+```python
+import numpy as np
+from vlmprobe.visualization import plot_attention_overlay
+
+# A self-contained display example; replace with the actual processed image/map.
+processed_image = np.full((96, 96, 3), 220, dtype=np.uint8)
+scores = np.linspace(0.01, 0.2, 24 * 24).reshape(24, 24)
+scores[0, 0] = 100.0
+ax = plot_attention_overlay(processed_image, scores, clip=(1, 99))
+ax.figure.savefig("percentile-display.png", bbox_inches="tight")
+```
+
+For signed maps, percentile endpoints determine a symmetric scale around zero;
+signs and the zero point remain unchanged. Explicit overlay `vmin`/`vmax` override
+the corresponding percentile limit. With comparison `shared_scale=True`, limits
+are calculated from the pooled finite values within each signedness group. A
+shared scale is meaningful only for comparable units. Clipped displays can hide
+extreme magnitudes; retain an unclipped view or report the chosen limits when
+comparing methods. Display clipping does not remove a model's attention sinks.
 
 ## Causal grids and curves
 

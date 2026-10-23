@@ -17,6 +17,8 @@ MODEL_CONTRACTS = {
     (f"transformers.models.{module}.modeling_{module}", name): (prefix, visual_ids)
     for module, name, prefix, visual_ids in (
         ("llama", "LlamaForCausalLM", "model", ()),
+        ("qwen2", "Qwen2ForCausalLM", "model", ()),
+        ("qwen3", "Qwen3ForCausalLM", "model", ()),
         ("gpt2", "GPT2LMHeadModel", "transformer", ()),
         ("qwen2_vl", "Qwen2VLForConditionalGeneration", "model.language_model", ("image_token_id", "video_token_id")),
         ("qwen2_5_vl", "Qwen2_5_VLForConditionalGeneration", "model.language_model", ("image_token_id", "video_token_id")),
@@ -85,9 +87,9 @@ def make_adapter(model):
                     sites[site] = HookPoint(f"{attn_path}.c_attn",
                                             tensor_slice=(start, start + attn.split_size))
                 else:
-                    # Qwen3-VL normalizes each Q/K head before rotary position
+                    # Qwen3 and Qwen3-VL normalize each Q/K head before rotary position
                     # encoding. Capture the actual normalized receiver input.
-                    normalized = name == "Qwen3VLForConditionalGeneration" and kind in {"q", "k"}
+                    normalized = name in {"Qwen3ForCausalLM", "Qwen3VLForConditionalGeneration"} and kind in {"q", "k"}
                     component = f"{kind}_norm" if normalized else f"{kind}_proj"
                     sites[site] = HookPoint(f"{attn_path}.{component}")
                 path_qkv[i][kind] = HeadSite(site, count if kind == "q" else kv_count,
@@ -156,6 +158,7 @@ def make_adapter(model):
         ("Audited native eager scores and consumed probabilities before A @ V are editable."
          if attention_scores else "Native attention-score intervention sites are unavailable for this backbone."),
         "Computational edges require an explicit graph adapter.",
+        "Causal attention propagation can favor early sequence positions; weights and target gradients still affect the maps.",
         f"Uncached full-sequence image/text forwards; Transformers {installed}.",
     ]
     if hybrid:
@@ -164,7 +167,7 @@ def make_adapter(model):
     else:
         notes.extend([
             "Path sender outputs are frozen before output projection; the fixed linear projection preserves each head contribution.",
-            "Path Q/K receivers are measured before positional rotation when present; Qwen3-VL uses normalized Q/K, and K/V index physical KV heads.",
+            "Path Q/K receivers are measured before positional rotation when present; Qwen3 and Qwen3-VL use normalized Q/K, and K/V index physical KV heads.",
         ])
     if gpt2:
         notes.append("GPT2 Q/K/V use disjoint packed-projection slices; fixed-scale head logit attribution is not exposed for its affine LayerNorm.")
@@ -182,7 +185,7 @@ def make_adapter(model):
         alignment_keys=("image_grid_thw", "video_grid_thw", "position_ids", "second_per_grid_ts",
                         "pixel_attention_mask", "image_sizes", "token_type_ids", "mm_token_type_ids"),
         forward_defaults={"use_cache": False, "return_dict": True}, notes=tuple(notes),
-        attention_supports=attention_supports,
+        attention_supports=attention_supports, causal_attention=True,
     )
     model_id = getattr(model.config, "_name_or_path", "") or name
     return TorchModelAdapter(model, sites, model_id=model_id,

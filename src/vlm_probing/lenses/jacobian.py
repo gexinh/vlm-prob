@@ -1,12 +1,85 @@
 """Averaged causal transport: https://github.com/anthropics/jacobian-lens."""
 from collections.abc import Callable, Mapping
 from pathlib import Path
+import warnings
 
 import torch
 from torch import Tensor
 
-from .base import BaseLens, decoded, floating_tensor, load_artifact, position_mask, save_artifact
+from .base import BaseLens, decoded, floating_tensor, load_artifact, save_artifact
 from ..core.types import ProbeResult
+
+
+class _JacobianReplacementWarning(RuntimeWarning):
+    """A one-batch estimate will replace an already calibrated Jacobian."""
+
+
+def _warn_replacement(*, stacklevel=2):
+    warnings.warn(
+        "Jacobian Lens fit replaces the existing estimate; it does not accumulate "
+        "calibration batches. Use vlmprobe.training.fit_jacobian_lenses(...) for "
+        "prompt-weighted dataset calibration.",
+        _JacobianReplacementWarning, stacklevel=stacklevel,
+    )
+
+
+def _selector_description(selector):
+    if isinstance(selector, Tensor):
+        return f"tensor(shape={tuple(selector.shape)}, dtype={selector.dtype})"
+    return repr(selector)
+
+
+def _calibration_selection(layout, tokens):
+    """Let Jacobian preflight diagnose an entirely empty, otherwise valid selector."""
+    try:
+        return layout.select(tokens)
+    except ValueError as error:
+        if str(error) != "token selection is empty":
+            raise
+        return torch.zeros_like(layout.valid)
+
+
+def _calibration_masks(valid, *, source_mask=None, target_mask=None, skip_first=16,
+                       exclude_last=True, context="Jacobian calibration"):
+    """Apply the reference exclusions and diagnose every failing prompt before VJPs."""
+    if not isinstance(skip_first, int) or skip_first < 0:
+        raise ValueError("skip_first must be a nonnegative integer")
+    shape = tuple(valid.shape)
+
+    def checked(mask, name):
+        if mask is None:
+            return torch.ones_like(valid)
+        if not isinstance(mask, Tensor) or mask.dtype != torch.bool or tuple(mask.shape) != shape:
+            raise ValueError(f"{context}: {name} must be boolean with shape {shape}")
+        return mask.to(valid.device)
+
+    source_mask, target_mask = checked(source_mask, "source_mask"), checked(target_mask, "target_mask")
+    retained = valid.clone()
+    for batch in range(len(valid)):
+        positions = valid[batch].nonzero(as_tuple=True)[0]
+        retained[batch, positions[:skip_first]] = False
+        if exclude_last and len(positions):
+            retained[batch, positions[-1]] = False
+    sources, targets = retained & source_mask, retained & target_mask
+    source_counts, target_counts = sources.sum(-1), targets.sum(-1)
+    failures = ((source_counts == 0) | (target_counts == 0)).nonzero(as_tuple=True)[0]
+    if len(failures):
+        minimum = skip_first + int(bool(exclude_last)) + 1
+        raise ValueError(
+            f"{context}: every prompt must retain at least one source and target position; "
+            f"failing rows={failures.tolist()}; valid_counts={valid.sum(-1).tolist()}; "
+            f"retained_source_counts={source_counts.tolist()}; "
+            f"retained_target_counts={target_counts.tolist()}; "
+            f"skip_first={skip_first}, exclude_last={exclude_last}; "
+            f"source_mask_counts={source_mask.sum(-1).tolist()}, "
+            f"target_mask_counts={target_mask.sum(-1).tolist()}. "
+            f"Unrestricted masks need at least {minimum} valid expanded tokens per prompt. "
+            "Use longer calibration contexts or explicitly adjust skip_first/exclude_last, "
+            "and ensure selectors/masks intersect the retained positions. "
+            "With an all-prompt layout, tokens='last_prompt' conflicts with exclude_last=True. "
+            "No rows were dropped."
+        )
+    return sources, targets
 
 
 class JacobianLens(BaseLens):
@@ -42,26 +115,26 @@ class JacobianLens(BaseLens):
         token of each prompt, matching the reference calibration convention.
         Use skip_first=0/exclude_last=False to retain those positions. Optional
         source subsampling draws only from the remaining valid source set.
-        Call fit once on the supplied calibration batch; it replaces prior J.
+        Call fit once on the supplied calibration batch; replacing prior J emits
+        RuntimeWarning. Use training.fit_jacobian_lenses for multiple batches.
         """
         if torch.is_inference_mode_enabled():
             raise ValueError("Jacobian calibration cannot run inside torch.inference_mode()")
         floating_tensor(activations, "activations", ndim=3)
-        if not isinstance(skip_first, int) or skip_first < 0:
-            raise ValueError("skip_first must be a nonnegative integer")
         if max_sources is not None and (not isinstance(max_sources, int) or max_sources < 1):
             raise ValueError("max_sources must be positive")
         shape = tuple(activations.shape[:2])
-        valid = position_mask(valid_mask, shape, activations.device).clone()
-        for batch in range(shape[0]):
-            positions = valid[batch].nonzero(as_tuple=True)[0]
-            valid[batch, positions[:skip_first]] = False
-            if exclude_last and len(positions):
-                valid[batch, positions[-1]] = False
-        sources = valid & position_mask(source_mask, shape, activations.device)
-        targets = valid & position_mask(target_mask, shape, activations.device)
-        if not sources.any(-1).all() or not targets.any(-1).all():
-            raise ValueError("every prompt must retain at least one source and target position")
+        if valid_mask is None:
+            valid = torch.ones(shape, dtype=torch.bool, device=activations.device)
+        elif (not isinstance(valid_mask, Tensor) or valid_mask.dtype != torch.bool
+              or tuple(valid_mask.shape) != shape):
+            raise ValueError(f"valid_mask must be boolean with shape {shape}")
+        else:
+            valid = valid_mask.to(activations.device)
+        sources, targets = _calibration_masks(valid, source_mask=source_mask,
+            target_mask=target_mask, skip_first=skip_first, exclude_last=exclude_last)
+        if self.jacobian is not None:
+            _warn_replacement(stacklevel=3)
         if max_sources is not None:
             generator = torch.Generator(device="cpu").manual_seed(seed)
             for batch in range(shape[0]):
